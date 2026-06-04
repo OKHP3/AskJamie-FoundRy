@@ -1,0 +1,51 @@
+name: Validate Manifests
+
+on:
+  pull_request:
+    paths:
+      - "manifest.yaml"
+      - "**/manifest.yaml"
+      - "schemas/manifest.schema.yaml"
+      - "_template/manifest.yaml"
+  push:
+    branches:
+      - main
+    paths:
+      - "manifest.yaml"
+      - "**/manifest.yaml"
+      - "schemas/manifest.schema.yaml"
+
+jobs:
+  validate:
+    name: Validate manifest.yaml files
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install jsonschema
+        run: pip install jsonschema pyyaml
+
+      - name: Find and validate all manifest.yaml files
+        run: |
+          echo "=== AskJamie FoundRy — Manifest Validation ==="
+          FAIL=0
+          while IFS= read -r -d '' manifest; do
+            echo ""
+            echo "Validating: $manifest"
+            python3 scripts/validate-manifest.py "$manifest" || FAIL=1
+          done < <(find . -name "manifest.yaml" -not -path "./.git/*" -not -path "./_template/*" -print0)
+          if [ "$FAIL" -eq 1 ]; then
+            echo ""
+            echo "❌ One or more manifest.yaml files failed validation."
+            exit 1
+          else
+            echo ""
+            echo "✅ All manifest.yaml files passed validation."
+          fi
