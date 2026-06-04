@@ -48,3 +48,4 @@ exports/*.tar.gz
 *.tmp
 *.bak
 *.orig
+.github/workflows/*.yml
