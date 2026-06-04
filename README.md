@@ -40,27 +40,54 @@ GPT, Copilot agent, Gemini Gem, website page, or local agent is only a
 
 ---
 
-## Repository Structure
+## Repository Catalog
 
-```text
-.github/              GitHub automation: workflows, issue templates, PR template
-_template/            Starter scaffold for new child repositories
-registry/             Child repo catalog and triage log
-  └── index.yaml      Master registry of all governed repos
-schemas/              YAML schema definitions for manifests and registry
-  ├── manifest.schema.yaml
-  └── registry.schema.yaml
-docs/                 Relay design, governance, naming, and migration guides
-archive/              Legacy content and pre-refactor artifacts
-assets/               Shared brand assets (logo, standards, identity)
-  └── brand/
-scripts/              Governance utility scripts (Python 3, no dependencies)
-AGENTS.md             Authority chain, relay rules, and agent behavior contract
-CHANGELOG.md          Version history of this FoundRy
-LICENSE.md            Proprietary license
-manifest.yaml         Self-describing manifest for this FoundRy
-README.md             This file
-```
+Every folder has its own README. Click any link to jump to the full documentation
+for that area.
+
+### Governance and Infrastructure
+
+| Folder | What It Is | Docs |
+|---|---|---|
+| [`_template/`](_template/) | Canonical starter scaffold — copy this to create any new AskJamie child repo | [ABOUT.md](_template/ABOUT.md) |
+| [`registry/`](registry/) | Authoritative catalog of all 9 governed child repos plus the triage intake log | [README.md](registry/README.md) |
+| [`schemas/`](schemas/) | YAML schemas for `manifest.yaml` and `registry/index.yaml` validation | [README.md](schemas/README.md) |
+| [`docs/`](docs/) | Relay design, governance reference, naming conventions, migration guide, ecosystem map | [README.md](docs/README.md) |
+| [`scripts/`](scripts/) | Python utilities: manifest validator, registry health check, filename normalizer | [README.md](scripts/README.md) |
+| [`assets/`](assets/) | Shared AskJamie™ brand standards and identity assets | [README.md](assets/README.md) |
+
+### Capability Efforts Staged for Graduation
+
+Content here is ready to graduate into its own standalone repository — it is not
+abandoned, just awaiting the scaffolding step.
+
+| Folder | Capability | Code | Target Repo | Docs |
+|---|---|---|---|---|
+| [`archive/aj01-resume-representative/`](archive/aj01-resume-representative/) | Résumé Representative — HR, career, résumé hybridization | `aj01` | `askjamie-aj01-resume-representative` | [README.md](archive/aj01-resume-representative/README.md) |
+| [`archive/brg00-builders-firstsource/`](archive/brg00-builders-firstsource/) | BrandGuard — Builders FirstSource · 🔒 BFS Firewall | `brg00` | `askjamie-brg00-builders-firstsource` | [README.md](archive/brg00-builders-firstsource/README.md) |
+
+→ See [`archive/`](archive/README.md) for the full archive overview and graduation checklist.
+
+### Legacy Folders
+
+These root-level folders predate the current governance structure. Their content
+has been mirrored into `archive/` (the canonical location) and is preserved here
+for historical continuity pending a future consolidation pass.
+
+| Folder | Original Name | Canonical Location | Docs |
+|---|---|---|---|
+| [`gpt-aj01-askjamie-resume-representative/`](gpt-aj01-askjamie-resume-representative/) | `gpt-aj01-askjamie™-—-résumé-representative/` | [`archive/aj01-resume-representative/`](archive/aj01-resume-representative/) | [README.md](gpt-aj01-askjamie-resume-representative/README.md) |
+| [`okhp3-brandguard-sentinel/`](okhp3-brandguard-sentinel/) | `OKHP3-BrandGaurd-Sentinel/` | [`archive/brg00-builders-firstsource/`](archive/brg00-builders-firstsource/) | [README.md](okhp3-brandguard-sentinel/README.md) |
+
+### Root Files
+
+| File | Purpose |
+|---|---|
+| `AGENTS.md` | Authority chain, relay rules, and AI agent behavior contract |
+| `manifest.yaml` | Self-describing manifest for this FoundRy relay |
+| `CHANGELOG.md` | Version history in Keep a Changelog format |
+| `LICENSE.md` | Proprietary license declaration |
+| `README.md` | This file |
 
 ---
 

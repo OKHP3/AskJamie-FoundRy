@@ -11,6 +11,36 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [0.4.0] — 2026-06-04
+
+### Added
+- **Per-folder README / ABOUT files (11 new documents):**
+  - `_template/ABOUT.md` — meta-description of the scaffold folder (preserving
+    `_template/README.md` as the child-repo template placeholder)
+  - `archive/README.md` — overview of both staged capabilities, graduation process
+  - `assets/README.md` — shared brand assets structure and usage rules
+  - `docs/README.md` — index of all 5 governance documents and workflows staging dir
+  - `gpt-aj01-askjamie-resume-representative/README.md` — legacy folder orientation,
+    redirect to canonical archive copy, AJ01 capability overview
+  - `okhp3-brandguard-sentinel/README.md` — legacy folder orientation with BFS
+    firewall notice, redirect to canonical archive copy, BRG00 capability overview
+  - `registry/README.md` — registry table (9 repos), status values, how to add entries
+  - `schemas/README.md` — schema summaries, validation commands, upgrade procedure
+  - `scripts/README.md` — expanded to document all 7 scripts with usage examples
+
+### Changed
+- `README.md` — "Repository Structure" section replaced with "Repository Catalog":
+  four subsections (Governance and Infrastructure, Capability Efforts Staged for
+  Graduation, Legacy Folders, Root Files), each with links to per-folder READMEs.
+- `assets/brand/README.md` — removed stale note about brand files being at root
+  (they have been moved to `assets/brand/` and the root copies removed).
+
+### Removed
+- `askjamie-brand-standards.docx` (root) — duplicate of `assets/brand/` copy; removed.
+- `askjamie-brand-standards.pdf` (root) — duplicate of `assets/brand/` copy; removed.
+
+---
+
 ## [0.3.0] — 2026-06-04
 
 ### Added
@@ -90,7 +120,8 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
-[Unreleased]: https://github.com/OKHP3/AskJamie-FoundRy/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/OKHP3/AskJamie-FoundRy/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/OKHP3/AskJamie-FoundRy/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/OKHP3/AskJamie-FoundRy/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/OKHP3/AskJamie-FoundRy/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/OKHP3/AskJamie-FoundRy/releases/tag/v0.1.0

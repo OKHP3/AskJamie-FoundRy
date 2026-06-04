@@ -6,12 +6,8 @@ Shared AskJamie™ brand assets for use across the FoundRy and child repositorie
 
 | File | Description |
 |---|---|
-| `askjamie-brand-standards.pdf` | AskJamie™ Brand Standards (PDF, print-ready) |
-| `askjamie-brand-standards.docx` | AskJamie™ Brand Standards (DOCX, editable source) |
-
-> **Note:** The canonical brand standard files currently live at the repo
-> root as `askjamie™-brand-standards.pdf` / `.docx`. They will be moved here
-> and renamed (removing the `™` special character) in the next maintenance pass.
+| [`askjamie-brand-standards.pdf`](askjamie-brand-standards.pdf) | AskJamie™ Brand Standards (PDF, print-ready) |
+| [`askjamie-brand-standards.docx`](askjamie-brand-standards.docx) | AskJamie™ Brand Standards (DOCX, editable source) |
 
 ## Usage
 
