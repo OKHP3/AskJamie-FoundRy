@@ -1,0 +1,38 @@
+# CODEOWNERS — AskJamie FoundRy
+#
+# Code ownership assignments for this repository.
+# GitHub uses this file to automatically request reviews.
+# Format: [path pattern]  @[owner]
+#
+# Reference: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything not matched below
+*                           @OKHP3
+
+# Governance and authority chain files — require owner review
+AGENTS.md                   @OKHP3
+manifest.yaml               @OKHP3
+LICENSE.md                  @OKHP3
+
+# Registry — require owner review (any registry change affects all children)
+registry/                   @OKHP3
+registry/index.yaml         @OKHP3
+
+# Schemas — require owner review (schema changes affect all child manifests)
+schemas/                    @OKHP3
+
+# Template — require owner review (template changes cascade to all new children)
+_template/                  @OKHP3
+
+# GitHub automation — require owner review
+.github/                    @OKHP3
+.github/workflows/          @OKHP3
+
+# Documentation
+docs/                       @OKHP3
+
+# Scripts
+scripts/                    @OKHP3
+
+# Archive — lighter review, but still owner for audit trail
+archive/                    @OKHP3

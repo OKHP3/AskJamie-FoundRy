@@ -1,0 +1,1 @@
+- [AskJamie FoundRy Structure](askjamie-foundry.md) — full governance relay layout, naming conventions, and upgrade path for this repo.

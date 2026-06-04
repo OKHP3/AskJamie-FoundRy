@@ -1,0 +1,50 @@
+# OS artifacts
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor artifacts
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+.env
+.venv
+venv/
+env/
+
+# Node (if ever introduced)
+node_modules/
+npm-debug.log*
+
+# Replit internal
+.cache/
+.local/
+.upm/
+.pythonlibs/
+
+# Secrets / local config
+.env.local
+.env.*.local
+*.secret
+
+# Generated exports
+exports/*.zip
+exports/*.tar.gz
+
+# Temp files
+*.tmp
+*.bak
+*.orig

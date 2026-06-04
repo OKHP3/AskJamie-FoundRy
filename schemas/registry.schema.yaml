@@ -1,0 +1,83 @@
+# registry.schema.yaml
+# JSON Schema (expressed in YAML) for registry/index.yaml
+# Validate with: python3 scripts/check-registry.py
+
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: AskJamie FoundRy Registry Index
+description: >
+  Defines the required and optional fields for registry/index.yaml,
+  the authoritative catalog of all repositories governed by
+  OKHP3/AskJamie-FoundRy.
+
+type: object
+required:
+  - schema_version
+  - foundry
+  - updated
+  - repositories
+
+properties:
+
+  schema_version:
+    type: string
+    enum: ["1.0"]
+
+  foundry:
+    type: string
+    enum: ["OKHP3/AskJamie-FoundRy"]
+
+  updated:
+    type: string
+    pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+
+  repositories:
+    type: array
+    items:
+      type: object
+      required:
+        - repo
+        - display_name
+        - code
+        - family
+        - status
+        - visibility
+        - public_graduation_allowed
+      properties:
+        repo:
+          type: string
+          pattern: "^OKHP3/.+"
+        display_name:
+          type: string
+        code:
+          type: string
+          pattern: "^(aj|brg)[0-9]{2}$"
+        family:
+          type: string
+          enum:
+            - core-capability
+            - brandguard
+            - enterprise-sleuth
+            - client-overlay
+        status:
+          type: string
+          enum: [draft, active, deprecated, archived]
+        visibility:
+          type: string
+          enum: [private, public]
+        public_graduation_allowed:
+          type: boolean
+        bfs_firewall:
+          type: boolean
+        visibility_lock:
+          type: string
+          enum: [permanent-private]
+        client_org:
+          type: string
+        description:
+          type: string
+        archive_source:
+          type: string
+        notes:
+          type: string
+
+additionalProperties: false

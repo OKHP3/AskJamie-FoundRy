@@ -1,0 +1,128 @@
+schema_version: "1.0"
+foundry: OKHP3/AskJamie-FoundRy
+updated: "2026-06-04"
+
+# ---------------------------------------------------------------------------
+# Registry of all child repositories governed by AskJamie FoundRy
+# ---------------------------------------------------------------------------
+# Status values: draft | active | deprecated | archived
+# Visibility values: private | public
+# Families: core-capability | brandguard | enterprise-sleuth | client-overlay
+# ---------------------------------------------------------------------------
+
+repositories:
+
+  # ── Core Capabilities ────────────────────────────────────────────────────
+
+  - repo: OKHP3/askjamie-aj01-resume-representative
+    display_name: "AskJamie™ — Résumé Representative"
+    code: aj01
+    family: core-capability
+    status: active
+    visibility: private
+    public_graduation_allowed: true
+    description: >
+      Career, HR, and resume hybridization assistant. Covers dynamic resume
+      generation, cover letter synthesis, hiring history analysis, and
+      market-value compensation guidance.
+    archive_source: "archive/aj01-resume-representative/"
+    notes: "Legacy content staged in archive/ pending full repo graduation."
+
+  - repo: OKHP3/askjamie-aj02-professional-portfolio
+    display_name: "AskJamie™ — Professional Portfolio"
+    code: aj02
+    family: core-capability
+    status: draft
+    visibility: private
+    public_graduation_allowed: true
+    description: >
+      Public-facing professional portfolio capability. Surfaces curated work
+      history and capability demonstrations for external audiences.
+    notes: "Planned. Not yet scaffolded."
+
+  - repo: OKHP3/askjamie-aj03-enterprise-sleuth
+    display_name: "AskJamie™ — Enterprise Sleuth"
+    code: aj03
+    family: enterprise-sleuth
+    status: draft
+    visibility: private
+    public_graduation_allowed: true
+    description: >
+      Organizational intelligence and research assistant. Designed to help
+      users investigate companies, roles, and hiring contexts at depth.
+    notes: "Planned. Not yet scaffolded."
+
+  - repo: OKHP3/askjamie-aj04-brandguard
+    display_name: "AskJamie™ — BrandGuard"
+    code: aj04
+    family: brandguard
+    status: draft
+    visibility: private
+    public_graduation_allowed: true
+    description: >
+      Core BrandGuard identity and governance framework. Defines brand
+      protection rules, tone enforcement, and identity consistency systems.
+    notes: "Planned. Not yet scaffolded."
+
+  # ── BrandGuard Sentinels ─────────────────────────────────────────────────
+
+  - repo: OKHP3/askjamie-brg00-builders-firstsource
+    display_name: "BrandGuard — Builders FirstSource"
+    code: brg00
+    family: brandguard
+    status: active
+    visibility: private
+    public_graduation_allowed: false
+    bfs_firewall: true
+    visibility_lock: permanent-private
+    description: >
+      BrandGuard Sentinel for Builders FirstSource (NYSE: BLDR). Covers
+      wood-frame construction knowledge, BFS product catalog, logistics,
+      and brand voice standards.
+    archive_source: "archive/brg00-builders-firstsource/"
+    notes: "Legacy content in archive/. Client overlay — permanently private."
+
+  - repo: OKHP3/askjamie-brg01-lego
+    display_name: "BrandGuard — LEGO"
+    code: brg01
+    family: brandguard
+    status: draft
+    visibility: private
+    public_graduation_allowed: false
+    visibility_lock: permanent-private
+    notes: "Planned."
+
+  - repo: OKHP3/askjamie-brg12-mathews-archery
+    display_name: "BrandGuard — Mathews Archery"
+    code: brg12
+    family: brandguard
+    status: draft
+    visibility: private
+    public_graduation_allowed: false
+    visibility_lock: permanent-private
+    notes: "Planned."
+
+  # ── Client Overlays ───────────────────────────────────────────────────────
+
+  - repo: OKHP3/buildersfirstsource-askjamie-aj03-enterprise-sleuth
+    display_name: "Builders FirstSource × AskJamie Enterprise Sleuth"
+    code: aj03
+    family: client-overlay
+    client_org: buildersfirstsource
+    status: draft
+    visibility: private
+    public_graduation_allowed: false
+    bfs_firewall: true
+    visibility_lock: permanent-private
+    notes: "Planned. Client overlay — permanently private."
+
+  - repo: OKHP3/cvshealth-askjamie-aj03-enterprise-sleuth
+    display_name: "CVS Health × AskJamie Enterprise Sleuth"
+    code: aj03
+    family: client-overlay
+    client_org: cvshealth
+    status: draft
+    visibility: private
+    public_graduation_allowed: false
+    visibility_lock: permanent-private
+    notes: "Planned. Client overlay — permanently private."

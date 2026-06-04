@@ -1,0 +1,175 @@
+# manifest.schema.yaml
+# JSON Schema (expressed in YAML) for AskJamie child repo manifest.yaml files.
+# Validate with: python3 scripts/validate-manifest.py path/to/manifest.yaml
+
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: AskJamie Child Repository Manifest
+description: >
+  Defines the required and optional fields for manifest.yaml in every
+  repository governed by OKHP3/AskJamie-FoundRy.
+
+type: object
+required:
+  - schema_version
+  - identity
+  - brand
+  - lineage
+  - governance
+  - visibility_control
+  - maintainers
+  - created
+  - updated
+
+properties:
+
+  schema_version:
+    type: string
+    description: Schema version this manifest targets.
+    enum: ["1.0"]
+
+  identity:
+    type: object
+    required: [repo, display_name, slug, type, status]
+    properties:
+      repo:
+        type: string
+        description: "Full GitHub repo path, e.g. OKHP3/askjamie-aj01-resume-representative"
+        pattern: "^OKHP3/.+"
+      display_name:
+        type: string
+        description: Human-readable name for the capability.
+      slug:
+        type: string
+        description: URL-safe slug for this capability.
+        pattern: "^[a-z0-9-]+$"
+      type:
+        type: string
+        enum:
+          - core-capability
+          - brandguard
+          - enterprise-sleuth
+          - client-overlay
+          - conversation-design
+          - rag-experiment
+          - foundry-relay
+      status:
+        type: string
+        enum: [draft, active, deprecated, archived]
+
+  brand:
+    type: object
+    required: [brand_domain, trademark]
+    properties:
+      brand_domain:
+        type: string
+        enum: [askjamie]
+      trademark:
+        type: string
+      capability_code:
+        type: string
+        description: "e.g. aj01, brg00"
+        pattern: "^(aj|brg)[0-9]{2}$"
+
+  lineage:
+    type: object
+    required: [parent_foundry]
+    properties:
+      parent_foundry:
+        type: string
+        description: "Full GitHub repo path of the parent foundry, e.g. OKHP3/AskJamie-FoundRy"
+        pattern: "^OKHP3/.+"
+      parent_repo:
+        type: string
+      parent_capability:
+        type: string
+        description: Required for client overlays.
+
+  governance:
+    type: object
+    required: [naming_pattern]
+    properties:
+      naming_pattern:
+        type: string
+      agents_doc:
+        type: string
+        default: "AGENTS.md"
+
+  deployment_surfaces:
+    type: array
+    items:
+      type: object
+      required: [name, status]
+      properties:
+        name:
+          type: string
+          enum:
+            - openai-custom-gpt
+            - microsoft-copilot
+            - gemini-gem
+            - replit-agent
+            - website
+            - api
+            - other
+        status:
+          type: string
+          enum: [planned, active, deprecated, none]
+        url:
+          type: string
+
+  visibility_control:
+    type: object
+    required: [public_graduation_allowed]
+    properties:
+      visibility:
+        type: string
+        enum: [private, public]
+      public_graduation_allowed:
+        type: boolean
+      client_org:
+        type: string
+        description: Org slug for client overlay repos.
+      visibility_lock:
+        type: string
+        enum: [permanent-private]
+        description: If set, public graduation is permanently blocked.
+      bfs_firewall:
+        type: boolean
+        description: If true, treat as BFS-sensitive. Do not share publicly.
+
+  relay_scope:
+    type: object
+    description: Optional — used only in foundry-relay type manifests.
+    properties:
+      governs:
+        type: array
+        items:
+          type: string
+      families:
+        type: array
+        items:
+          type: string
+
+  maintainers:
+    type: array
+    minItems: 1
+    items:
+      type: object
+      required: [handle, role]
+      properties:
+        handle:
+          type: string
+        role:
+          type: string
+          enum: [owner, maintainer, contributor]
+
+  created:
+    type: string
+    pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    description: ISO 8601 date the repo was created.
+
+  updated:
+    type: string
+    pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    description: ISO 8601 date the manifest was last updated.
+
+additionalProperties: false

@@ -1,0 +1,56 @@
+schema_version: "1.0"
+
+identity:
+  repo: OKHP3/AskJamie-FoundRy
+  display_name: AskJamie FoundRy
+  slug: askjamie-foundry
+  type: foundry-relay
+  status: active
+
+brand:
+  brand_domain: askjamie
+  trademark: "AskJamie™"
+  storefront: https://askjamie.bot/
+  replit_project: https://replit.com/t/askjamie/repls/AskJamie-FoundRy
+
+lineage:
+  parent_foundry: OKHP3/OverKill-Hill
+  parent_repo: OKHP3/OverKill-Hill-FoundRy
+  universe: https://overkillhill.com/universe/
+  sibling_portfolio: https://replit.com/t/askjamie/repls/AskJamie
+
+governance:
+  authority_chain:
+    - OKHP3/OverKill-Hill
+    - OKHP3/AskJamie-FoundRy
+  naming_pattern: "askjamie-aj##-[capability-slug] | askjamie-brg##-[brand-slug] | [client-org]-askjamie-[capability-code]-[capability-slug]"
+  child_registry: registry/index.yaml
+  schema_dir: schemas/
+  template_dir: _template/
+  docs_dir: docs/
+
+relay_scope:
+  governs:
+    - askjamie-aj##-*
+    - askjamie-brg##-*
+    - "[client-org]-askjamie-*"
+  families:
+    - core-capability
+    - brandguard
+    - enterprise-sleuth
+    - client-overlay
+    - conversation-design
+    - rag-experiment
+
+visibility_control:
+  visibility: private
+  public_graduation_allowed: false
+  default_child_visibility: private
+  client_org_repos_public_graduation_allowed: false
+
+maintainers:
+  - handle: OKHP3
+    role: owner
+
+created: "2024-01-01"
+updated: "2026-06-04"

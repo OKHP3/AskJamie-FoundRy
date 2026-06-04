@@ -1,0 +1,50 @@
+schema_version: "1.0"
+
+identity:
+  repo: OKHP3/[REPO_NAME]
+  display_name: "[DISPLAY_NAME]"
+  slug: "[capability-slug]"
+  type: "[core-capability | brandguard | enterprise-sleuth | client-overlay | conversation-design | rag-experiment]"
+  status: "[draft | active | deprecated]"
+
+brand:
+  brand_domain: askjamie
+  trademark: "AskJamie™"
+  capability_code: "[aj## | brg##]"
+
+lineage:
+  parent_foundry: OKHP3/AskJamie-FoundRy
+  parent_repo: OKHP3/AskJamie-FoundRy
+  # If this is a client overlay, declare the parent capability:
+  # parent_capability: OKHP3/askjamie-aj03-enterprise-sleuth
+
+governance:
+  naming_pattern: "askjamie-[code]-[slug]"
+  agents_doc: AGENTS.md
+
+deployment_surfaces:
+  - name: openai-custom-gpt
+    status: "[planned | active | deprecated | none]"
+    url: ""
+  - name: microsoft-copilot
+    status: "[planned | active | deprecated | none]"
+    url: ""
+  - name: gemini-gem
+    status: "[planned | active | deprecated | none]"
+    url: ""
+
+visibility_control:
+  visibility: "[private | public]"
+  public_graduation_allowed: true
+  # For client overlays, set these:
+  # client_org: "[org-slug]"
+  # visibility_lock: permanent-private
+  # public_graduation_allowed: false
+  # bfs_firewall: false
+
+maintainers:
+  - handle: OKHP3
+    role: owner
+
+created: "YYYY-MM-DD"
+updated: "YYYY-MM-DD"
