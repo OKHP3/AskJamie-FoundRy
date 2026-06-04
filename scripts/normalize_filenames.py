@@ -167,6 +167,10 @@ def clean_filename(name: str, *, keep_unicode: bool, is_dir: bool = False) -> st
     if keep_unicode:
         stem = re.sub(r"[^\w-]+", "", stem)
     else:
+        # NFKD decomposes accented characters into base + combining accent:
+        # é → e + ́  → encode('ascii','ignore') keeps 'e', drops the accent.
+        # Without this, é would be dropped entirely instead of becoming 'e'.
+        stem = unicodedata.normalize("NFKD", stem)
         stem = stem.encode("ascii", "ignore").decode("ascii")
         stem = re.sub(r"[^a-zA-Z0-9_-]+", "", stem)
 

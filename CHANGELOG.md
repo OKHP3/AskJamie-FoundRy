@@ -11,6 +11,38 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [0.3.0] — 2026-06-04
+
+### Added
+- `scripts/normalize_filenames.py` — canonical filename normalization utility.
+  Converts ™, —, é, &, ,, #, (, ), ' and other non-standard characters to
+  ASCII-compliant kebab-case slugs. Supports dry-run (default) and `--apply`,
+  `--recursive`, `--ascii-only`, `--include-dirs`, and `--exclude-path` flags.
+  Fixed NFKD transliteration so accented letters (é → e) are retained rather
+  than dropped. Preserves `PRESERVE_NAMES` list (README, CHANGELOG, AGENTS, etc.)
+  and Windows-reserved basename guard.
+
+### Changed
+- **Full filename normalization pass — 74 renames applied across the repository.**
+  All file and folder names now comply with GitHub and Replit naming best practices
+  (ASCII only, kebab-case separators, no special shell/URL characters):
+  - Root: `askjamie™-brand-standards.*` → `askjamie-brand-standards.*`
+  - Legacy folder: `gpt-aj01-askjamie™-—-résumé-representative/` →
+    `gpt-aj01-askjamie-resume-representative/`
+  - Legacy folder: `OKHP3-BrandGaurd-Sentinel/` → `okhp3-brandguard-sentinel/`
+    (also corrects "Gaurd" → "Guard" typo)
+  - Legacy subfolder: `BFS-Framing-Intelligent-Futures/` →
+    `bfs-framing-intelligent-futures/`
+  - `archive/aj01-resume-representative/hr_guidebook_2025-(1).pdf` →
+    `hr_guidebook_2025-1.pdf`
+  - `archive/brg00-builders-firstsource/##-builders-firstsource-gpt-—-core.md` →
+    `builders-firstsource-gpt-core.md`
+  - All 32 knowledge files in `archive/brg00-builders-firstsource/knowledge/` and
+    `okhp3-brandguard-sentinel/bfs-framing-intelligent-futures/knowledge/`:
+    `&` → `and`, `,` → removed, `'` → removed, `—` → `-` in every filename.
+
+---
+
 ## [0.2.0] — 2026-06-04
 
 ### Added
@@ -58,6 +90,7 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
-[Unreleased]: https://github.com/OKHP3/AskJamie-FoundRy/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/OKHP3/AskJamie-FoundRy/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/OKHP3/AskJamie-FoundRy/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/OKHP3/AskJamie-FoundRy/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/OKHP3/AskJamie-FoundRy/releases/tag/v0.1.0
