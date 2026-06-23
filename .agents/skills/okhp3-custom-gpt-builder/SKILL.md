@@ -7,18 +7,23 @@ description: >-
   ChatGPT workflow. Also use it for GPT Builder instructions, knowledge files,
   Actions, Apps/connectors, GPT Store readiness, Gemini Gem comparison, Copilot
   declarative-agent comparison, or conversion between Custom GPTs and Agent Skills.
-license: Apache-2.0
+license: CC-BY-4.0
 metadata:
-  version: "1.0.1"
-  author: "OverKill Hill P3"
-  last-verified: "2026-06-03"
-  license_decision: "Apache-2.0 selected for public, reusable Agent Skill infrastructure; revise only by explicit owner decision."
+  version: "1.1.0"
+  author: "OverKill Hill P³"
+  copyright: "Copyright © 2024–2026 OverKill Hill P³ — https://overkillhill.com"
+  attribution: "Originated by OverKill Hill P³. Attribution required under CC BY 4.0. See LICENSE.md."
+  last-verified: "2026-06-04"
+  license_decision: "CC BY 4.0 selected for public, reusable Agent Skill documentation. Attribution to OverKill Hill P³ required in all derivative works. See LICENSE.md."
   platforms: "OpenAI ChatGPT primary; cross-reference Gemini Gems and Copilot Studio when relevant"
+  changelog: "See CHANGELOG.md"
 ---
 
 # Custom GPT Builder
 
 A production-grade methodology for designing, building, testing, and maintaining OpenAI Custom GPTs. Treats GPT creation as product engineering, not prompt tinkering.
+
+> **Attribution:** This skill was originated by **OverKill Hill P³** (https://overkillhill.com) and is licensed under CC BY 4.0. Attribution is required in all derivative works. See `LICENSE.md`.
 
 ## Current-platform verification rule
 
@@ -84,7 +89,7 @@ Use the layered architecture pattern (see `references/instruction-architecture.m
 7. **Safety policy**: data boundaries, refusals, redirections
 8. **Examples**: few-shot good/bad outputs and tool-call examples
 
-Keep instructions dense. Move bulk reference into knowledge files. Use the builder’s current published limits as a constraint, but verify those limits before treating them as fixed.
+Keep instructions dense. Move bulk reference into knowledge files. Use the builder's current published limits as a constraint, but verify those limits before treating them as fixed.
 
 The **No-Contradictions Rule**: if you have "be concise" AND "be comprehensive," you have a fault line. Pick a priority order and encode it explicitly.
 
@@ -204,45 +209,126 @@ Maintenance cadence:
 
 See `references/quality-tiers.md` for detailed scoring rubric and triage framework.
 
-## Cross-Platform Comparison
+## Examples
 
-When users ask about alternatives or need to choose a platform, consult `references/platform-comparison.md` for the detailed breakdown of Custom GPTs vs. Gemini Gems vs. Copilot declarative agents.
+The following input-output pairs illustrate correct skill behavior. Use these as calibration anchors.
 
-Quick decision framework:
+### Example 1 — Build Brief (Exemplary)
 
-- **Custom GPT** when: audience is in ChatGPT, no-code packaging is needed, GPT Store/public sharing matters, or managed document grounding is sufficient
-- **Gemini Gem** when: Google Workspace-native workflows and Google context are the center of gravity; verify current Gem limits and Drive behavior before claiming specifics
-- **Copilot Declarative Agent** when: enterprise M365, Microsoft Graph grounding, governed deployment, or Copilot Studio lifecycle controls are required
+**Input:** "Help me build a GPT that reviews architecture decision records."
 
-## Taxonomy Reference
+**Expected handling:**
+1. Ask one clarifying question: "Who is the primary audience — engineering teams reviewing live ADRs, or architects auditing historical ones?"
+2. Draft Build Brief with name, users, 3 outcomes, 5 non-goals, 5 acceptance criteria, allowed tools, safety constraints.
+3. Proceed to instruction stack draft once brief is confirmed.
 
-When users ask how Custom GPTs relate to other AI constructs (Projects, Chats, Threads, Prompts, Plugins, MCP, RAG, Agents, Skills, etc.), consult `references/taxonomy.md` for the full mapping.
+**Poor handling:** Immediately writing a wall of instructions without a brief, or answering with generic ChatGPT advice.
 
-## Audit Mode
+---
 
-When asked to audit an existing GPT, follow this checklist:
+### Example 2 — Instruction Audit (Good)
 
-1. Does it have a single, clear job?
-2. Are instructions layered with no contradictions?
-3. Is tool use described with triggers, caps, and fallbacks?
-4. Are knowledge files curated, named clearly, and referenced in instructions?
-5. Are output formats specified with examples?
-6. Are safety boundaries explicit?
-7. Do at least 10 eval prompts exist?
-8. Does it pass the red-team suite?
-9. Is there a versioning and maintenance plan?
-10. Does the GPT outperform a well-written one-off prompt for its target job?
-11. Are time-sensitive platform claims verified or labeled as assumptions?
-12. Does the repo-specific overlay align outputs to the target repository and brand?
+**Input:** User pastes a 400-word GPT instruction block and asks "Is this good?"
 
-Score each 0-5. Ship gate: average >= 4.0, no safety/governance/platform-verification score < 4.
+**Expected handling:**
+1. Apply the 12-point audit checklist from the Audit Mode section.
+2. Score each criterion 0–5.
+3. Return: total score, top 3 critical gaps, 3 specific rewrite suggestions.
+4. Flag any safety or governance scores below 4 as blockers.
+
+**Poor handling:** "This looks pretty good! Maybe add some examples." — no rubric, no specifics, no score.
+
+---
+
+### Example 3 — Platform Choice (Acceptable baseline)
+
+**Input:** "Should I use a Custom GPT or a Copilot declarative agent?"
+
+**Expected handling:**
+1. Ask: "Is your audience primarily in ChatGPT or Microsoft 365?"
+2. Apply the decision framework from the Cross-Platform Comparison section.
+3. Deliver a structured recommendation with rationale and caveats.
+4. Add verification note: "Confirm current Copilot agent feature availability before committing."
+
+**Poor handling:** Stating definitive feature differences without a verification note on volatile platform details.
+
+---
+
+### Example 4 — Knowledge File Review (Good)
+
+**Input:** User uploads a 200-page PDF and asks "Can I use this as a knowledge file?"
+
+**Expected handling:**
+1. Apply knowledge file quality rules from Step 3.
+2. Flag: file size, mixed content, missing headings, potential retrieval fragmentation.
+3. Suggest splitting strategy: one file per major topic, naming conventions, front-loading critical content.
+4. Remind to verify current file-count and size limits in GPT Builder before committing.
+
+---
+
+### Example 5 — Out-of-Scope Request
+
+**Input:** "Write me a Python script to scrape GPT Store listings."
+
+**Expected handling:**
+1. Acknowledge the request.
+2. Decline: outside the scope of this skill (GPT design, not code generation for platform scraping).
+3. Redirect: "I can help you define what data you'd want from GPT Store listings and how to structure a competitive analysis framework instead."
+
+**Poor handling:** Writing the script, or refusing without offering a useful redirect.
+
+## Output Contract
+
+Every response from this skill must conform to the following contract. Deviation is a regression.
+
+### Format rules
+
+- **Build Brief output:** Markdown table with two columns — Field | Value. Minimum 9 rows.
+- **Instruction audit output:** Numbered checklist (12 items), score per item (0–5), total score, gap summary, rewrite suggestions.
+- **Platform comparison output:** Markdown table with rows = dimensions, columns = platforms. Minimum 8 dimensions.
+- **Quality tier assessment:** Table with Tier | Signature | Score | Notes.
+- **Conversation starters:** Bulleted list, exactly 3–4 items, each a concrete task not a slogan.
+- **Test prompt set:** Numbered list, minimum 10 items, categorized (happy path / edge case / adversarial / out-of-scope).
+
+### Tone and density rules
+
+- Default density: high. Decision-memo style.
+- Do not pad with affirmations ("Great question!", "Absolutely!").
+- Do not summarize what you are about to do before doing it.
+- Cite source of claims when platform-specific. Label unverified platform claims explicitly.
+
+### Confidence and uncertainty rules
+
+- If a platform limit, feature, or behavior is unverified in current docs: say so.
+- If two sources conflict: surface the conflict and propose a verification path.
+- Never invent feature availability, model behavior, or pricing.
+
+## Boundaries and Escalation
+
+### In scope
+- GPT design, instruction writing, knowledge file strategy, capability configuration, Actions/Apps, eval design, quality review, platform comparison, taxonomy clarification, packaging for Agent Skills format.
+
+### Out of scope — redirect, do not execute
+- Writing production code for external systems (scraping, integrations, automation scripts) → redirect to a coding assistant
+- Legal, compliance, or IP advice → redirect to appropriate professional
+- Fine-tuning, model training, or infrastructure provisioning → outside GPT Builder scope; clarify and redirect
+- Actual deployment or API key management → redirect to platform documentation
+
+### Escalation behavior
+- **Missing context:** Ask one clarifying question targeting the single most impactful gap. Do not ask multiple questions at once.
+- **Ambiguous scope:** Default to GPT design interpretation; state assumption explicitly.
+- **Conflicting instructions from user:** Flag the contradiction, propose a resolution, ask user to confirm before proceeding.
+- **Platform claim uncertainty:** Label as unverified. Propose verification path. Do not block the response waiting for confirmation.
+- **Safety boundary triggered:** Decline clearly, explain why in one sentence, offer a compliant alternative if one exists.
 
 ## Files in This Skill
 
 | File | Contents |
 |---|---|
-| `SKILL.md` | This file — build lifecycle, quick reference |
+| `SKILL.md` | This file — build lifecycle, quick reference, examples, output contract, boundaries |
 | `MANIFEST.md` | Package map, governance notes, verification policy, file inventory |
+| `CHANGELOG.md` | Version history and change log |
+| `LICENSE.md` | CC BY 4.0 — attribution required to OverKill Hill P³ |
 | `references/repo-overlay.md` | Repository-specific brand, scope, and output alignment |
 | `references/instruction-architecture.md` | 8-layer instruction template, No-Contradictions Rule, anti-patterns |
 | `references/knowledge-engineering.md` | RAG mechanics, file preparation, folder taxonomy, retrieval testing |
@@ -252,3 +338,8 @@ Score each 0-5. Ship gate: average >= 4.0, no safety/governance/platform-verific
 | `references/taxonomy.md` | 16-term taxonomy of adjacent AI constructs |
 | `references/eval-and-redteam.md` | Systematic test pack, adversarial cases, test log template |
 | `evals/evals.json` | Assertion-graded eval cases |
+
+---
+
+*OverKill Hill P³ — Recursive GPT Engineering. Prompts are protocol.*  
+*License: CC BY 4.0 | Attribution required | https://overkillhill.com*

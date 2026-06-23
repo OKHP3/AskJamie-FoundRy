@@ -4,9 +4,25 @@
 
 - **Skill name:** `custom-gpt-builder`
 - **Purpose:** Build, audit, improve, package, and govern OpenAI Custom GPTs as productized AI assistants.
-- **Version:** `1.0.1`
-- **License decision:** Apache-2.0 is selected for this public, reusable Agent Skill infrastructure unless the owner explicitly changes the licensing posture.
-- **Last verified:** 2026-06-03
+- **Version:** `1.1.0`
+- **Author:** OverKill Hill P³
+- **Copyright:** Copyright © 2024–2026 OverKill Hill P³ — https://overkillhill.com
+- **License:** CC BY 4.0 — Attribution required. See `LICENSE.md`.
+- **Attribution required:** "Originated by OverKill Hill P³ (https://overkillhill.com) — Skill: custom-gpt-builder — License: CC BY 4.0"
+- **Last verified:** 2026-06-04
+- **Changelog:** See `CHANGELOG.md`
+
+## License Summary
+
+This skill is published under the **Creative Commons Attribution 4.0 International (CC BY 4.0)** license.
+
+- ✅ Free to use commercially and personally
+- ✅ Free to adapt and redistribute
+- ✅ Free to embed in other products and tools
+- ⚠️ **Attribution to OverKill Hill P³ is required in all uses and derivatives**
+- ⚠️ Any executable scripts are additionally licensed under Apache 2.0
+
+Full license text: `LICENSE.md` or https://creativecommons.org/licenses/by/4.0/legalcode
 
 ## Current-platform verification rule
 
@@ -16,8 +32,10 @@ Platform details change frequently. Before stating limits, feature availability,
 
 | Path | Purpose | Authority |
 |---|---|---:|
-| `SKILL.md` | Main activation metadata, lifecycle workflow, audit checklist, and file map | Primary |
+| `SKILL.md` | Main activation metadata, lifecycle workflow, audit checklist, examples, output contract, boundaries | Primary |
 | `MANIFEST.md` | This package inventory and governance map | Primary |
+| `LICENSE.md` | CC BY 4.0 license with OverKill Hill P³ attribution requirement | Primary |
+| `CHANGELOG.md` | Version history and change tracking | Primary |
 | `references/repo-overlay.md` | Repository-specific brand and output alignment | Primary |
 | `references/instruction-architecture.md` | 8-layer instruction architecture, No-Contradictions Rule, anti-patterns, self-check | High |
 | `references/knowledge-engineering.md` | Knowledge-file preparation, retrieval behavior, manifest strategy, testing | High |
@@ -38,10 +56,12 @@ Platform details change frequently. Before stating limits, feature availability,
 6. Update `last-verified` when official platform documentation is checked.
 7. Do not store API keys, credentials, customer data, private GPT instructions, or proprietary source files in this skill package.
 8. Treat eval failures as regressions until intentionally accepted.
+9. `LICENSE.md` must not be removed or modified without explicit owner decision by OverKill Hill P³.
+10. Any fork or derivative must preserve the attribution notice per CC BY 4.0 terms.
 
 ## Recommended maintenance cadence
 
 - **Monthly:** verify official GPT Builder, Actions, Apps/connectors, Gemini Gems, and Copilot agent constraints.
-- **Per release:** run evals and red-team prompts.
-- **Per repo fork/copy:** update `references/repo-overlay.md`.
+- **Per release:** run evals and red-team prompts; update CHANGELOG.md.
+- **Per repo fork/copy:** update `references/repo-overlay.md`; preserve LICENSE.md and attribution.
 - **Per major model/platform change:** retest knowledge retrieval, tool selection, and refusal behavior.
