@@ -128,3 +128,36 @@ docs/        Relay design, governance, and migration guidance
 ## 10. Canonical Principle
 
 AskJamie capabilities are reusable reasoning and conversation systems. A Custom GPT, Copilot agent, Gem, skill, website page, or local agent is only a deployment surface.
+
+## 11. Writing and Style Rules
+
+These rules apply to all AI agents and contributors generating content in this repository
+or any governed child repo.
+
+- **No em dashes** in any generated content. Use a colon, comma, or restructure the
+  sentence instead.
+- **Preserve standalone punchy lines.** Do not consolidate short, punchy sentences into
+  surrounding paragraphs. They are intentional for rhythm and scannability.
+- **ROY principle:** understanding produced / explanation invested — verbosity must earn
+  its space. Prefer concise, direct prose. Do not pad or over-explain.
+- **AutoCAD version is R10** — locked, not negotiable. Do not reference or suggest a
+  different AutoCAD version in any content.
+
+## 12. Project Context
+
+Quick-reference metadata for agents and contributors.
+
+| Field | Value |
+|---|---|
+| Suite | FoundRy / AskJamie |
+| Type | Development Lab (R&D governance relay — not a deployable app) |
+| GitHub | https://github.com/OKHP3/AskJamie-FoundRy |
+| Notion Anchor | https://app.notion.com/p/2aaa7fb7da3f4338b5d7402754aee9b0 |
+| Windows Local Path | `C:\Users\jamie\OKH-Local\Projects\askjamie-foundry` |
+| Mac Local Path | `/Volumes/OKH-Local/04_GitHub_Mirrors/AskJamie-FoundRy` |
+
+### Related Repositories
+
+- [OKHP3/AskJamie](https://github.com/OKHP3/AskJamie) — public portfolio (sibling)
+- [OKHP3/OverKill-Hill](https://github.com/OKHP3/OverKill-Hill) — parent universe governance
+- [OKHP3/OverKill-Hill-FoundRy](https://github.com/OKHP3/OverKill-Hill-FoundRy) — parent FoundRy relay

@@ -11,6 +11,19 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [0.5.0] — 2026-06-23
+
+### Added
+- `AGENTS.md` §11 Writing and Style Rules — merged from `CLAUDE.md`: no em dashes,
+  punchy-line preservation, ROY verbosity principle, AutoCAD R10 lock.
+- `AGENTS.md` §12 Project Context — merged from `CLAUDE.md`: Notion Anchor URL,
+  local workspace paths (Windows + Mac), and related repository links.
+
+### Removed
+- `CLAUDE.md` — contents merged into `AGENTS.md` §§11–12; file deleted.
+
+---
+
 ## [0.4.0] — 2026-06-04
 
 ### Added
@@ -120,7 +133,8 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
-[Unreleased]: https://github.com/OKHP3/AskJamie-FoundRy/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/OKHP3/AskJamie-FoundRy/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/OKHP3/AskJamie-FoundRy/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/OKHP3/AskJamie-FoundRy/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/OKHP3/AskJamie-FoundRy/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/OKHP3/AskJamie-FoundRy/compare/v0.1.0...v0.2.0
