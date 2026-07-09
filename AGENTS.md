@@ -153,7 +153,7 @@ Quick-reference metadata for agents and contributors.
 | Type | Development Lab (R&D governance relay — not a deployable app) |
 | GitHub | https://github.com/OKHP3/AskJamie-FoundRy |
 | Notion Anchor | https://app.notion.com/p/2aaa7fb7da3f4338b5d7402754aee9b0 |
-| Windows Local Path | `C:\Users\jamie\OKH-Local\Projects\askjamie-foundry` |
+| Windows Local Path | `C:\Users\jamie\OKH-Local\04_GitHub_Mirrors\askjamie-foundry` |
 | Mac Local Path | `/Volumes/OKH-Local/04_GitHub_Mirrors/AskJamie-FoundRy` |
 
 ### Related Repositories
