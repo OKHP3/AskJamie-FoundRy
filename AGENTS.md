@@ -161,3 +161,5 @@ Quick-reference metadata for agents and contributors.
 - [OKHP3/AskJamie](https://github.com/OKHP3/AskJamie) — public portfolio (sibling)
 - [OKHP3/OverKill-Hill](https://github.com/OKHP3/OverKill-Hill) — parent universe governance
 - [OKHP3/OverKill-Hill-FoundRy](https://github.com/OKHP3/OverKill-Hill-FoundRy) — parent FoundRy relay
+
+## Imported Claude Cowork project instructions
