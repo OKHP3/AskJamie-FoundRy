@@ -1,165 +1,175 @@
-# AGENTS.md — AskJamie-FoundRy
+# AGENTS.md: AskJamie-FoundRy
 
-## 0. Role
+## Project identity
 
-This repository is the AskJamie FoundRy relay. It translates golden governance from `OKHP3/OverKill-Hill` into reusable scaffolds for AskJamie child repositories, including AskJamie core capabilities, BrandGuard systems, Enterprise Sleuth variants, conversation-design assets, personal knowledge systems, and RAG-oriented assistant behavior.
+This repository is the private AskJamie FoundRy relay. Its confirmed role is
+to translate parent OKHP3 governance into child-repository scaffolds, schemas,
+registry records, documentation, and staged capability assets.
 
-## 1. Authority Chain
+It is a development and governance workbench, not a deployable application.
+The repository has no server, frontend, backend, or application build. Its
+runtime surface is limited to small Python governance utilities.
+
+Authority flows in this direction:
 
 ```text
 OKHP3/OverKill-Hill
-  → OKHP3/AskJamie-FoundRy
-    → AskJamie child repositories
+  -> OKHP3/AskJamie-FoundRy
+    -> AskJamie child repositories
 ```
 
-## 2. Relay Responsibilities
+The longer-term aim, inferred from the repository structure and migration
+guides, is to mature reusable AskJamie capabilities here and graduate them to
+governed child repositories without losing lineage or visibility controls.
 
-This repository owns:
+## Scope and boundaries
 
-- AskJamie child repository scaffolds in `_template/`
-- AskJamie repo registry files in `registry/`
-- Manifest and registry schemas in `schemas/`
-- Relay documentation in `docs/`
-- GitHub workflow templates in `.github/`
-- Governance guidance for AskJamie, BrandGuard, and client-overlay repositories
+This relay owns:
 
-## 3. Child Repository Scope
+- `_template/`: the starter scaffold for child repositories
+- `registry/`: the authoritative child-repository catalog and intake log
+- `schemas/`: manifest and registry schemas
+- `docs/`: relay design, governance, naming, migration, and ecosystem guidance
+- `.github/`: repository metadata, pull-request guidance, and issue templates
+- `archive/`: legacy capability material staged for graduation
+- `assets/`: shared AskJamie brand assets
+- `scripts/`: Python governance utilities
 
-This relay governs repositories matching these families:
+The staged GitHub Actions workflow files are under
+`docs/github-workflows/`. They are not currently active under
+`.github/workflows/`.
 
-- `askjamie-aj##-*`
-- `askjamie-brg##-*`
-- `[client-org]-askjamie-*`
-- AskJamie assistant, RAG, identity, and conversation repositories
+This repository does not own deployed application code, production service
+configuration, child-repository application implementations, or public release
+decisions. Do not infer that a registry entry proves a remote child repository
+exists or is operational.
 
-Known child examples include:
+## Current status
 
-- `askjamie-aj01-resume-representative`
-- `askjamie-aj02-professional-portfolio`
-- `askjamie-aj03-enterprise-sleuth`
-- `askjamie-aj04-brandguard`
-- `askjamie-brg00-builders-firstsource`
-- `askjamie-brg01-lego` through `askjamie-brg12-mathews-archery`
-- `buildersfirstsource-askjamie-aj03-enterprise-sleuth`
-- `cvshealth-askjamie-aj03-enterprise-sleuth`
+Confirmed by `manifest.yaml`:
 
-## 4. Client Overlay Rule
+- Type: `foundry-relay`
+- Lifecycle status: `active`
+- Visibility: private
+- Parent foundry: `OKHP3/OverKill-Hill`
+- Parent FoundRy relay: `OKHP3/OverKill-Hill-FoundRy`
 
-Client or organization overlay repos are deployment overlays, not normal public-candidate repos.
+The registry contains nine governed child-repository entries. Two capabilities
+have local staged material under `archive/`: AJ01 Resume Representative and
+BRG00 Builders FirstSource BrandGuard. The remaining entries are cataloged as
+planned or draft work unless their registry status says otherwise.
 
-If a repo includes `client_org`, `bfs_firewall`, or `visibility_lock: permanent-private`, public graduation is blocked unless Jamie explicitly overrides the lock in writing.
+## Repository structure and entry points
 
-## 5. Required Child Repo Files
+Read these files first when orienting to a task:
 
-Every governed child repo should eventually contain:
-
-```text
-AGENTS.md
-README.md
-CHANGELOG.md
-LICENSE.md
-manifest.yaml
-```
-
-Capability repos should additionally include:
-
-```text
-docs/
-origin/
-skill/
-prompts/
-research/
-tests/
-schemas/
-assets/
-exports/
-archive/
-```
-
-## 6. Naming Rules
-
-Preferred AskJamie patterns:
-
-```text
-askjamie-aj##-[capability-slug]
-askjamie-brg##-[brand-slug]
-[client-org]-askjamie-[capability-code]-[capability-slug]
-```
-
-## 7. Manifest Requirements
-
-Required lineage fields:
-
-```yaml
-brand_domain: askjamie
-parent_foundry: OKHP3/AskJamie-FoundRy
-governance.naming_pattern: ""
-```
-
-Client overlays must additionally declare:
-
-```yaml
-lineage.parent_capability: ""
-visibility_control.client_org: ""
-visibility_control.visibility_lock: permanent-private
-visibility_control.public_graduation_allowed: false
-```
-
-## 8. Agent Behavior
-
-AI agents working in this repo must:
-
-- Preserve parent-child lineage.
-- Treat BrandGuard repos as public-source-only unless explicitly told otherwise.
-- Treat BFS/client-org repos as sensitive and private by default.
-- Update `registry/index.yaml` when child relationships are created or materially changed.
-- Avoid commingling AskJamie client overlays with public portfolio artifacts.
-
-## 9. Directory Contract
-
-```text
-_template/   Child repo starter scaffold
-registry/    Child repo catalog and triage logs
-schemas/     Manifest and registry validation schemas
-docs/        Relay design, governance, and migration guidance
-.github/     GitHub workflow and issue template scaffolds
-```
-
-## 10. Canonical Principle
-
-AskJamie capabilities are reusable reasoning and conversation systems. A Custom GPT, Copilot agent, Gem, skill, website page, or local agent is only a deployment surface.
-
-## 11. Writing and Style Rules
-
-These rules apply to all AI agents and contributors generating content in this repository
-or any governed child repo.
-
-- **No em dashes** in any generated content. Use a colon, comma, or restructure the
-  sentence instead.
-- **Preserve standalone punchy lines.** Do not consolidate short, punchy sentences into
-  surrounding paragraphs. They are intentional for rhythm and scannability.
-- **ROY principle:** understanding produced / explanation invested — verbosity must earn
-  its space. Prefer concise, direct prose. Do not pad or over-explain.
-- **AutoCAD version is R10** — locked, not negotiable. Do not reference or suggest a
-  different AutoCAD version in any content.
-
-## 12. Project Context
-
-Quick-reference metadata for agents and contributors.
-
-| Field | Value |
+| Path | Use |
 |---|---|
-| Suite | FoundRy / AskJamie |
-| Type | Development Lab (R&D governance relay — not a deployable app) |
-| GitHub | https://github.com/OKHP3/AskJamie-FoundRy |
-| Notion Anchor | https://app.notion.com/p/2aaa7fb7da3f4338b5d7402754aee9b0 |
-| Windows Local Path | `C:\Users\jamie\OKH-Local\04_GitHub_Mirrors\askjamie-foundry` |
-| Mac Local Path | `/Volumes/OKH-Local/04_GitHub_Mirrors/AskJamie-FoundRy` |
+| `README.md` | Repository purpose, catalog, and working overview |
+| `manifest.yaml` | This relay's identity, lineage, scope, and visibility |
+| `registry/index.yaml` | Source of truth for governed child repositories |
+| `registry/triage.md` | Candidate intake and archival decisions |
+| `_template/ABOUT.md` | How to scaffold a child repository |
+| `schemas/manifest.schema.yaml` | Child manifest contract |
+| `schemas/registry.schema.yaml` | Registry entry contract |
+| `docs/governance.md` | Governance rules and maintenance obligations |
+| `docs/naming-conventions.md` | Repository and filename conventions |
+| `docs/migration-guide.md` | Legacy-content and graduation procedure |
+| `replit.md` | Replit-oriented project overview and non-app status |
+| `CHANGELOG.md` | Material repository changes |
 
-### Related Repositories
+Capability repositories inherit this directory contract from `_template/`:
 
-- [OKHP3/AskJamie](https://github.com/OKHP3/AskJamie) — public portfolio (sibling)
-- [OKHP3/OverKill-Hill](https://github.com/OKHP3/OverKill-Hill) — parent universe governance
-- [OKHP3/OverKill-Hill-FoundRy](https://github.com/OKHP3/OverKill-Hill-FoundRy) — parent FoundRy relay
+```text
+docs/ origin/ skill/ prompts/ research/ tests/
+schemas/ assets/ exports/ archive/
+```
 
-## Imported Claude Cowork project instructions
+The root repository has no nested Git repositories or submodules. The legacy
+root folders `gpt-aj01-askjamie-resume-representative/` and
+`okhp3-brandguard-sentinel/` remain for historical continuity. Their canonical
+staged copies are under `archive/`.
+
+## Runtime and validation
+
+The utilities are documented for Python 3.11. Current verification ran under
+Python 3.14.5. YAML parsing requires `pyyaml`; full manifest schema validation
+uses `jsonschema` when available. `jsonschema` is not installed in the current
+environment, so the manifest check used its structural fallback. There is no
+package manager, application build, test suite, or local deployment command in
+this repository.
+
+Verified baseline commands:
+
+```bash
+python3 scripts/validate-manifest.py manifest.yaml
+python3 scripts/check-registry.py
+```
+
+Both commands pass in the current checkout. Run them after changing
+`manifest.yaml`, either schema, `registry/index.yaml`, or the child template.
+
+The staged workflow definitions in `docs/github-workflows/` install `pyyaml`
+and `jsonschema` in CI. They are reference files until explicitly activated
+under `.github/workflows/`.
+
+## Safe-change rules
+
+- Preserve the parent-child lineage in every manifest and registry entry.
+- Use the naming patterns in `docs/naming-conventions.md`.
+- Update `registry/index.yaml` when a child relationship, status, visibility,
+  or graduation decision changes.
+- Update `CHANGELOG.md` for material governance, schema, template, or registry
+  changes.
+- Start new child repositories from `_template/`, then replace every template
+  placeholder before publishing.
+- Keep new filenames ASCII-only, lowercase where the naming guide requires it,
+  and free of special punctuation.
+- Do not commingle client-overlay content with public portfolio artifacts.
+- Treat `client_org`, `bfs_firewall: true`, and
+  `visibility_lock: permanent-private` as sensitive controls. Locked content
+  must remain private.
+- Public graduation is a registry decision. Do not change a visibility lock or
+  graduation flag without explicit maintainer direction.
+- Preserve standalone punchy lines in generated documentation. Concise prose
+  is preferred, and extra explanation should earn its space.
+- Do not use em dashes in generated content. Use a colon, comma, or a new
+  sentence instead.
+- AutoCAD version is R10. This constraint is locked and must not be changed or
+  replaced in generated content.
+
+## Known gaps and risks
+
+These are repository findings, not assumptions:
+
+- `scripts/manifest-audit.py` checks legacy fields such as `name`,
+  `lifecycle_status`, and `author`, which are not part of the current manifest
+  schema. Its current baseline run fails and should not be treated as the
+  canonical manifest check.
+- `scripts/foundry-sync.py` and `scripts/sync-report.py` still reference older
+  paths including `registry/triage-log.md`,
+  `schemas/repo-manifest-schema.yaml`, `schemas/repo-manifest.schema.yaml`,
+  and `docs/governance-model.md`. The current paths are `registry/triage.md`,
+  `schemas/manifest.schema.yaml`, and `docs/governance.md`.
+- `scripts/check-registry.py` performs its own registry checks but does not
+  invoke `schemas/registry.schema.yaml`, despite the surrounding documentation
+  describing schema validation.
+- `CLAUDE.md` is retained as a compatibility pointer because repository history
+  mentions its deletion, but the file is present in the current checkout.
+- The registry records planned child repositories, but this checkout does not
+  establish their remote existence, deployment state, or ownership beyond the
+  metadata recorded locally.
+
+## Keeping this guide current
+
+When the repository structure, manifest contract, registry rules, validation
+commands, or visibility policy changes, update this file together with the
+affected schema, template, documentation, and `CHANGELOG.md`. Re-run the two
+verified baseline commands and re-read this file before completing the change.
+
+## Related repositories
+
+- [OKHP3/AskJamie](https://github.com/OKHP3/AskJamie): public portfolio sibling
+- [OKHP3/OverKill-Hill](https://github.com/OKHP3/OverKill-Hill): parent universe governance
+- [OKHP3/OverKill-Hill-FoundRy](https://github.com/OKHP3/OverKill-Hill-FoundRy): parent relay
+- [OKHP3/AskJamie-FoundRy](https://github.com/OKHP3/AskJamie-FoundRy): this repository

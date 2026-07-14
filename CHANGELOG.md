@@ -9,6 +9,12 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- `AGENTS.md` aligned with the current relay structure, validation commands,
+  visibility controls, and known script gaps.
+- `CLAUDE.md` retained as a short pointer to the canonical `AGENTS.md` guide.
+- `replit.md` corrected to distinguish repository metadata from staged workflows.
+
 ---
 
 ## [0.5.0] — 2026-06-23

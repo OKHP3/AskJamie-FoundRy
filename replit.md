@@ -35,7 +35,8 @@ OKHP3/OverKill-Hill         ← Parent universe governance
 | `_template/` | Starter scaffold for new child repos |
 | `schemas/` | YAML schema definitions |
 | `docs/` | Governance, naming, ecosystem, and migration guides |
-| `.github/` | Issue templates, PR template, GitHub Actions workflows |
+| `.github/` | Repository metadata, issue templates, and PR guidance |
+| `docs/github-workflows/` | Staged workflow definitions, not currently active |
 | `archive/` | Staged legacy content pending graduation |
 | `assets/brand/` | Shared AskJamie™ brand assets |
 | `scripts/` | Python governance utilities |
