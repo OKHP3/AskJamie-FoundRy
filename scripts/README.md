@@ -1,7 +1,7 @@
 # scripts/
 
 **Role:** Python governance utilities for the AskJamie FoundRy relay.  
-**Runtime:** Python 3.11 · Standard library only (no pip dependencies required)  
+**Runtime:** Python 3.11 · PyYAML and jsonschema are pinned in `requirements.txt`
 **Rule:** Do not place site-rendering scripts here unless this repo gains a deployable web surface.
 
 ---

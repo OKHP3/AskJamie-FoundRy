@@ -1,0 +1,4 @@
+# Direct runtime dependencies for the governance utilities.
+# Dependabot reviews these pins weekly and opens pull requests for updates.
+PyYAML==6.0.3
+jsonschema==4.26.0

@@ -92,12 +92,11 @@ staged copies are under `archive/`.
 
 ## Runtime and validation
 
-The utilities are documented for Python 3.11. Current verification ran under
-Python 3.14.5. YAML parsing requires `pyyaml`; full manifest schema validation
-uses `jsonschema` when available. `jsonschema` is not installed in the current
-environment, so the manifest check used its structural fallback. There is no
-package manager, application build, test suite, or local deployment command in
-this repository.
+The utilities support Python 3.11. Repository history records verification
+under Python 3.14.5, while the current Windows launcher reports Python
+3.14.0rc1. Runtime dependencies are pinned in `requirements.txt`: `PyYAML` for
+YAML parsing and `jsonschema` for full manifest schema validation. There is no
+application build, test suite, or local deployment command in this repository.
 
 Verified baseline commands:
 
@@ -109,9 +108,10 @@ python3 scripts/check-registry.py
 Both commands pass in the current checkout. Run them after changing
 `manifest.yaml`, either schema, `registry/index.yaml`, or the child template.
 
-The staged workflow definitions in `docs/github-workflows/` install `pyyaml`
-and `jsonschema` in CI. They are reference files until explicitly activated
-under `.github/workflows/`.
+The active compatibility workflow under `.github/workflows/` and the staged
+workflow definitions under `docs/github-workflows/` install the pinned
+dependencies from `requirements.txt`. The older staged definitions remain
+reference files unless explicitly activated under `.github/workflows/`.
 
 ## Safe-change rules
 

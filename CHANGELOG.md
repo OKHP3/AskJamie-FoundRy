@@ -10,6 +10,9 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Changed
+- Added `docs/technology-inventory.md`, pinned Python dependencies, an active
+  compatibility workflow, and weekly Dependabot tracking for Python packages
+  and GitHub Actions.
 - `AGENTS.md` aligned with the current relay structure, validation commands,
   visibility controls, and known script gaps.
 - `CLAUDE.md` retained as a short pointer to the canonical `AGENTS.md` guide.
