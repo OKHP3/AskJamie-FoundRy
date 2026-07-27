@@ -15,6 +15,7 @@
 | [`naming-conventions.md`](naming-conventions.md) | Canonical naming patterns for repos, files, and folders |
 | [`migration-guide.md`](migration-guide.md) | How to bring legacy or pre-standard repos up to spec |
 | [`ecosystem-map.md`](ecosystem-map.md) | Visual and textual map of the OKHP3 / AskJamie universe |
+| [`askjamie-repository-inventory.md`](askjamie-repository-inventory.md) | Scoped crosswalk of AskJamie child repositories, local clones, and remote-name reconciliation |
 | [`github-workflows/`](github-workflows/README.md) | Staged GitHub Actions workflows — pending activation |
 
 ---
@@ -55,6 +56,12 @@ Step-by-step guide for:
 
 A structured map of the entire OKHP3 / AskJamie universe: parent repos, sibling
 FoundRies, public portfolio, deployment surfaces, and known child repos.
+
+### `askjamie-repository-inventory.md`
+
+Read-only snapshot of the scoped AskJamie child repositories and adjacent local
+clones. Records canonical remote names, local origin naming, clone state, and
+the boundary for future cross-repository interrogation or change work.
 
 ### `github-workflows/`
 
