@@ -10,6 +10,8 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Changed
+- Added a scoped AskJamie repository and local-clone inventory, including the
+  canonical-remote versus legacy-origin reconciliation finding.
 - Added `docs/technology-inventory.md`, pinned Python dependencies, an active
   compatibility workflow, and weekly Dependabot tracking for Python packages
   and GitHub Actions.
