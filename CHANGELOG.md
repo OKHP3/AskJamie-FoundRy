@@ -22,6 +22,33 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [0.6.0] — 2026-08-03
+
+### Added
+- **`docs/adr/` scaffold** — ADR directory required by the `architecture-decision-records`
+  skill: `README.md` index, `template.md`, and three founding ADRs:
+  - `0001-relay-repository-pattern.md` — why this is a governance relay, not an app
+  - `0002-agents-md-as-ai-context-file.md` — AGENTS.md chosen over CLAUDE.md; rationale
+  - `0003-uppercase-skill-md-naming.md` — SKILL.md/README.md uppercase convention
+
+### Fixed
+- **Skill frontmatter — `description: >-` parser issue** — `>-` YAML block scalar
+  caused three skill descriptions to render as the literal string `>-` in the catalog.
+  Fixed to `>` in `okhp3-custom-gpt-builder`, `okhp3-custom-gpt-readiness`, and
+  `okhp3-gpt-skill-conversion-plan`.
+- **Skill frontmatter — missing version warnings** — `architecture-decision-records`
+  and `frontend-design` had no `metadata.version`; added `metadata.version: "1.0.0"`
+  to both. Catalog now runs with zero warnings.
+
+### Verified
+- **`okhp3-skill-promotion` mirror** — byte-for-byte exact (`exact: true`, all 9 files
+  with matching SHA-256 hashes). No sync required.
+- **Skill catalog** — refreshed to 18 skills, zero errors, zero warnings.
+- **18-skill compliance audit** — reviewed all Agent Skills against repo structure;
+  3 N/A (no UI/React code), all others pass or have been remediated.
+
+---
+
 ## [0.5.0] — 2026-06-23
 
 ### Added
