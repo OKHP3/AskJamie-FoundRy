@@ -25,8 +25,7 @@ repositories:
       Career, HR, and resume hybridization assistant. Covers dynamic resume
       generation, cover letter synthesis, hiring history analysis, and
       market-value compensation guidance.
-    archive_source: "archive/aj01-resume-representative/"
-    notes: "Legacy content staged in archive/ pending full repo graduation."
+    notes: "Historical staged source material was removed from this checkout on 2026-07-27."
 
   - repo: OKHP3/askjamie-aj02-professional-portfolio
     display_name: "AskJamie™ — Professional Portfolio"
@@ -79,8 +78,7 @@ repositories:
       BrandGuard Sentinel for Builders FirstSource (NYSE: BLDR). Covers
       wood-frame construction knowledge, BFS product catalog, logistics,
       and brand voice standards.
-    archive_source: "archive/brg00-builders-firstsource/"
-    notes: "Legacy content in archive/. Client overlay — permanently private."
+    notes: "Historical staged source material was removed from this checkout on 2026-07-27. Client overlay, permanently private."
 
   - repo: OKHP3/askjamie-brg01-lego
     display_name: "BrandGuard — LEGO"

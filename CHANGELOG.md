@@ -10,6 +10,12 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Changed
+- Reconciled relay documentation and registry notes with the 2026-07-27 removal
+  of historical AJ01 and BRG00 staged content.
+- Removed the obsolete `scripts/manifest-audit.py` validator and repaired the
+  lightweight FoundRy posture reports to use current repository paths.
+- Removed the raw Foundry evaluation workspace after preserving its historical
+  aggregate evidence, and refreshed the local skill catalog from 18 to 50 skills.
 - Added a scoped AskJamie repository and local-clone inventory, including the
   canonical-remote versus legacy-origin reconciliation finding.
 - Added `docs/technology-inventory.md`, pinned Python dependencies, an active

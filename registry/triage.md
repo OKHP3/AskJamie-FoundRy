@@ -31,5 +31,5 @@ move entries to `registry/index.yaml` and delete the triage entry.
 
 | Slug | Decision | Date | Notes |
 |---|---|---|---|
-| `gpt-aj01-askjamie-résumé-representative` | archive | 2026-06-04 | Legacy naming — archived under `archive/aj01-resume-representative/` |
-| `OKHP3-BrandGaurd-Sentinel/BFS-Framing-Intelligent-Futures` | archive | 2026-06-04 | Legacy folder — archived under `archive/brg00-builders-firstsource/` |
+| `gpt-aj01-askjamie-résumé-representative` | archive | 2026-06-04 | Legacy naming. Staged source material was later removed from this checkout on 2026-07-27. |
+| `OKHP3-BrandGaurd-Sentinel/BFS-Framing-Intelligent-Futures` | archive | 2026-06-04 | Legacy folder. Staged source material was later removed from this checkout on 2026-07-27. |

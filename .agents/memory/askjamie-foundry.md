@@ -25,12 +25,11 @@ This repo is a private R&D governance relay (not a deployable app). No workflow,
 ## Important rule: foundry-relay type
 The root `manifest.yaml` has `identity.type: foundry-relay` and `lineage.parent_foundry: OKHP3/OverKill-Hill`. The validate-manifest.py script has special-case logic for this type — it skips the child-repo parent_foundry check.
 
-## Legacy content
-- `gpt-aj01-askjamie™-—-résumé-representative/` — original aj01 content, copied to `archive/aj01-resume-representative/`, legacy folder still in git
-- `OKHP3-BrandGaurd-Sentinel/BFS-Framing-Intelligent-Futures/` — brg00 BFS content, copied to `archive/brg00-builders-firstsource/`, legacy folder still in git
-- Both legacy folders should be git rm'd in a future cleanup commit
-
-**Why:** These folders predate the naming convention and cannot be safely deleted via agent tools (destructive git op). Archived copies exist in `archive/`.
+## Historical content
+- AJ01, BRG00, and their former archive and legacy folders were removed from
+  this checkout on 2026-07-27.
+- Their registry identities remain as governance records. Do not recreate local
+  source copies without an explicit source, owner, and recovery plan.
 
 ## BFS firewall
 Repos with `bfs_firewall: true` (brg00, buildersfirstsource client overlay) are permanently private. Never summarize or share content publicly.

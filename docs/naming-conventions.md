@@ -98,7 +98,7 @@ identity:
 ## Legacy / Non-Standard Names (Do Not Use)
 
 These naming patterns existed before the current standard was adopted.
-They are archived and must not be used for new repos:
+Their former local content has been removed, and they must not be used for new repos:
 
 | Legacy Name | Standard Equivalent |
 |---|---|

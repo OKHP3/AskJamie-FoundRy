@@ -30,9 +30,10 @@ REQUIRED_PATHS = [
 RECOMMENDED_PATHS = [
     "scripts",
     "registry/index.yaml",
-    "registry/triage-log.md",
-    "schemas/repo-manifest-schema.yaml",
-    "docs/governance-model.md",
+    "registry/triage.md",
+    "schemas/manifest.schema.yaml",
+    "schemas/registry.schema.yaml",
+    "docs/governance.md",
 ]
 
 

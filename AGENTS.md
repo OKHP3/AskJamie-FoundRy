@@ -31,7 +31,7 @@ This relay owns:
 - `schemas/`: manifest and registry schemas
 - `docs/`: relay design, governance, naming, migration, and ecosystem guidance
 - `.github/`: repository metadata, pull-request guidance, and issue templates
-- `archive/`: legacy capability material staged for graduation
+- `.agents/skills/`: project-local Agent Skills and their evaluation resources
 - `assets/`: shared AskJamie brand assets
 - `scripts/`: Python governance utilities
 
@@ -54,10 +54,10 @@ Confirmed by `manifest.yaml`:
 - Parent foundry: `OKHP3/OverKill-Hill`
 - Parent FoundRy relay: `OKHP3/OverKill-Hill-FoundRy`
 
-The registry contains nine governed child-repository entries. Two capabilities
-have local staged material under `archive/`: AJ01 Resume Representative and
-BRG00 Builders FirstSource BrandGuard. The remaining entries are cataloged as
-planned or draft work unless their registry status says otherwise.
+The registry contains nine governed child-repository entries. Earlier AJ01 and
+BRG00 staged capability material was removed from this checkout on 2026-07-27.
+The remaining entries are cataloged as planned or draft work unless their
+registry status says otherwise.
 
 ## Repository structure and entry points
 
@@ -85,10 +85,9 @@ docs/ origin/ skill/ prompts/ research/ tests/
 schemas/ assets/ exports/ archive/
 ```
 
-The root repository has no nested Git repositories or submodules. The legacy
-root folders `gpt-aj01-askjamie-resume-representative/` and
-`okhp3-brandguard-sentinel/` remain for historical continuity. Their canonical
-staged copies are under `archive/`.
+The root repository has no nested Git repositories or submodules. Historical
+capability folders and their staged archive copies are no longer present in this
+checkout.
 
 ## Runtime and validation
 
@@ -142,15 +141,10 @@ reference files unless explicitly activated under `.github/workflows/`.
 
 These are repository findings, not assumptions:
 
-- `scripts/manifest-audit.py` checks legacy fields such as `name`,
-  `lifecycle_status`, and `author`, which are not part of the current manifest
-  schema. Its current baseline run fails and should not be treated as the
-  canonical manifest check.
-- `scripts/foundry-sync.py` and `scripts/sync-report.py` still reference older
-  paths including `registry/triage-log.md`,
-  `schemas/repo-manifest-schema.yaml`, `schemas/repo-manifest.schema.yaml`,
-  and `docs/governance-model.md`. The current paths are `registry/triage.md`,
-  `schemas/manifest.schema.yaml`, and `docs/governance.md`.
+- `scripts/foundry-sync.py` and `scripts/sync-report.py` are lightweight posture
+  reports, not authoritative validators. The canonical paths are
+  `registry/triage.md`, `schemas/manifest.schema.yaml`,
+  `schemas/registry.schema.yaml`, and `docs/governance.md`.
 - `scripts/check-registry.py` performs its own registry checks but does not
   invoke `schemas/registry.schema.yaml`, despite the surrounding documentation
   describing schema validation.

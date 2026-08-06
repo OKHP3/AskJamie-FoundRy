@@ -6,7 +6,6 @@ const { spawnSync } = require('node:child_process');
 const test = require('node:test');
 
 const packageDir = path.resolve(__dirname, '..');
-const localMirror = path.resolve(packageDir, '..', '..', '.agents', 'skills', 'okhp3-skill-foundry');
 const validator = path.join(packageDir, 'scripts', 'validate-skill-suite.cjs');
 
 function run(target) {
@@ -50,8 +49,18 @@ test('accepts the frozen Foundry package', () => {
 });
 
 test('accepts the synchronized project-local Foundry mirror', () => {
-  const result = run(localMirror);
-  assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'foundry-mirror-'));
+  const mirror = path.join(root, 'okhp3-skill-foundry');
+  fs.cpSync(packageDir, mirror, {
+    recursive: true,
+    filter: source => !source.includes(`${path.sep}workspace${path.sep}`),
+  });
+  try {
+    const result = run(mirror);
+    assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });
 
 expectRejected('rejects a protected holdout that was seen', target => {

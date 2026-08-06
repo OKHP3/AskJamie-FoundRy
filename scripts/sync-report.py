@@ -4,7 +4,7 @@ import datetime
 import pathlib
 
 ROOT = pathlib.Path('.')
-CHECKS = ['AGENTS.md','README.md','CHANGELOG.md','manifest.yaml','_template/AGENTS.md','_template/manifest.yaml','registry/index.yaml','schemas/repo-manifest.schema.yaml','scripts/foundry-sync.py']
+CHECKS = ['AGENTS.md','README.md','CHANGELOG.md','manifest.yaml','_template/AGENTS.md','_template/manifest.yaml','registry/index.yaml','schemas/manifest.schema.yaml','schemas/registry.schema.yaml','scripts/foundry-sync.py']
 
 print('# FoundRy Sync Report')
 print()

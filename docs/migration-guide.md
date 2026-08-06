@@ -40,15 +40,15 @@ it currently lives, and what you propose to do with it.
 | If the content is... | It should go to... |
 |---|---|
 | A fully-formed capability (prompts, knowledge, skill files) | A new child repo named per `docs/naming-conventions.md` |
-| Draft/in-progress content | `archive/[code]-[slug]/` in this FoundRy, pending graduation |
-| Retired or superseded content | `archive/[code]-[slug]/` — no graduation planned |
+| Draft/in-progress content | A governed child-repository work area or an explicitly approved local staging area |
+| Retired or superseded content | Remove after provenance and recovery requirements are resolved |
 | Brand asset files (.pdf, .docx, logos) | `assets/brand/` in this FoundRy |
 
 ### Step 3 — Stage the Content
 
-If the content is going to `archive/` in this FoundRy:
+If an owner explicitly approves a local staging area in this FoundRy:
 
-1. Create a subfolder: `archive/[code]-[slug]/`.
+1. Create a clearly named, governed subfolder.
 2. Move content into the subfolder.
 3. Add a `README.md` to the subfolder explaining what it is, its origin,
    its current status, and its intended destination (if any).
@@ -80,13 +80,11 @@ python3 scripts/check-registry.py
 
 ---
 
-## Known Legacy Content in This FoundRy
+## Historical Content Removed From This Checkout
 
-| Legacy Location | Standard Destination | Status |
-|---|---|---|
-| `gpt-aj01-askjamie™-—-résumé-representative/` | `archive/aj01-resume-representative/` → eventually `askjamie-aj01-resume-representative` repo | Staged in archive |
-| `OKHP3-BrandGaurd-Sentinel/BFS-Framing-Intelligent-Futures/` | `archive/brg00-builders-firstsource/` → eventually `askjamie-brg00-builders-firstsource` repo | Staged in archive |
-| `askjamie™-brand-standards.docx` / `.pdf` | `assets/brand/` | Move pending |
+The former AJ01, BRG00, and legacy root capability folders were removed on
+2026-07-27. Their registry identities remain as governance records. Do not
+recreate local copies without an explicit source, owner, and recovery plan.
 
 ---
 
@@ -97,8 +95,8 @@ Legacy file and folder names in this repo include special characters
 with some tooling. When graduating content to a new repo:
 
 - Rename files to use only ASCII characters, hyphens, and underscores.
-- Preserve the original names in the archive/ copy for historical reference.
-- Document the rename in the archive README.
+- Preserve the original names only when the source is intentionally retained.
+- Document any approved rename in the migration record.
 
 Examples:
 - `askjamie™-brand-standards.pdf` → `askjamie-brand-standards.pdf`

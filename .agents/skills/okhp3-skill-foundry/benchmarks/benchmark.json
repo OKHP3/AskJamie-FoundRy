@@ -122,6 +122,6 @@
     "Eval 2: without-skill eval design produces non-discriminating expectations (test general agent behavior, not skill-specific content). A developer following this pattern would see no with/without gap.",
     "Eval 3: without-skill gets the pass/fail right (LLMs understand endpoint mismatch) but uses wrong grading.json field names -- schema incompatibility.",
     "For version 1.0.0, the historical starting thresholds passed: with-skill mean 1.0 >= 0.9 and delta +0.58 >= 0.5. Fresh version-matched evidence is required for any current release claim.",
-    "workspace: .agents/skills/okhp3-skill-foundry/workspace/iteration-1/"
+    "Raw workspace checkpoint removed on 2026-08-05 after its graded evidence was preserved in this historical benchmark and the learning ledgers."
   ]
 }

@@ -17,7 +17,7 @@ contain TypeScript, JavaScript, Vite, Tailwind, React, npm, or a frontend build.
 | GitHub Actions | Staged workflows plus the active compatibility workflow | Action references: checkout 7.0.1 line via `@v7`, setup-python 6.2.0 line via `@v6` | `.github/workflows/`, `docs/github-workflows/`; [checkout releases](https://github.com/actions/checkout/releases), [setup-python releases](https://github.com/actions/setup-python/releases) |
 | Nix/Replit environment | Nix channel `stable-25_05`, package `libyaml` | NixOS/Nixpkgs 26.05 is the current stable line | `.replit`; [NixOS stable releases](https://nixos.org/manual/nixos/stable/release-notes) |
 | Markdown | Repository documentation format | No single universal package version is pinned | `*.md`; CommonMark-compatible GitHub rendering |
-| PDF and DOCX | Reference/document artifact formats, not executable dependencies | Format versions are not pinned in this repository | `assets/`, `archive/`, legacy capability directories |
+| PDF and DOCX | Reference/document artifact formats, not executable dependencies | Format versions are not pinned in this repository | `assets/`; historical capability files are no longer present |
 
 ## Deliberately absent
 

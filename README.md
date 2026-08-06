@@ -56,28 +56,12 @@ for that area.
 | [`scripts/`](scripts/) | Python utilities: manifest validator, registry health check, filename normalizer | [README.md](scripts/README.md) |
 | [`assets/`](assets/) | Shared AskJamie™ brand standards and identity assets | [README.md](assets/README.md) |
 
-### Capability Efforts Staged for Graduation
+### Capability Registry
 
-Content here is ready to graduate into its own standalone repository — it is not
-abandoned, just awaiting the scaffolding step.
-
-| Folder | Capability | Code | Target Repo | Docs |
-|---|---|---|---|---|
-| [`archive/aj01-resume-representative/`](archive/aj01-resume-representative/) | Résumé Representative — HR, career, résumé hybridization | `aj01` | `askjamie-aj01-resume-representative` | [README.md](archive/aj01-resume-representative/README.md) |
-| [`archive/brg00-builders-firstsource/`](archive/brg00-builders-firstsource/) | BrandGuard — Builders FirstSource · 🔒 BFS Firewall | `brg00` | `askjamie-brg00-builders-firstsource` | [README.md](archive/brg00-builders-firstsource/README.md) |
-
-→ See [`archive/`](archive/README.md) for the full archive overview and graduation checklist.
-
-### Legacy Folders
-
-These root-level folders predate the current governance structure. Their content
-has been mirrored into `archive/` (the canonical location) and is preserved here
-for historical continuity pending a future consolidation pass.
-
-| Folder | Original Name | Canonical Location | Docs |
-|---|---|---|---|
-| [`gpt-aj01-askjamie-resume-representative/`](gpt-aj01-askjamie-resume-representative/) | `gpt-aj01-askjamie™-—-résumé-representative/` | [`archive/aj01-resume-representative/`](archive/aj01-resume-representative/) | [README.md](gpt-aj01-askjamie-resume-representative/README.md) |
-| [`okhp3-brandguard-sentinel/`](okhp3-brandguard-sentinel/) | `OKHP3-BrandGaurd-Sentinel/` | [`archive/brg00-builders-firstsource/`](archive/brg00-builders-firstsource/) | [README.md](okhp3-brandguard-sentinel/README.md) |
+Capability repositories are represented in [`registry/index.yaml`](registry/index.yaml).
+Earlier staged capability files and legacy folders were removed from this checkout
+on 2026-07-27. The registry remains a governance record and does not prove that a
+remote repository exists or is operational.
 
 ### Root Files
 
