@@ -1,6 +1,6 @@
 ---
 name: okhp3-custom-gpt-readiness
-description: >
+description: >-
   Assess an incomplete or newly proposed Custom GPT concept for build readiness.
   Use when a user has a GPT idea, partial notes, pasted conversation, draft
   instructions, knowledge files, or an unfinished GPT and needs an evidence
