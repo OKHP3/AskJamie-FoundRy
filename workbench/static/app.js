@@ -124,10 +124,26 @@
     return d;
   };
   const draftFields = [
-    "title", "slug", "code", "family", "kind", "purpose", "audience",
-    "source_text", "source_reference", "instructions", "output_contract",
-    "constraints", "client_org", "parent_capability", "bfs_firewall",
-    "visibility_lock", "skill_ids", "workflow_steps", "decision", "eval_cases",
+    "title",
+    "slug",
+    "code",
+    "family",
+    "kind",
+    "purpose",
+    "audience",
+    "source_text",
+    "source_reference",
+    "instructions",
+    "output_contract",
+    "constraints",
+    "client_org",
+    "parent_capability",
+    "bfs_firewall",
+    "visibility_lock",
+    "skill_ids",
+    "workflow_steps",
+    "decision",
+    "eval_cases",
   ];
   const draftPayload = (project) =>
     Object.fromEntries(draftFields.map((key) => [key, project[key]]));
@@ -172,15 +188,19 @@
         api(`/api/projects/${encodeURIComponent(id)}/history`),
         api(`/api/projects/${encodeURIComponent(id)}/evaluations`),
       ]);
-      state.history = history.status === "fulfilled" && Array.isArray(history.value.history)
-        ? history.value.history : [];
-      state.evaluation = evaluations.status === "fulfilled" && Array.isArray(evaluations.value.evaluations)
-        ? evaluations.value.evaluations.at(-1) || null : null;
+      state.history =
+        history.status === "fulfilled" && Array.isArray(history.value.history)
+          ? history.value.history
+          : [];
+      state.evaluation =
+        evaluations.status === "fulfilled" &&
+        Array.isArray(evaluations.value.evaluations)
+          ? evaluations.value.evaluations[0] || null
+          : null;
       state.error = "";
       state.notice = "";
       state.preview = null;
       state.previewAnswers = {};
-      state.evaluation = null;
       render();
     } catch (error) {
       state.error = error.message;
@@ -620,6 +640,35 @@
           p._dirty = true;
         });
       if (p.kind === "decision-tool") {
+        (p.decision?.nodes || [])
+          .filter((node) => node.question !== undefined)
+          .forEach((node, questionIndex) => {
+            const label = el("label", {
+              text: `${node.id}: ${node.question}`,
+              for: `answer-${index}-${questionIndex}`,
+            });
+            const select = el("select", {
+              id: `answer-${index}-${questionIndex}`,
+            });
+            [
+              ["", "Unanswered"],
+              ["true", "Yes"],
+              ["false", "No"],
+            ].forEach(([value, text]) =>
+              select.append(el("option", { value, text })),
+            );
+            select.value =
+              item.answers?.[node.id] === undefined
+                ? ""
+                : String(item.answers[node.id]);
+            select.addEventListener("change", () => {
+              item.answers ||= {};
+              if (select.value === "") delete item.answers[node.id];
+              else item.answers[node.id] = select.value === "true";
+              p._dirty = true;
+            });
+            card.append(label, select);
+          });
         card.append(
           field(
             "Expected result",
@@ -743,6 +792,13 @@
         text: "Build the path in plain language. Preview follows the answers you provide and stops at the first unanswered question.",
       }),
     );
+    panel.append(field("Start node ID", "decision-start", p.decision.start));
+    panel
+      .querySelector("#field-decision-start")
+      .addEventListener("input", (event) => {
+        p.decision.start = event.target.value;
+        p._dirty = true;
+      });
     const list = el("div", { class: "guided-list" });
     p.decision.nodes.forEach((node, index) => {
       const card = el("div", { class: "node-card" });
@@ -840,7 +896,9 @@
       el("h3", { text: "Preview path" }),
       el("p", {
         class: "field-hint",
-        text: "Save the project before running the deterministic preview.",
+        text: p._dirty
+          ? "Save changes before running the deterministic preview."
+          : `Runs saved revision ${p.revision}. Choose answers to explore the path.`,
       }),
     );
     if (state.preview) {
@@ -871,6 +929,9 @@
         );
         preview.append(answerRow);
       }
+      preview.append(
+        button("Restart preview", "quiet-button", () => runPreview({})),
+      );
     } else
       preview.append(
         button("Start preview", "primary-button", () => runPreview({})),
@@ -988,9 +1049,16 @@
           text: `Revision ${state.evaluation.revision} · ${state.evaluation.evaluated_at || "recorded now"}`,
         }),
       );
+      if (state.evaluation.revision !== p.revision)
+        resultBox.append(
+          el("p", {
+            class: "field-hint",
+            text: "These results belong to an earlier revision. Run evaluations again to check the current draft.",
+          }),
+        );
       const cases = el("div", { class: "guided-list" });
       (state.evaluation.cases || []).forEach((item) => {
-        const row = el("div", { class: "guided-item" });
+        const row = el("div", { class: "guided-item evidence-row" });
         row.append(
           el("strong", { text: item.name || "Unnamed case" }),
           el("span", {
@@ -1019,7 +1087,7 @@
     );
     const historyList = el("div", { class: "guided-list" });
     state.history.forEach((item) => {
-      const row = el("div", { class: "guided-item" });
+      const row = el("div", { class: "guided-item evidence-row" });
       row.append(
         el("strong", { text: `Revision ${item.revision}` }),
         el("span", { class: "field-hint", text: item.updated_at || "" }),
@@ -1047,6 +1115,12 @@
             body: JSON.stringify(p),
           });
       state.current = saved;
+      state.preview = null;
+      state.previewAnswers = {};
+      const history = await api(
+        `/api/projects/${encodeURIComponent(saved.id)}/history`,
+      );
+      state.history = history.history || [];
       state.projects = [
         ...state.projects.filter((item) => item.id !== saved.id),
         saved,
@@ -1064,6 +1138,7 @@
     }
   }
   async function createProject(kind) {
+    if (!canLeaveCurrent()) return;
     kind = kind === "blank" ? "assistant" : kind;
     const payload = template(kind);
     try {
@@ -1143,7 +1218,9 @@
   async function exportProject() {
     if (!requireSavedProject("exporting")) return;
     try {
-      const response = await api(`/api/projects/${encodeURIComponent(state.current.id)}/export`);
+      const response = await api(
+        `/api/projects/${encodeURIComponent(state.current.id)}/export`,
+      );
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
@@ -1340,10 +1417,14 @@
     repos.forEach((repo) =>
       body.append(
         el("tr", {}, [
-          el("td", { text: repo.code || repo.id || "—" }),
+          el("td", { text: repo.code || repo.id || "Unknown" }),
           el("td", {}, [
-            el("strong", { text: repo.name || repo.repository || "Unnamed" }),
-            el("small", { text: repo.purpose || repo.description || "" }),
+            el("strong", {
+              text: repo.repo || repo.name || repo.repository || "Unnamed",
+            }),
+            el("small", {
+              text: repo.display_name || repo.purpose || repo.description || "",
+            }),
           ]),
           el("td", { text: repo.status || "recorded" }),
           el("td", { text: repo.visibility || "private" }),
@@ -1357,7 +1438,9 @@
   }
   function openDialog(templateKind = "blank") {
     const dialog = document.getElementById("new-project-dialog");
-    const choice = dialog.querySelector(`input[name="template"][value="${templateKind}"]`);
+    const choice = dialog.querySelector(
+      `input[name="template"][value="${templateKind}"]`,
+    );
     if (choice) choice.checked = true;
     dialog.showModal();
   }
@@ -1365,13 +1448,17 @@
     .getElementById("new-project-form")
     .addEventListener("submit", (event) => {
       event.preventDefault();
+      if (event.submitter?.value === "cancel") {
+        event.currentTarget.closest("dialog").close();
+        return;
+      }
       const kind = new FormData(event.currentTarget).get("template");
       event.currentTarget.closest("dialog").close();
       createProject(kind === "blank" ? "assistant" : kind);
     });
   document
     .getElementById("new-project-button")
-    .addEventListener("click", openDialog);
+    .addEventListener("click", () => openDialog());
   document
     .getElementById("refresh-button")
     .addEventListener("click", async () => {
@@ -1391,5 +1478,14 @@
       event.returnValue = "";
     }
   });
-  loadProjects().then(render);
+  Promise.all([
+    loadProjects(),
+    api("/api/skills")
+      .then((data) => {
+        state.skills = data.skills || [];
+      })
+      .catch((error) => {
+        state.error = error.message;
+      }),
+  ]).then(render);
 })();

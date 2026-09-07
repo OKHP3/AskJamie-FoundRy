@@ -1090,3 +1090,27 @@ select:focus-visible {
     animation: none !important;
   }
 }
+
+/* Evidence rows need room for names and timestamps at every width. */
+.evidence-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+.evidence-row > .field-hint {
+  grid-column: 1 / -1;
+  overflow-wrap: anywhere;
+}
+.evidence-row > strong {
+  overflow-wrap: anywhere;
+}
+.evidence-row .badge {
+  width: auto;
+}
+.node-card > select {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0 16px;
+  color: var(--ink);
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}

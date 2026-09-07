@@ -78,7 +78,7 @@ Read these files first when orienting to a task:
 | `docs/governance.md` | Governance rules and maintenance obligations |
 | `docs/naming-conventions.md` | Repository and filename conventions |
 | `docs/migration-guide.md` | Legacy-content and graduation procedure |
-| `replit.md` | Replit-oriented project overview and non-app status |
+| `replit.md` | Replit-oriented project overview and access boundary |
 | `CHANGELOG.md` | Material repository changes |
 
 Capability repositories inherit this directory contract from `_template/`:
@@ -94,13 +94,13 @@ checkout.
 
 ## Runtime and validation
 
-The utilities support Python 3.11. Repository history records verification
-under Python 3.14.5, while the current Windows launcher reports Python
-3.14.0rc1. Runtime dependencies are pinned in `requirements.txt`: `PyYAML` for
+The application and utilities were verified under Python 3.11.15 and 3.14.5.
+Older Windows launcher observations are historical and do not describe this Mac runtime. Runtime dependencies are pinned in `requirements.txt`: `PyYAML` for
 YAML parsing and `jsonschema` for schema validation. The interface has no build step.
 SQLite and HTTP support use the Python standard library.
 
-Verified baseline commands:
+Install `requirements.txt` into an activated virtual environment first, as
+documented in `docs/workbench.md`. Verified baseline commands:
 
 ```bash
 python3 scripts/validate-manifest.py manifest.yaml
