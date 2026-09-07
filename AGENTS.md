@@ -111,7 +111,9 @@ python3 -m unittest discover -s tests -v
 Start the app with `python3 -m workbench --port 8765`, then open
 `http://127.0.0.1:8765`. It binds to loopback only. Private local state lives in
 ignored `.foundry-data/`; use `--data-dir` to choose another private directory.
-Stop the server before copying its data directory for backup.
+On POSIX systems the dedicated state directory is owner-only (0700), with
+SQLite state files owner read/write (0600). This is not encryption or Windows
+ACL management. Stop the server before copying its data directory for backup.
 
 Run the validators after changing `manifest.yaml`, either schema,
 `registry/index.yaml`, or the child template. Run the test suite after runtime,

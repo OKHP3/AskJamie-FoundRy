@@ -24,7 +24,9 @@ specifications for deployment through a separately chosen platform.
 
 The [seven-element research](docs/research/2026-09-07-universe/universe-research.md)
 explains the universe boundaries and current evidence gaps. Skillz is shared;
-the three regional Found-Rys have distinct responsibilities.
+the three regional Found-Rys have distinct responsibilities and learn from one
+another, with OverKill Found-Ry as the mentor pattern. See the
+[current-state and maturation assessment](docs/current-state-and-maturation.md).
 
 ## Ecosystem Position
 
@@ -44,7 +46,7 @@ OKHP3/OverKill-Hill          ← Universe governance
 | **This FoundRy (private workbench)** | **[OKHP3/AskJamie-FoundRy](https://github.com/OKHP3/AskJamie-FoundRy)** |
 | **This Replit Project** | **[replit.com/t/askjamie/repls/AskJamie-FoundRy](https://replit.com/t/askjamie/repls/AskJamie-FoundRy)** |
 | Parent Universe | [overkillhill.com/universe](https://overkillhill.com/universe/) |
-| Historical relay lineage | [OKHP3/OverKill-Hill-FoundRy](https://github.com/OKHP3/OverKill-Hill-FoundRy) |
+| Mentor pattern and relay lineage | [OKHP3/OverKill-Hill-FoundRy](https://github.com/OKHP3/OverKill-Hill-FoundRy) |
 
 ---
 

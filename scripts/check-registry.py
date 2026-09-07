@@ -21,6 +21,7 @@ import sys
 import argparse
 from pathlib import Path
 from collections import defaultdict
+from typing import Any
 
 
 def load_yaml(path: Path) -> dict:
@@ -33,7 +34,9 @@ def load_yaml(path: Path) -> dict:
         return yaml.safe_load(f)
 
 
-def check_registry(registry_path: Path, schema_path: Path, verbose: bool) -> list[str]:
+def check_registry(
+    registry_path: Path, schema_path: Path, verbose: bool
+) -> tuple[list[str], dict[str, dict[str, int]], list[dict[str, Any]]]:
     errors = []
     stats = defaultdict(lambda: defaultdict(int))
     try:

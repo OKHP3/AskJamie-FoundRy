@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 import uuid
 from contextlib import contextmanager
@@ -28,8 +29,25 @@ def utc_now() -> str:
 class Store:
     def __init__(self, data_dir: Path):
         self.data_dir = Path(data_dir)
-        self.data_dir.mkdir(parents=True, exist_ok=True)
+        if self.data_dir.is_symlink():
+            raise ValueError("The private data directory must not be a symbolic link")
+        self.data_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
+        if os.name == "posix":
+            self.data_dir.chmod(0o700)
         self.db_path = self.data_dir / "workbench.sqlite3"
+        # Secure the file before SQLite writes any private project content.
+        for suffix in ("", "-journal", "-wal", "-shm"):
+            state_path = Path(str(self.db_path) + suffix)
+            if state_path.is_symlink():
+                raise ValueError("Private state files must not be symbolic links")
+            if state_path.exists() and os.name == "posix":
+                state_path.chmod(0o600)
+        descriptor = os.open(self.db_path, os.O_CREAT | os.O_RDWR | getattr(os, "O_NOFOLLOW", 0), 0o600)
+        try:
+            if os.name == "posix":
+                os.fchmod(descriptor, 0o600)
+        finally:
+            os.close(descriptor)
         self._initialize()
 
     @contextmanager

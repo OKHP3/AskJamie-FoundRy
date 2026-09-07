@@ -73,7 +73,10 @@ process.
 ## Storage and backup
 
 The default data directory is `.foundry-data/`, ignored by Git. Choose another
-private location with `--data-dir /path/to/private-state`. The SQLite database
+private location with `--data-dir /path/to/private-state`. On POSIX systems the app restricts the dedicated data directory to the owner
+and sets SQLite state files to owner read/write. This is not encryption;
+Windows account access must be managed through operating-system permissions.
+The SQLite database
 holds original source, project revisions and evaluation records. Protect it as
 private content. Stop the application before copying the complete data directory
 for backup. Restore that directory and restart with the same `--data-dir`.

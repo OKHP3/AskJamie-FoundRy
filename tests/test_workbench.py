@@ -3,6 +3,8 @@ from __future__ import annotations
 import http.client
 import io
 import json
+import os
+import stat
 import socket
 import tempfile
 import threading
@@ -95,6 +97,24 @@ class PersistenceTests(unittest.TestCase):
             self.store.update(created["id"], 1, dict(protected, family="core-capability"))
         with self.assertRaisesRegex(InputError, "parent_capability"):
             self.store.update(created["id"], 1, dict(protected, parent_capability="OKHP3/other"))
+
+    @unittest.skipUnless(os.name == "posix", "POSIX owner-only permissions")
+    def test_private_state_permissions_on_creation_and_reopen(self):
+        self.assertEqual(stat.S_IMODE(self.store.data_dir.stat().st_mode), 0o700)
+        self.assertEqual(stat.S_IMODE(self.store.db_path.stat().st_mode), 0o600)
+        normalized, _ = normalize_draft(draft())
+        project = self.store.create(normalized)
+        self.store.data_dir.chmod(0o755)
+        self.store.db_path.chmod(0o644)
+        reopened = Store(self.store.data_dir)
+        self.assertEqual(stat.S_IMODE(reopened.data_dir.stat().st_mode), 0o700)
+        self.assertEqual(stat.S_IMODE(reopened.db_path.stat().st_mode), 0o600)
+        self.assertEqual(reopened.get(project["id"])["source_text"], normalized["source_text"])
+
+    def test_nonfinite_json_numbers_are_rejected(self):
+        for value in (json.loads("1e400"), float("-inf"), float("nan")):
+            with self.subTest(value=value), self.assertRaisesRegex(InputError, "finite"):
+                normalize_draft(draft(decision={"nested": [value]}))
 
     def test_hostile_and_unknown_input_is_rejected(self):
         with self.assertRaisesRegex(InputError, "unknown field"):

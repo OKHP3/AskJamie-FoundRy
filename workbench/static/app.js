@@ -960,8 +960,8 @@
       placeholder: "Search all Skillz metadata",
       "aria-label": "Search Skillz metadata",
     });
-    skillSearch.className = "catalog-toolbar";
-    panel.append(skillSearch);
+    const toolbar = el("div", { class: "catalog-toolbar" }, [skillSearch]);
+    panel.append(toolbar);
     const picker = el("div", { class: "skill-picker" });
     const selected = new Set(p.skill_ids || []);
     const renderSkillChoices = () => {

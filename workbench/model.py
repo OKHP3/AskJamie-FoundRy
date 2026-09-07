@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import math
 from typing import Any
 
 
@@ -177,7 +178,10 @@ def _check_json_shape(value: Any, field: str, depth: int = 0) -> None:
         raise InputError(f"{field} is nested too deeply")
     if isinstance(value, str):
         _clean_text(value, field, MAX_TEXT)
-    elif value is None or isinstance(value, (bool, int, float)):
+    elif isinstance(value, float):
+        if not math.isfinite(value):
+            raise InputError(f"{field} must contain only finite numbers")
+    elif value is None or isinstance(value, (bool, int)):
         return
     elif isinstance(value, list):
         if len(value) > MAX_ITEMS:

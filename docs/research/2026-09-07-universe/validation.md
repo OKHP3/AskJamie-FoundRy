@@ -26,6 +26,10 @@ git diff --check
 
 Tests cover durable persistence and revision history, stale updates, irreversible client protections, malformed HTTP bodies and origin/host restrictions, graph cycles and invalid targets, unknown answer IDs, honest unrun tests, schema-valid isolated exports, script escaping, source/template provenance, and registry schema/privacy enforcement.
 
+## Follow-up review validation
+
+The follow-up commit adds two regression tests. The current Python 3.11.15 suite passes 21 of 21 tests, including creation/reopening of owner-only POSIX state and rejection of non-finite nested JSON numbers. The original 19-test Python 3.14.5 result above remains the earlier baseline. Search toolbar styling and the registry validator return annotation were also corrected. Manifest/registry validation, JavaScript syntax and diff checks pass.
+
 ## Browser acceptance
 
 The in-app browser exercised the integrated Python 3.11 server with synthetic owner-original source in a separate QA database:

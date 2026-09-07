@@ -16,6 +16,8 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - Application and privacy regression checks in the compatibility workflow.
 
 ### Fixed
+- Restricted local POSIX state permissions and rejected non-finite draft numbers.
+- Corrected Skillz search-field styling and the registry validator return annotation.
 - Registry validation now invokes its schema and rejects inconsistent protected
   entries; conversation-design and RAG families align with the manifest schema.
 
