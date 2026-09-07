@@ -240,6 +240,23 @@ class ExportTests(unittest.TestCase):
             self.assertIn("\\u2028", page)
             self.assertIn("open `index.html`", archive.read("README.md").decode("utf-8"))
 
+    def test_enterprise_variants_use_aj03_without_replacing_existing_repos(self):
+        normalized, _ = normalize_draft(draft(
+            slug="research-variant", code="aj03", family="enterprise-sleuth",
+        ))
+        project = self.store.create(normalized)
+        filename, payload = export_project(project, self.store)
+        self.assertEqual(filename, "askjamie-aj03-research-variant.zip")
+        with zipfile.ZipFile(io.BytesIO(payload)) as archive:
+            proposal = yaml.safe_load(archive.read("exports/registry-proposal.yaml"))["repository"]
+            self.assertEqual(proposal["code"], "aj03")
+            self.assertEqual(proposal["family"], "enterprise-sleuth")
+        for change in ({"code": "aj06"}, {"slug": "enterprise-sleuth"}):
+            invalid = dict(project, **change)
+            self.assertFalse(validate_project(invalid)["valid"])
+            with self.assertRaisesRegex(InputError, "Export blocked"):
+                export_project(invalid, self.store)
+
     def test_overlay_parent_and_protection_are_preserved(self):
         normalized, _ = normalize_draft(draft(
             title="Acme Sleuth", slug="sleuth", code="aj03", family="client-overlay", client_org="acme",

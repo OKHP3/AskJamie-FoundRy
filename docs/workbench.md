@@ -67,7 +67,8 @@ Public graduation remains an explicit maintainer decision outside the app.
 The registry view shows local governance records. A draft export produces a
 proposal, not a new registry entry or remote GitHub repository. Existing and
 retired capability codes remain reserved; an overlay must reference its governed
-parent. Review the proposal before applying it through the existing governance
+parent. Enterprise Sleuth variants use aj03 with a unique repository name.
+Review the proposal before applying it through the existing governance
 process.
 
 ## Storage and backup

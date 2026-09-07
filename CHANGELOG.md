@@ -16,6 +16,8 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - Application and privacy regression checks in the compatibility workflow.
 
 ### Fixed
+- Enterprise Sleuth variants can export with their required aj03 code while
+  duplicate repository names and incorrect variant codes remain blocked.
 - Restricted local POSIX state permissions and rejected non-finite draft numbers.
 - Corrected Skillz search-field styling and the registry validator return annotation.
 - Registry validation now invokes its schema and rejects inconsistent protected

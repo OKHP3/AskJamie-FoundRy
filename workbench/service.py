@@ -119,6 +119,12 @@ def validate_project(project: dict[str, Any]) -> dict[str, Any]:
         generated_repo = f"OKHP3/{repo_name(project)}"
         if any(entry.get("repo") == generated_repo for entry in registry):
             errors.append(f"repository name conflicts with the canonical registry: {generated_repo}")
+    elif code and family == "enterprise-sleuth":
+        if code != "aj03":
+            errors.append("enterprise-sleuth variants must use code aj03")
+        generated_repo = f"OKHP3/{repo_name(project)}"
+        if any(entry.get("repo") == generated_repo for entry in registry):
+            errors.append(f"repository name conflicts with the canonical registry: {generated_repo}")
     elif code:
         generated_repo = f"OKHP3/{repo_name(project)}"
         if any(entry.get("code") == code or entry.get("repo") == generated_repo for entry in registry):
