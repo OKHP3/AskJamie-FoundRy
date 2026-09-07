@@ -1333,7 +1333,7 @@
       makeHeader(
         "THE SEVEN ELEMENTS",
         "Seven elements, one working map",
-        "The rings show relationship and reuse, not merged ownership. OverKill Found-Ry remains regional.",
+        "OverKill is the centroid and baseline pattern. Its Found-Ry mentors the regional Found-Rys, and each can learn from the others.",
       ),
     );
     const map = el("div", { class: "universe-map" });
@@ -1342,7 +1342,7 @@
       [
         "overkill",
         "OverKill Hill",
-        "Methodology, strategy, and connective systems practice.",
+        "Centroid, baseline pattern, and systems practice.",
       ],
       [
         "glee",
@@ -1361,7 +1361,7 @@
     section.append(map);
     const legend = el("div", { class: "universe-legend" });
     [
-      ["OverKill Found-Ry", "OverKill regional workbench"],
+      ["OverKill Found-Ry", "Public mentor pattern and regional workbench"],
       ["Glee-fully Found-Ry", "Glee-fully fabrication and governance"],
       ["AskJamie Found-Ry", "This private capability workbench"],
       ["Skillz", "Shared, provenance-bearing catalog"],
@@ -1374,6 +1374,7 @@
       ),
     );
     section.append(legend);
+    section.append(el("p", { text: "AskJamie and Glee-fully borrow and adapt mentor patterns. Either may mentor OverKill Found-Ry or its peer in return. Skillz remains the shared catalog across all three regions." }));
     return section;
   }
   function registryView() {

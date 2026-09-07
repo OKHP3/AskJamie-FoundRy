@@ -167,10 +167,13 @@ These are repository findings, not assumptions:
 ## Application and universe boundaries
 
 The owner's 2026-09-07 direction establishes three overlapping regions:
-AskJamie left, OverKill at the connective center, Glee-fully right. Skillz is
-shared. Each regional Found-Ry belongs to its own region. Existing
-`lineage.parent_repo` records historical provenance and does not make OverKill
-Found-Ry a shared application dependency. See `docs/ecosystem-map.md`.
+AskJamie left, OverKill as centroid and baseline pattern, Glee-fully right.
+The regional sites borrow from OverKill or defer to it when a question arises.
+Skillz is shared. Intentionally public OverKill Found-Ry is the mentor pattern
+for both regional Found-Rys, with reciprocal and peer mentoring encouraged.
+Start from relevant mentor patterns, adapt to regional needs, and offer useful
+improvements back through reviewable changes. Existing lineage is preserved;
+mentoring does not require a shared application runtime. See `docs/ecosystem-map.md`.
 
 - Keep all workbench projects and generated packages private by default.
 - Never clear protection flags or client identity after a draft becomes protected.

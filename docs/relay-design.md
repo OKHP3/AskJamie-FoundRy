@@ -119,5 +119,7 @@ registry, and produces private packages plus proposed registration records.
 This extends the relay role without treating an export as a child repository
 creation or public graduation. See [workbench guide](workbench.md).
 
-Skillz supplies shared public contract metadata. OverKill Found-Ry remains
-region-specific; historical lineage is not a runtime dependency.
+Skillz supplies shared public contract metadata. Intentionally public OverKill
+Found-Ry supplies the mentor pattern for both regional Found-Rys. AskJamie and
+Glee-fully can adapt that baseline, mentor each other, and contribute improvements
+back to OverKill Found-Ry. Regional ownership and runtimes remain distinct.

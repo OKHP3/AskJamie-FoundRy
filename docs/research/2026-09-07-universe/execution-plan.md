@@ -5,7 +5,7 @@ Owner request: research the seven OKHP3 elements, then build this repository int
 
 ## Scope and assumptions
 
-The owner defines three overlapping regions: AskJamie at left, OverKill at the connective center, Glee-fully at right. Skillz is shared across all three. OverKill Found-Ry belongs exclusively to OverKill. This instruction supersedes conflicting historical ecosystem descriptions without erasing recorded provenance.
+The owner defines three overlapping regions: AskJamie at left, OverKill at the connective center, Glee-fully at right. Skillz is shared across all three. OverKill Found-Ry belongs to OverKill and, as subsequently clarified by the owner, is intentionally public and serves as the mentor pattern for both regional Found-Rys. Mentoring may also flow back to OverKill or between peers. This instruction supersedes conflicting historical ecosystem descriptions without erasing recorded provenance.
 
 Deliver the research as repository Markdown, implementation as a private local application, and reviewable GitHub pull requests. Preserve owner checkouts. Do not change sibling products or publish private data. No paid inference service is assumed. No emphasis reply was available after independent research; proceeding with the stated broad-builder assumption.
 

@@ -21,6 +21,8 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 
 ### Changed
+- Clarified OverKill as the centroid and baseline, its intentionally public
+  Found-Ry as mentor pattern, and reciprocal mentoring among regional Found-Rys.
 - Reconciled relay documentation and registry notes with the 2026-07-27 removal
   of historical AJ01 and BRG00 staged content.
 - Removed the obsolete `scripts/manifest-audit.py` validator and repaired the
