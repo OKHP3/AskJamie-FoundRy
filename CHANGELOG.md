@@ -9,7 +9,24 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- Local AskJamie capability workbench with durable drafts, decision preview,
+  evidence records, Skillz references and governed repository-package exports.
+- Seven-element universe research, implementation contract and operating guide.
+- Application and privacy regression checks in the compatibility workflow.
+
+### Fixed
+- Enterprise Sleuth variants can export with their required aj03 code while
+  duplicate repository names and incorrect variant codes remain blocked.
+- Restricted local POSIX state permissions and rejected non-finite draft numbers.
+- Corrected Skillz search-field styling and the registry validator return annotation.
+- Registry validation now invokes its schema and rejects inconsistent protected
+  entries; conversation-design and RAG families align with the manifest schema.
+
+
 ### Changed
+- Clarified OverKill as the centroid and baseline, its intentionally public
+  Found-Ry as mentor pattern, and reciprocal mentoring among regional Found-Rys.
 - Reconciled relay documentation and registry notes with the 2026-07-27 removal
   of historical AJ01 and BRG00 staged content.
 - Removed the obsolete `scripts/manifest-audit.py` validator and repaired the

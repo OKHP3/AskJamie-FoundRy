@@ -58,6 +58,8 @@ properties:
             - brandguard
             - enterprise-sleuth
             - client-overlay
+            - conversation-design
+            - rag-experiment
         status:
           type: string
           enum: [draft, active, deprecated, archived]
@@ -73,6 +75,9 @@ properties:
           enum: [permanent-private]
         client_org:
           type: string
+        parent_capability:
+          type: string
+          pattern: "^OKHP3/askjamie-(aj|brg)[0-9]{2}-[a-z0-9-]+$"
         description:
           type: string
         archive_source:

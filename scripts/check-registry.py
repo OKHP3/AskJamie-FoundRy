@@ -21,6 +21,7 @@ import sys
 import argparse
 from pathlib import Path
 from collections import defaultdict
+from typing import Any
 
 
 def load_yaml(path: Path) -> dict:
@@ -33,9 +34,26 @@ def load_yaml(path: Path) -> dict:
         return yaml.safe_load(f)
 
 
-def check_registry(registry_path: Path, schema_path: Path, verbose: bool) -> list[str]:
+def check_registry(
+    registry_path: Path, schema_path: Path, verbose: bool
+) -> tuple[list[str], dict[str, dict[str, int]], list[dict[str, Any]]]:
     errors = []
-    data = load_yaml(registry_path)
+    stats = defaultdict(lambda: defaultdict(int))
+    try:
+        import jsonschema
+        import yaml
+        data = load_yaml(registry_path)
+        schema = load_yaml(schema_path)
+        validator = jsonschema.Draft202012Validator(schema)
+        for error in validator.iter_errors(data):
+            path = ".".join(str(part) for part in error.path) or "root"
+            errors.append(f"{path}: {error.message}")
+    except ImportError as exc:
+        return [f"Cannot validate registry: {exc}"], stats, []
+    except (OSError, ValueError, yaml.YAMLError) as exc:
+        return [f"Cannot validate registry: {exc}"], stats, []
+    if errors:
+        return errors, stats, []
 
     # Top-level fields
     for field in ["schema_version", "foundry", "updated", "repositories"]:
@@ -49,12 +67,13 @@ def check_registry(registry_path: Path, schema_path: Path, verbose: bool) -> lis
     repositories = data.get("repositories", [])
     if not isinstance(repositories, list):
         errors.append("repositories must be a list")
-        return errors
+        return errors, stats, []
 
     # Per-entry checks
     required_entry_fields = ["repo", "display_name", "code", "family",
                               "status", "visibility", "public_graduation_allowed"]
-    valid_families = {"core-capability", "brandguard", "enterprise-sleuth", "client-overlay"}
+    valid_families = {"core-capability", "brandguard", "enterprise-sleuth", "client-overlay",
+                      "conversation-design", "rag-experiment"}
     valid_statuses = {"draft", "active", "deprecated", "archived"}
     valid_visibilities = {"private", "public"}
 
@@ -101,6 +120,13 @@ def check_registry(registry_path: Path, schema_path: Path, verbose: bool) -> lis
                 errors.append(f"{prefix}: client-overlay must have visibility_lock: permanent-private")
             if graduation is not False:
                 errors.append(f"{prefix}: client-overlay must have public_graduation_allowed: false")
+
+        protected = bool(client_org) or entry.get("bfs_firewall") is True or visibility_lock == "permanent-private"
+        if protected:
+            if visibility != "private" or graduation is not False:
+                errors.append(f"{prefix}: protected entries must remain private with graduation disabled")
+            if visibility_lock != "permanent-private":
+                errors.append(f"{prefix}: protected entries require permanent-private lock")
 
         # Locked repos should not be public
         if visibility_lock == "permanent-private" and visibility == "public":
@@ -182,7 +208,7 @@ def main():
             print("✅ PASS — registry/index.yaml is healthy")
             sys.exit(0)
     else:
-        sys.exit(0)
+        sys.exit(1 if errors else 0)
 
 
 if __name__ == "__main__":

@@ -1,69 +1,37 @@
-# AskJamie FoundRy — Project Overview
+# AskJamie Found-Ry project overview
 
-## Purpose
+Private AskJamie capability-building application and governance workbench.
+The local application authors assistant specifications, decision tools and
+workflows; saves SQLite drafts; records evaluations; and exports governed ZIPs.
 
-This is the private R&D and governance workbench for the **AskJamie™** ecosystem.
-It is not a deployable application. It is a knowledge-and-governance fabrication
-line: a place where capabilities are designed, tempered, and staged before being
-exposed through public-facing deployment surfaces.
-
-## Ecosystem Role
-
-```
-OKHP3/OverKill-Hill         ← Parent universe governance
-  └── OKHP3/AskJamie-FoundRy ← This project (relay FoundRy)
-        ├── askjamie-aj##-* ← Core capability repos
-        ├── askjamie-brg##-* ← BrandGuard repos
-        └── [org]-askjamie-* ← Client overlay repos (private)
-```
-
-## Three-Way Pairing
-
-| Layer | Public | Private Workbench |
-|---|---|---|
-| Website | askjamie.bot | — |
-| GitHub | OKHP3/AskJamie | OKHP3/AskJamie-FoundRy |
-| Replit | AskJamie (portfolio) | AskJamie-FoundRy (this project) |
-
-## Key Files & Directories
-
-| Path | Purpose |
-|---|---|
-| `AGENTS.md` | Authority chain and AI agent behavior rules |
-| `manifest.yaml` | Self-describing FoundRy manifest |
-| `registry/index.yaml` | Authoritative catalog of all child repos |
-| `_template/` | Starter scaffold for new child repos |
-| `schemas/` | YAML schema definitions |
-| `docs/` | Governance, naming, ecosystem, and migration guides |
-| `.github/` | Repository metadata, issue templates, and PR guidance |
-| `docs/github-workflows/` | Staged workflow definitions, not currently active |
-| `archive/` | Staged legacy content pending graduation |
-| `assets/brand/` | Shared AskJamie™ brand assets |
-| `scripts/` | Python governance utilities |
-
-## Governance Scripts
+## Run locally
 
 ```bash
-# Validate a manifest.yaml
-python3 scripts/validate-manifest.py path/to/manifest.yaml
-
-# Check registry health
-python3 scripts/check-registry.py
+python3 -m pip install -r requirements.txt
+python3 -m workbench --port 8765
 ```
 
-## No Runnable Application
+Open http://127.0.0.1:8765. See [operating guide](docs/workbench.md).
+The server is loopback-only. Existing Replit project metadata is retained;
+its remote workspace, Run behavior and deployment were not verified during
+this implementation. Replit preview hosting requires an authenticated access
+design and separate parity check, not just binding this private server publicly.
 
-This project has no server, frontend, or backend. There is no workflow to start.
-The "Run" button is not used. All work is documentation, governance artifacts,
-and utility scripts.
+## Ownership
 
-## User Preferences
+AskJamie is the interpretation region. OverKill is the connective center.
+Glee-fully is the personal-tools region. Skillz is shared across all three;
+each regional Found-Ry owns its own fabrication line. Historical parent
+metadata is provenance. See [ecosystem map](docs/ecosystem-map.md).
 
-- Follow AskJamie FoundRy naming conventions (`docs/naming-conventions.md`) at all times.
-- Treat any repo/content with `bfs_firewall: true` or `visibility_lock: permanent-private` as confidential.
-- Never commingle client overlay content with public portfolio artifacts.
-- Keep `registry/index.yaml` and `CHANGELOG.md` up to date with any material change.
-- Use Keep a Changelog format for all CHANGELOG.md files.
-- All file/folder names in new repos should use ASCII only (no ™, é, —, &, ##).
-- When creating a new child repo, always start from `_template/`.
-- Validate manifests before merging any PR that touches `manifest.yaml`.
+## Working contracts
+
+- `AGENTS.md`: canonical agent and governance instructions.
+- `workbench/`: Python runtime, static interface and public catalog snapshot.
+- `_template/`, `schemas/`, `registry/`: authoritative scaffold/governance assets.
+- `tests/`: runtime and validation regression checks.
+- `.foundry-data/`: ignored private local state.
+
+Preserve visibility locks, client isolation, lineage, and the locked AutoCAD
+R10 constraint. Exports are private packages with pending registry proposals.
+No automatic repository creation, publication or graduation occurs.
