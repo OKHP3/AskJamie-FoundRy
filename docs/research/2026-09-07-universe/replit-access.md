@@ -12,8 +12,8 @@ parity or deployment health.
 | [Skillz](https://replit.com/t/overkill-hill/repls/skillz) | Workspace with running Forge catalog preview; current SHA not verified | Concurrent OverKill coordinator Browser |
 | [OverKill Found-Ry](https://replit.com/t/overkill-hill/repls/OverKill-Hill-FoundRy) | Main, no changes, root preview shows staged GPT studio. Prior agent history mentions 452cea7; GitHub head is newer | Concurrent OverKill coordinator Browser |
 | [Glee-fully Tools](https://replit.com/t/glee-fullytools/repls/Glee-fullyTools) | Workspace with running homepage; current SHA not verified | Concurrent OverKill coordinator Browser, relayed by Glee-fully coordinator |
-| [Glee-fully Found-Ry](https://replit.com/t/glee-fullytools/repls/Glee-fullyTools-FoundRy) | Exact URL returns Page not found; route or access gap, not proof of absence | Concurrent OverKill coordinator Browser, relayed by Glee-fully coordinator |
-| [AskJamie](https://replit.com/t/askjamie/repls/AskJamie) | Exact URL returns Page not found; route or access gap, not proof of absence | Concurrent OverKill coordinator Browser |
+| [Glee-fully Found-Ry](https://replit.com/t/glee-fullytools/repls/Glee-fullyTools-FoundRy) | Later direct observation loaded workspace, main, no changes, agent waiting for input. Runtime preview not tested. Supersedes earlier Page not found | This task direct Browser |
+| [AskJamie](https://replit.com/t/askjamie/repls/AskJamie) | Later direct observation loaded workspace, no changes and running helpdesk homepage. Supersedes earlier delegated Page not found result | This task direct Browser |
 | [AskJamie Found-Ry](https://replit.com/t/askjamie/repls/AskJamie-FoundRy) | Independently observed main, remote OKHP3/AskJamie-FoundRy, no changes to commit, app not running, upstream last fetched six days ago | This task's direct Browser plus concurrent corroboration |
 
 ## Provenance and limits

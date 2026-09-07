@@ -52,7 +52,7 @@ All GitHub heads were retrieved on September 7, 2026. Website retrieval confirms
 | Older ecosystem map calls OverKill Found-Ry a parent for all domains | Confirmed contradiction with current direction | Replace explanatory map; retain manifest lineage provenance |
 | Skillz published snapshot is behind current GitHub head | Confirmed source metadata difference | Display snapshot source, never claim latest-main synchronization |
 | Catalog or registry entries prove functioning downstream tools | Unsupported | Show recorded status and readiness separately |
-| Replit workspace and parity | Browser observations now cover all seven attempts; five load and two report Page not found. Commit parity remains unverified | Preserve remote work; inspect hashes before synchronization |
+| Replit workspace and parity | Browser observations now cover all seven attempts; all seven eventually loaded workspace identities. Early Page not found observations were superseded. Commit parity remains unverified | Preserve remote work; inspect hashes before synchronization |
 | Public creator equals entire private OverKill relay | Unsupported | Keep public surface and private materials distinct |
 | Multiuser or internet-hosted AskJamie Found-Ry | Not part of verified baseline | Local single-user runtime first; hosted auth is a separate deployment design |
 
