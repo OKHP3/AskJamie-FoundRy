@@ -32,4 +32,4 @@ Research workers: gpt-5.6-luna / medium, bounded read-only lanes, no recursive a
 
 ## Delivered verification
 
-See [validation record](validation.md) for exact commands, browser observations, limits and PR sequence. Research is PR [#3](https://github.com/OKHP3/AskJamie-FoundRy/pull/3). The application branch is `codex/askjamie-foundry-workbench`, stacked on the research branch for a focused implementation review.
+See [validation record](validation.md) for exact commands, browser observations, limits and PR sequence. Research is PR [#3](https://github.com/OKHP3/AskJamie-FoundRy/pull/3). Application PR [#4](https://github.com/OKHP3/AskJamie-FoundRy/pull/4) uses `codex/askjamie-foundry-workbench`, stacked on the research branch for a focused implementation review.
