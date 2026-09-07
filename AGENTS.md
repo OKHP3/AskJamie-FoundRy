@@ -6,9 +6,11 @@ This repository is the private AskJamie FoundRy relay. Its confirmed role is
 to translate parent OKHP3 governance into child-repository scaffolds, schemas,
 registry records, documentation, and staged capability assets.
 
-It is a development and governance workbench, not a deployable application.
-The repository has no server, frontend, backend, or application build. Its
-runtime surface is limited to small Python governance utilities.
+It is a private development and governance workbench with a local single-user
+application under `workbench/`. Python serves a plain HTML/CSS/JavaScript
+interface and persists capability drafts and evaluation records in SQLite.
+The application generates governed packages and executable decision tools.
+It does not provision hosted agents or execute arbitrary generated code.
 
 Authority flows in this direction:
 
@@ -34,13 +36,14 @@ This relay owns:
 - `.agents/skills/`: project-local Agent Skills and their evaluation resources
 - `assets/`: shared AskJamie brand assets
 - `scripts/`: Python governance utilities
+- `workbench/`: local application, static interface and public Skillz metadata snapshot
+- `tests/`: application and governance regression checks
 
-The staged GitHub Actions workflow files are under
-`docs/github-workflows/`. They are not currently active under
-`.github/workflows/`.
+The compatibility workflow is active under `.github/workflows/`. Older workflow
+examples under `docs/github-workflows/` remain reference files.
 
-This repository does not own deployed application code, production service
-configuration, child-repository application implementations, or public release
+This repository owns its local workbench runtime. It does not own sibling
+application implementations, hosted production configuration, or public release
 decisions. Do not infer that a registry entry proves a remote child repository
 exists or is operational.
 
@@ -94,18 +97,25 @@ checkout.
 The utilities support Python 3.11. Repository history records verification
 under Python 3.14.5, while the current Windows launcher reports Python
 3.14.0rc1. Runtime dependencies are pinned in `requirements.txt`: `PyYAML` for
-YAML parsing and `jsonschema` for full manifest schema validation. There is no
-application build, test suite, or local deployment command in this repository.
+YAML parsing and `jsonschema` for schema validation. The interface has no build step.
+SQLite and HTTP support use the Python standard library.
 
 Verified baseline commands:
 
 ```bash
 python3 scripts/validate-manifest.py manifest.yaml
 python3 scripts/check-registry.py
+python3 -m unittest discover -s tests -v
 ```
 
-Both commands pass in the current checkout. Run them after changing
-`manifest.yaml`, either schema, `registry/index.yaml`, or the child template.
+Start the app with `python3 -m workbench --port 8765`, then open
+`http://127.0.0.1:8765`. It binds to loopback only. Private local state lives in
+ignored `.foundry-data/`; use `--data-dir` to choose another private directory.
+Stop the server before copying its data directory for backup.
+
+Run the validators after changing `manifest.yaml`, either schema,
+`registry/index.yaml`, or the child template. Run the test suite after runtime,
+validation, or export changes. See `docs/workbench.md` for the operating model.
 
 The active compatibility workflow under `.github/workflows/` and the staged
 workflow definitions under `docs/github-workflows/` install the pinned
@@ -145,14 +155,31 @@ These are repository findings, not assumptions:
   reports, not authoritative validators. The canonical paths are
   `registry/triage.md`, `schemas/manifest.schema.yaml`,
   `schemas/registry.schema.yaml`, and `docs/governance.md`.
-- `scripts/check-registry.py` performs its own registry checks but does not
-  invoke `schemas/registry.schema.yaml`, despite the surrounding documentation
-  describing schema validation.
+- Registry checks now invoke `schemas/registry.schema.yaml` and enforce
+  permanent-private restrictions. Draft exports include proposals; they never
+  modify the authoritative registry automatically.
 - `CLAUDE.md` is retained as a compatibility pointer because repository history
   mentions its deletion, but the file is present in the current checkout.
 - The registry records planned child repositories, but this checkout does not
   establish their remote existence, deployment state, or ownership beyond the
   metadata recorded locally.
+
+## Application and universe boundaries
+
+The owner's 2026-09-07 direction establishes three overlapping regions:
+AskJamie left, OverKill at the connective center, Glee-fully right. Skillz is
+shared. Each regional Found-Ry belongs to its own region. Existing
+`lineage.parent_repo` records historical provenance and does not make OverKill
+Found-Ry a shared application dependency. See `docs/ecosystem-map.md`.
+
+- Keep all workbench projects and generated packages private by default.
+- Never clear protection flags or client identity after a draft becomes protected.
+- Treat selected Skillz metadata as references, not executable or verified skills.
+- Label supplied-response checks distinctly from model execution; there are no
+  model-provider calls in the local runtime.
+- A valid package is not public graduation, a created remote repository, or an
+  operational hosted assistant. Decision packages include an offline runner.
+- Replit workspace parity and deployment require separate authenticated inspection.
 
 ## Keeping this guide current
 

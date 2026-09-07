@@ -30,3 +30,5 @@ governance relay. Maintained under the `architecture-decision-records` Agent Ski
 - [`docs/governance.md`](../governance.md) — governance obligations
 - [`AGENTS.md`](../../AGENTS.md) — AI context file referencing key decisions
 - [`CHANGELOG.md`](../../CHANGELOG.md) — version history
+
+- [ADR-0004: Local capability-building workbench](0004-local-capability-workbench.md): owner-authorized runtime extension.

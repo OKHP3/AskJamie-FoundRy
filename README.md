@@ -6,6 +6,26 @@
 
 ---
 
+## Run the workbench
+
+```bash
+python3 -m pip install -r requirements.txt
+python3 -m workbench --port 8765
+```
+
+Open **http://127.0.0.1:8765**. Python 3.11 or newer is required. No frontend
+build, provider key, or paid inference service is needed. Private drafts persist
+in ignored `.foundry-data/`. See [the operating guide](docs/workbench.md).
+
+Create a capability, define its behavior, add a decision flow or workflow,
+record evaluations, and download a validated package. Decision exports include
+a standalone offline runner. Assistant exports are editable instructions and
+specifications for deployment through a separately chosen platform.
+
+The [seven-element research](docs/research/2026-09-07-universe/universe-research.md)
+explains the universe boundaries and current evidence gaps. Skillz is shared;
+the three regional Found-Rys have distinct responsibilities.
+
 ## Ecosystem Position
 
 ```text
@@ -24,15 +44,15 @@ OKHP3/OverKill-Hill          ← Universe governance
 | **This FoundRy (private workbench)** | **[OKHP3/AskJamie-FoundRy](https://github.com/OKHP3/AskJamie-FoundRy)** |
 | **This Replit Project** | **[replit.com/t/askjamie/repls/AskJamie-FoundRy](https://replit.com/t/askjamie/repls/AskJamie-FoundRy)** |
 | Parent Universe | [overkillhill.com/universe](https://overkillhill.com/universe/) |
-| Parent FoundRy | [OKHP3/OverKill-Hill-FoundRy](https://github.com/OKHP3/OverKill-Hill-FoundRy) |
+| Historical relay lineage | [OKHP3/OverKill-Hill-FoundRy](https://github.com/OKHP3/OverKill-Hill-FoundRy) |
 
 ---
 
 ## What This Repository Is
 
-**AskJamie FoundRy** is a private R&D and governance relay. It is not a
-deployable application — it is a knowledge-and-governance fabrication line
-for AskJamie™ capabilities and their child repositories.
+**AskJamie FoundRy** is a private capability-building application and governance
+relay. Author assistants, decision tools and guided workflows; save revisions,
+record evidence, and export governed child-repository packages.
 
 The durable asset is the **capability and knowledge architecture**. A Custom
 GPT, Copilot agent, Gemini Gem, website page, or local agent is only a

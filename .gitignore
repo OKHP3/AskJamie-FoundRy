@@ -49,3 +49,6 @@ exports/*.tar.gz
 *.bak
 *.orig
 .github/workflows/*.yml
+
+# Private workbench state
+.foundry-data/

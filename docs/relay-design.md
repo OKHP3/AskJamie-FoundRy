@@ -2,7 +2,8 @@
 
 ## Purpose
 
-The AskJamie FoundRy is a **relay** — not a destination. It occupies the
+The AskJamie FoundRy combines a **governance relay** with a local authoring
+application. Its governance role occupies the
 middle layer of the OKHP3 governance hierarchy, translating golden standards
 from the parent (`OKHP3/OverKill-Hill`) into actionable scaffolds, schemas,
 and registry entries that child repositories inherit.
@@ -109,3 +110,14 @@ standards, the relay's upgrade path is:
 4. Add entries to `registry/triage.md` for child repos that need updating.
 5. Bump the relay's version in `CHANGELOG.md`.
 6. Notify child repo maintainers via GitHub Discussions or issue creation.
+
+## Local application layer
+
+The owner authorized a working application on 2026-09-07. The runtime consumes
+the existing template and schemas, saves draft projects separately from the
+registry, and produces private packages plus proposed registration records.
+This extends the relay role without treating an export as a child repository
+creation or public graduation. See [workbench guide](workbench.md).
+
+Skillz supplies shared public contract metadata. OverKill Found-Ry remains
+region-specific; historical lineage is not a runtime dependency.

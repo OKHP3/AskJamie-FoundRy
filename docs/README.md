@@ -10,6 +10,8 @@
 
 | File / Folder | Purpose |
 |---|---|
+| [`workbench.md`](workbench.md) | Local application operating guide |
+| [`research/2026-09-07-universe/universe-research.md`](research/2026-09-07-universe/universe-research.md) | Seven-element research and evidence gaps |
 | [`relay-design.md`](relay-design.md) | Architecture and design rationale for this relay layer |
 | [`governance.md`](governance.md) | Full governance reference — roles, rules, and obligations |
 | [`naming-conventions.md`](naming-conventions.md) | Canonical naming patterns for repos, files, and folders |

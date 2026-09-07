@@ -146,3 +146,15 @@ If a governance question cannot be resolved by this relay's documentation:
 1. Consult `OKHP3/OverKill-Hill` governance documentation.
 2. If still unresolved, flag for a human maintainer via a GitHub Issue using
    the "Governance Change" issue template.
+
+## Local workbench drafts and exports
+
+Drafts are private application records, separate from the authoritative child
+registry. Saving or exporting a draft never adds a governed child relationship.
+Exports carry a pending registry proposal and remain private until the owner
+performs the existing registration and graduation process. The application
+cannot clear an established client identity or permanent-private controls.
+
+A supplied-response check records deterministic text assertions. It is not a
+model run. Decision tests exercise the authored deterministic graph. Neither
+kind establishes external deployment readiness or public-source clearance.

@@ -2,7 +2,9 @@
 
 ## Status
 
-Accepted
+Accepted for governance relay responsibilities. The exclusion of application
+runtime is superseded by [ADR-0004](0004-local-capability-workbench.md) under
+the owner's 2026-09-07 direction. The remaining text records the original decision.
 
 ## Context
 

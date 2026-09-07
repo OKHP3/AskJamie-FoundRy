@@ -1,138 +1,60 @@
-# Ecosystem Map — AskJamie™ & OKHP3 Universe
+# OKHP3 universe: three regions and seven elements
 
-## Universe Overview
+The owner defines three overlapping rings: AskJamie on the left, OverKill at
+the connective center, and Glee-fully on the right. The overlap represents
+relationships and shared capability references, not merged product ownership.
 
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│  OKHP3 Universe                                                 │
-│  https://overkillhill.com/universe/                             │
-│                                                                 │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │  OverKill Hill FoundRy  (OKHP3/OverKill-Hill-FoundRy)   │  │
-│  │  Parent governance relay for all OKHP3 domains          │  │
-│  └────────────────────────┬─────────────────────────────────┘  │
-│                           │ governs                             │
-│  ┌────────────────────────▼─────────────────────────────────┐  │
-│  │  AskJamie FoundRy  (OKHP3/AskJamie-FoundRy)             │  │
-│  │  Domain relay — this repository                          │  │
-│  └──┬─────────────────────────────────────────────────┬─────┘  │
-│     │ core capabilities                 BrandGuard +  │         │
-│     │                                  client overlays│         │
-│  ┌──▼──────────────┐              ┌────▼─────────────┐│         │
-│  │ askjamie-aj01   │              │ askjamie-brg00   ││         │
-│  │ askjamie-aj02   │              │ askjamie-brg01   ││         │
-│  │ askjamie-aj03   │              │ ...              ││         │
-│  │ askjamie-aj04   │              │ buildersfirst-   ││         │
-│  └─────────────────┘              │ source-askjamie  ││         │
-│                                   └──────────────────┘│         │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart LR
+  subgraph AJ[AskJamie region]
+    A[AskJamie: interpretation and public portfolio]
+    AF[AskJamie Found-Ry: capability building]
+    AF -->|reviewed outputs| A
+  end
+  subgraph OK[OverKill connective center]
+    O[OverKill Hill: methodology and universe context]
+    S[Skillz: shared Agent Skill catalog]
+    OF[OverKill Found-Ry: OverKill-specific building]
+    OF -->|regional outputs| O
+  end
+  subgraph GF[Glee-fully region]
+    G[Glee-fully Tools: personal tools and catalog]
+    GFY[Glee-fully Found-Ry: Glee-fully-specific building]
+    GFY -->|reviewed outputs| G
+  end
+  O -. universe context .-> A
+  O -. universe context .-> G
+  S -. shared references .-> AF
+  S -. shared references .-> OF
+  S -. shared references .-> GFY
 ```
 
----
+The application renders the owner's overlapping-ring arrangement. This flow
+map emphasizes responsibilities and reference flows rather than ring geometry.
 
-## Three-Way Pairing: Public Face ↔ Private Workbench
-
-Each AskJamie deployment surface has a corresponding private workbench pairing:
-
-| Layer | Public / Storefront | Private Workbench |
+| Region | Public face | Regional building workbench |
 |---|---|---|
-| **Website** | [askjamie.bot](https://askjamie.bot/) | — |
-| **GitHub** | [OKHP3/AskJamie](https://github.com/OKHP3/AskJamie) | [OKHP3/AskJamie-FoundRy](https://github.com/OKHP3/AskJamie-FoundRy) |
-| **Replit** | [AskJamie](https://replit.com/t/askjamie/repls/AskJamie) | [AskJamie-FoundRy](https://replit.com/t/askjamie/repls/AskJamie-FoundRy) |
+| AskJamie | [askjamie.bot](https://askjamie.bot/) | [AskJamie Found-Ry](https://github.com/OKHP3/AskJamie-FoundRy) |
+| OverKill | [overkillhill.com](https://overkillhill.com/) | [OverKill Found-Ry](https://github.com/OKHP3/OverKill-Hill-FoundRy) |
+| Glee-fully | [glee-fully.tools](https://glee-fully.tools/) | [Glee-fully Tools Found-Ry](https://github.com/OKHP3/Glee-fullyTools-FoundRy) |
 
-The public-facing trio (`askjamie.bot` + `OKHP3/AskJamie` + Replit `AskJamie`)
-is the **storefront, catalog, or portfolio** of solutions.
+[Skillz](https://okhp3.github.io/skillz/) is shared across all three. Its public
+contract metadata can be inspected and referenced without executing a skill or
+changing its source family. AskJamie brand-specific work stays in AskJamie.
 
-The private workbench trio (`AskJamie-FoundRy` repo + Replit project) is the
-**R&D fabrication line** where capabilities are designed, tempered, and staged
-before public exposure.
+## Authority and historical lineage
 
----
+Universe governance flows from `OKHP3/OverKill-Hill` to this relay and its
+children. Existing manifest `lineage.parent_repo` names OverKill Found-Ry as
+historical relay provenance. It does not grant this application ownership of
+OverKill Found-Ry or make that regional workshop shared with the other rings.
+This interpretation implements the owner's 2026-09-07 direction.
 
-## OverKill Hill Parallel
+The canonical child catalog is [registry/index.yaml](../registry/index.yaml).
+Its entries record governance status, not verified deployment. The local
+workbench maintains drafts separately and exports pending registry proposals.
+Client overlays and permanent-private records never become public merely
+because a package validates or is downloaded.
 
-The AskJamie pairing mirrors the OverKill Hill domain structure:
-
-| Domain | FoundRy (workbench) | Portfolio (public) |
-|---|---|---|
-| OverKill Hill | [OKHP3/OverKill-Hill-FoundRy](https://github.com/OKHP3/OverKill-Hill-FoundRy) | [overkillhill.com](https://overkillhill.com/) |
-| AskJamie™ | [OKHP3/AskJamie-FoundRy](https://github.com/OKHP3/AskJamie-FoundRy) | [askjamie.bot](https://askjamie.bot/) |
-
----
-
-## Capability Family Map
-
-### Core Capabilities (`aj##`)
-
-| Code | Name | Status | Public |
-|---|---|---|---|
-| `aj01` | Résumé Representative | Active | Candidate |
-| `aj02` | Professional Portfolio | Draft | Candidate |
-| `aj03` | Enterprise Sleuth | Draft | Candidate |
-| `aj04` | BrandGuard (core) | Draft | Candidate |
-
-### BrandGuard Sentinels (`brg##`)
-
-| Code | Brand | Status | Public |
-|---|---|---|---|
-| `brg00` | Builders FirstSource | Active | Never (private) |
-| `brg01` | LEGO | Planned | TBD |
-| `brg12` | Mathews Archery | Planned | TBD |
-
-### Client Overlays
-
-| Client Org | Base Capability | Status | Public |
-|---|---|---|---|
-| Builders FirstSource | aj03 Enterprise Sleuth | Draft | Never |
-| CVS Health | aj03 Enterprise Sleuth | Draft | Never |
-
----
-
-## Data Flow: Fabrication to Deployment
-
-```text
-AskJamie FoundRy (private)
-  │
-  ├── Ideation & R&D
-  │     └── origin/  (raw prompts, research)
-  │
-  ├── Refinement
-  │     └── skill/   (tempered capability artifacts)
-  │
-  ├── Staging
-  │     └── prompts/ (versioned, deployment-ready)
-  │
-  └── Export
-        └── exports/ (GPT JSON, Copilot YAML, etc.)
-              │
-              ▼
-        Deployment Surfaces
-              ├── OpenAI Custom GPT
-              ├── Microsoft Copilot
-              ├── Google Gemini Gem
-              └── Replit Agent / API
-                    │
-                    ▼
-              Public Portfolio
-                    ├── askjamie.bot
-                    └── OKHP3/AskJamie (GitHub)
-```
-
----
-
-## Governance Data Flow
-
-```text
-OKHP3/OverKill-Hill
-  │  (golden standards, universe governance)
-  ▼
-OKHP3/AskJamie-FoundRy
-  │  (domain relay: translates + distributes)
-  ├── _template/       → new child repos inherit scaffold
-  ├── schemas/         → child repos validate manifests against
-  ├── docs/            → child repos reference for governance
-  └── registry/        → authoritative catalog of all children
-        │
-        ▼
-  Child Repositories   → govern their own content within relay rules
-```
+See [the seven-element research](research/2026-09-07-universe/universe-research.md)
+for commit-pinned sources, confirmed functionality and access limitations.

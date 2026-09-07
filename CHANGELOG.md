@@ -9,6 +9,17 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- Local AskJamie capability workbench with durable drafts, decision preview,
+  evidence records, Skillz references and governed repository-package exports.
+- Seven-element universe research, implementation contract and operating guide.
+- Application and privacy regression checks in the compatibility workflow.
+
+### Fixed
+- Registry validation now invokes its schema and rejects inconsistent protected
+  entries; conversation-design and RAG families align with the manifest schema.
+
+
 ### Changed
 - Reconciled relay documentation and registry notes with the 2026-07-27 removal
   of historical AJ01 and BRG00 staged content.
