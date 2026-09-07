@@ -52,11 +52,11 @@ All GitHub heads were retrieved on September 7, 2026. Website retrieval confirms
 | Older ecosystem map calls OverKill Found-Ry a parent for all domains | Confirmed contradiction with current direction | Replace explanatory map; retain manifest lineage provenance |
 | Skillz published snapshot is behind current GitHub head | Confirmed source metadata difference | Display snapshot source, never claim latest-main synchronization |
 | Catalog or registry entries prove functioning downstream tools | Unsupported | Show recorded status and readiness separately |
-| Replit workspace state for all seven links | Unknown: connector needs reauthentication; web retrieval failed; Mac locked | Reauthenticate or unlock to inspect; do not overwrite remote work |
+| Replit workspace and parity | Browser observations now cover all seven attempts; five load and two report Page not found. Commit parity remains unverified | Preserve remote work; inspect hashes before synchronization |
 | Public creator equals entire private OverKill relay | Unsupported | Keep public surface and private materials distinct |
 | Multiuser or internet-hosted AskJamie Found-Ry | Not part of verified baseline | Local single-user runtime first; hosted auth is a separate deployment design |
 
-The seven supplied Replit locators remain recorded in [replit-access.md](replit-access.md). Research stopped after two bounded source lanes, coordinator source checks, and targeted contradiction resolution. More unauthenticated retrieval would not resolve workspace state. These findings sufficiently support an independent local implementation; they do not constitute a complete Replit audit.
+All seven supplied Replit locators and later authenticated Browser observations are recorded in [replit-access.md](replit-access.md). Research stopped after two bounded source lanes, coordinator checks, targeted contradiction resolution and shared read-only Browser observations. The roles and build boundaries have sufficient support; exact Replit commit parity remains a bounded gap. These findings support an independent local implementation without overwriting remote work.
 
 ## Application acceptance criteria
 
