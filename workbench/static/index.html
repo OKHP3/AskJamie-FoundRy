@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>AskJamie Found-Ry</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Workbench navigation">
+      <div class="brand-lockup">
+        <div class="brand-mark" aria-hidden="true"><span>A</span><i></i><b></b></div>
+        <div><p class="eyebrow">Private workbench</p><h1>AskJamie <em>Found-Ry</em></h1></div>
+      </div>
+      <p class="side-intro">A calm place to shape interpretive capabilities, guided decisions, and useful next steps.</p>
+      <nav class="nav-stack">
+        <button class="nav-item active" data-view="workbench"><span class="nav-icon">⌂</span>Workbench</button>
+        <button class="nav-item" data-view="projects"><span class="nav-icon">▦</span>Projects <span class="nav-count" id="project-count">0</span></button>
+        <button class="nav-item" data-view="skills"><span class="nav-icon">✣</span>Skillz catalog</button>
+        <button class="nav-item" data-view="universe"><span class="nav-icon">◎</span>Universe</button>
+        <button class="nav-item" data-view="registry"><span class="nav-icon">▤</span>Registry <span class="read-only">read-only</span></button>
+      </nav>
+      <div class="sidebar-note">
+        <span class="status-dot"></span><span>Local and private</span>
+        <p>Nothing is published from this desk. Exports remain proposals until you decide otherwise.</p>
+      </div>
+      <div class="sidebar-footer"><span>AJ / 01</span><span>v1.1 profile</span></div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div class="crumbs"><span id="view-kicker">WORKBENCH</span><span class="crumb-slash">/</span><span id="view-title">Your capability desk</span></div>
+        <div class="top-actions"><button class="quiet-button" id="refresh-button" type="button">↻ <span>Refresh</span></button><button class="primary-button" id="new-project-button" type="button">＋ New project</button></div>
+      </header>
+      <div id="live-region" class="sr-only" aria-live="polite"></div>
+      <section id="view-root"></section>
+    </main>
+  </div>
+
+  <dialog id="new-project-dialog" class="modal">
+    <form method="dialog" id="new-project-form" class="modal-card">
+      <button class="modal-close" value="cancel" aria-label="Close new project dialog">×</button>
+      <p class="eyebrow">Start with a clear desk</p><h2>What are you shaping?</h2>
+      <p class="modal-lede">Choose a quiet starting point. Every field stays editable, and nothing is saved until you choose Create.</p>
+      <div class="template-grid">
+        <label class="template-choice"><input type="radio" name="template" value="blank" checked><span><strong>Blank capability</strong><small>Begin with a clean brief and define the contract yourself.</small></span></label>
+        <label class="template-choice"><input type="radio" name="template" value="decision"><span><strong>Decision guide</strong><small>Start with a yes / no path for a repeatable recommendation.</small></span></label>
+        <label class="template-choice"><input type="radio" name="template" value="workflow"><span><strong>Guided workflow</strong><small>Turn a known sequence into a checklist people can follow.</small></span></label>
+      </div>
+      <div class="modal-actions"><button class="quiet-button" value="cancel">Keep looking</button><button class="primary-button" value="default">Create draft</button></div>
+    </form>
+  </dialog>
+  <script src="/static/app.js"></script>
+</body>
+</html>
