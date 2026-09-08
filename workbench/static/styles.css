@@ -546,14 +546,33 @@ select:focus-visible {
   font-size: 12px;
   margin-bottom: 17px;
 }
-.success-box {
-  background: rgba(140, 195, 159, 0.1);
-  border: 1px solid rgba(140, 195, 159, 0.4);
+.status-box {
   border-radius: 5px;
-  color: #b6e0c2;
   padding: 10px 12px;
   font-size: 12px;
   margin-bottom: 17px;
+}
+.success-box {
+  background: rgba(140, 195, 159, 0.1);
+  border: 1px solid rgba(140, 195, 159, 0.4);
+  color: #b6e0c2;
+}
+.recovery-box {
+  background: rgba(216, 173, 106, 0.1);
+  border: 1px solid rgba(216, 173, 106, 0.4);
+  color: #f2d7a5;
+}
+.status-box strong {
+  display: block;
+  margin-bottom: 4px;
+  color: inherit;
+}
+.status-box p {
+  margin: 0;
+  color: inherit;
+}
+.loading-box {
+  justify-content: center;
 }
 .toggle-row {
   display: flex;
