@@ -9,6 +9,13 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Collaboration and repository visibility
+- Added shared task ownership and handoff instructions for ChatGPT/Codex,
+  Claude, Copilot, and Replit, with cost-conscious routing and validation reuse.
+- Recorded the owner's intentional public source-repository visibility while
+  preserving private child defaults, draft state, and graduation controls.
+
+
 ### Added
 - Local AskJamie capability workbench with durable drafts, decision preview,
   evidence records, Skillz references and governed repository-package exports.

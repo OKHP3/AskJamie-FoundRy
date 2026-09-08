@@ -43,7 +43,7 @@ relay_scope:
     - rag-experiment
 
 visibility_control:
-  visibility: private
+  visibility: public
   public_graduation_allowed: false
   default_child_visibility: private
   client_org_repos_public_graduation_allowed: false
@@ -53,4 +53,4 @@ maintainers:
     role: owner
 
 created: "2024-01-01"
-updated: "2026-06-04"
+updated: "2026-09-07"

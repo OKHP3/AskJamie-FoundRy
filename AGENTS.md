@@ -2,11 +2,11 @@
 
 ## Project identity
 
-This repository is the private AskJamie FoundRy relay. Its confirmed role is
+This repository is the intentionally public AskJamie FoundRy relay. Its confirmed role is
 to translate parent OKHP3 governance into child-repository scaffolds, schemas,
 registry records, documentation, and staged capability assets.
 
-It is a private development and governance workbench with a local single-user
+It is a public-source development and governance workbench with a local single-user
 application under `workbench/`. Python serves a plain HTML/CSS/JavaScript
 interface and persists capability drafts and evaluation records in SQLite.
 The application generates governed packages and executable decision tools.
@@ -53,7 +53,7 @@ Confirmed by `manifest.yaml`:
 
 - Type: `foundry-relay`
 - Lifecycle status: `active`
-- Visibility: private
+- Repository visibility: public
 - Parent foundry: `OKHP3/OverKill-Hill`
 - Parent FoundRy relay: `OKHP3/OverKill-Hill-FoundRy`
 
@@ -185,6 +185,31 @@ mentoring does not require a shared application runtime. See `docs/ecosystem-map
 - A valid package is not public graduation, a created remote repository, or an
   operational hosted assistant. Decision packages include an offline runner.
 - Replit workspace parity and deployment require separate authenticated inspection.
+
+## Cross-platform collaboration
+
+Follow [the collaboration protocol](docs/agent-collaboration.md) for shared work
+across ChatGPT/Codex, Claude, GitHub Copilot, and Replit. Keep AGENTS.md canonical;
+platform-specific instruction files are pointers, not competing policies.
+
+Use the owner's larger ChatGPT allocation for substantial implementation and
+integration reasoning, Claude for bounded independent review when available,
+Copilot for narrow code assistance, and Replit for workspace-specific execution
+and validation. These are routing preferences, not automatic tool access or
+permission to buy capacity. Minimize total token cost, accepting longer elapsed
+time. Delegate only concrete independent work with explicit scope and evidence.
+
+Before editing, claim a task in a shared GitHub issue or PR and record its owner,
+base SHA, branch, affected paths, acceptance checks, and handoff status. One
+integration owner controls each task branch and final merge. Other workers use
+isolated branches or worktrees. Do not concurrently mutate a shared checkout.
+If an existing Replit task is underway, coordinate with its owner before taking
+over its files. A stale timestamp does not transfer ownership.
+
+All three Found-Ry source repositories are intentionally public by owner
+confirmation. Private draft data and protected child capabilities remain
+private. This task scope covers AskJamie-FoundRy only; Skillz is context, not
+an additional assigned workstream.
 
 ## Keeping this guide current
 

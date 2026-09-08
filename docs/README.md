@@ -10,6 +10,7 @@
 
 | File / Folder | Purpose |
 |---|---|
+| [`agent-collaboration.md`](agent-collaboration.md) | Agent ownership, cost routing, and handoff protocol |
 | [`workbench.md`](workbench.md) | Local application operating guide |
 | [`research/2026-09-07-universe/universe-research.md`](research/2026-09-07-universe/universe-research.md) | Seven-element research and evidence gaps |
 | [`relay-design.md`](relay-design.md) | Architecture and design rationale for this relay layer |
