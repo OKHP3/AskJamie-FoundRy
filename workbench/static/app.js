@@ -15,6 +15,9 @@
     preview: null,
     evaluation: null,
     history: [],
+    loading: true,
+    loadingProjectId: null,
+    recovery: null,
     saving: false,
   };
   const esc = (value) => String(value ?? "");
@@ -53,6 +56,16 @@
   };
   const announce = (message) => {
     live.textContent = message;
+  };
+  const syncLiveRegion = () => {
+    const message =
+      state.error ||
+      state.notice ||
+      state.recovery?.message ||
+      (state.loading ? "Loading workbench." : "") ||
+      (state.loadingProjectId ? "Loading project." : "");
+    live.textContent = message;
+    live.setAttribute("role", state.error ? "alert" : "status");
   };
   const draftDefaults = (kind = "assistant") => ({
     title: "",
@@ -180,8 +193,11 @@
     document.getElementById("project-count").textContent =
       state.projects.length;
   }
-  async function loadProject(id) {
-    if (!canLeaveCurrent()) return;
+  async function loadProject(id, force = false) {
+    if (!force && !canLeaveCurrent()) return;
+    state.loadingProjectId = id;
+    state.recovery = null;
+    render();
     try {
       state.current = await api(`/api/projects/${encodeURIComponent(id)}`);
       const [history, evaluations] = await Promise.allSettled([
@@ -201,8 +217,10 @@
       state.notice = "";
       state.preview = null;
       state.previewAnswers = {};
+      state.loadingProjectId = null;
       render();
     } catch (error) {
+      state.loadingProjectId = null;
       state.error = error.message;
       render();
     }
@@ -252,7 +270,13 @@
   }
   function showError() {
     return state.error
-      ? el("div", { class: "error-box", role: "alert", text: state.error })
+      ? el("div", {
+          class: "error-box",
+          role: "alert",
+          "aria-live": "assertive",
+          "aria-atomic": "true",
+          text: state.error,
+        })
       : null;
   }
   function render() {
@@ -276,6 +300,7 @@
     if (state.view === "skills") root.append(skillsView());
     if (state.view === "universe") root.append(universeView());
     if (state.view === "registry") root.append(registryView());
+    syncLiveRegion();
   }
   function workbenchView() {
     const section = el("section");
@@ -294,6 +319,37 @@
       ]),
     );
     const grid = el("div", { class: "overview-grid" });
+    if (state.loading) {
+      grid.append(
+        el(
+          "article",
+          {
+            class: "desk-card status-box empty-card loading-box",
+            role: "status",
+            "aria-live": "polite",
+            "aria-atomic": "true",
+          },
+          [
+            el("div", {
+              class: "empty-stamp",
+              text: state.projects.length
+                ? "Refreshing saved work"
+                : "Loading saved work",
+            }),
+            el("h3", {
+              text: state.projects.length
+                ? "The desk is reconnecting"
+                : "Getting the desk ready",
+            }),
+            el("p", {
+              text: state.projects.length
+                ? "The saved projects list is being refreshed."
+                : "Saved projects are loading. The first screen is still coming together.",
+            }),
+          ],
+        ),
+      );
+    }
     const card = el("article", { class: "desk-card empty-card" });
     card.append(
       el("div", {
@@ -432,7 +488,22 @@
       list.append(row);
     });
     layout.append(list);
-    if (state.current) layout.append(editorView());
+    if (state.loadingProjectId) {
+      const loading = el("article", {
+        class: "panel desk-card empty-card status-box",
+        role: "status",
+        "aria-live": "polite",
+        "aria-atomic": "true",
+      });
+      loading.append(
+        el("div", { class: "empty-stamp", text: "Loading project" }),
+        el("h3", { text: "Reopening the saved revision" }),
+        el("p", {
+          text: "The selected project is loading. Keep the list open while the saved copy catches up.",
+        }),
+      );
+      layout.append(loading);
+    } else if (state.current) layout.append(editorView());
     else {
       const empty = el("article", { class: "panel desk-card empty-card" });
       empty.append(
@@ -466,13 +537,42 @@
       heading,
       el("div", {
         class: `save-state${project._dirty ? " dirty" : ""}`,
+        role: "status",
+        "aria-live": "polite",
+        "aria-atomic": "true",
         text: project._dirty ? "Unsaved changes" : "Saved locally",
       }),
     );
     editor.append(head);
     if (state.error) editor.append(showError());
     if (state.notice)
-      editor.append(el("div", { class: "success-box", text: state.notice }));
+      editor.append(
+        el("div", {
+          class: "success-box status-box",
+          role: "status",
+          "aria-live": "polite",
+          "aria-atomic": "true",
+          text: state.notice,
+        }),
+      );
+    if (state.recovery && state.recovery.projectId === project.id) {
+      const recovery = el("div", {
+        class: "recovery-box status-box",
+        role: "status",
+        "aria-live": "polite",
+        "aria-atomic": "true",
+      });
+      recovery.append(
+        el("strong", { text: "Stale save detected" }),
+        el("p", { text: state.recovery.message }),
+        el("div", { class: "card-actions" }, [
+          button("Reload saved copy", "quiet-button", () =>
+            loadProject(project.id, true),
+          ),
+        ]),
+      );
+      editor.append(recovery);
+    }
     const tabs = el("div", { class: "editor-tabs", role: "tablist" });
     [
       ["brief", "Brief"],
@@ -1127,13 +1227,22 @@
       ];
       state.notice = "Saved. The desk has a new revision.";
       state.error = "";
+      state.recovery = null;
       await loadProjects();
       state.saving = false;
       render();
       announce("Project saved");
     } catch (error) {
       state.saving = false;
+      state.notice = "";
       state.error = error.message;
+      state.recovery = error.message.includes("stale revision")
+        ? {
+            projectId,
+            message:
+              "The saved copy changed while you were editing. Reload the saved copy to reconcile, or keep editing and save again.",
+          }
+        : null;
       render();
     }
   }
@@ -1156,6 +1265,7 @@
       state.previewAnswers = {};
       state.evaluation = null;
       state.history = [];
+      state.recovery = null;
       await loadProjects();
       render();
       announce("Draft created");
@@ -1177,6 +1287,7 @@
         result.warnings && result.warnings.length
           ? result.warnings.join(" ")
           : "";
+      state.recovery = null;
       render();
     } catch (error) {
       state.error = error.message;
@@ -1241,6 +1352,7 @@
     state.view = view;
     state.error = "";
     state.notice = "";
+    state.recovery = null;
     render();
     if (view === "skills" && !state.skills.length)
       api("/api/skills")
@@ -1463,9 +1575,13 @@
   document
     .getElementById("refresh-button")
     .addEventListener("click", async () => {
+      state.loading = true;
+      render();
       await loadProjects();
       if (state.current?.id) await loadProject(state.current.id);
       else render();
+      state.loading = false;
+      render();
       announce("Refreshed");
     });
   document
@@ -1479,6 +1595,8 @@
       event.returnValue = "";
     }
   });
+  state.loading = true;
+  render();
   Promise.all([
     loadProjects(),
     api("/api/skills")
@@ -1488,5 +1606,8 @@
       .catch((error) => {
         state.error = error.message;
       }),
-  ]).then(render);
+  ]).then(() => {
+    state.loading = false;
+    render();
+  });
 })();
