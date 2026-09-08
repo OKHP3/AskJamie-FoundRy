@@ -6,3 +6,7 @@ stack = "BEST_EFFORT_FALLBACK"
 [nix]
 channel = "stable-25_05"
 packages = ["libyaml"]
+
+[postMerge]
+path = "scripts/post-merge.sh"
+timeoutMs = 180000
