@@ -1,14 +1,16 @@
 # Original F01-F24 task coverage
 
 Assessment date: 2026-09-08. This note maps the original 24 AskJamie Found-Ry
-proposal tasks from `assets/docs/coop-pertition-agent-backlog-2026-09-07.md`
+proposal tasks from the [website proposal packet](https://github.com/OKHP3/AskJamie/blob/171bf5c/assets/docs/coop-pertition-agent-backlog-2026-09-07.md)
 to the current repository evidence on or after `main@3ea4316`.
 
 ## Scope note
 
 The original F01-F24 queue was an upstream proposal, not the later issue-6
 commissioned numbering. That later queue reused some labels for different work.
-This note preserves the original meaning only.
+This note preserves the original meaning only. Partial proposal coverage is
+future backlog, not an unresolved issue-6 assignment or an archive blocker.
+The commissioned F01-F20 dispatch is complete in merged PRs #7 through #11.
 
 Status key:
 
@@ -23,7 +25,7 @@ Status key:
 | ID | Status | Current evidence | Minimal remaining gap |
 | --- | --- | --- | --- |
 | F01 | complete | `docs/current-state-and-maturation.md`, `docs/research/2026-09-07-universe/validation.md`, `tests/test_workbench.py`, `tests/test_registry_validation.py` show the baseline, current scope, and current local validation results. | None for the original mapping. Keep baseline notes dated if they drift. |
-| F02 | partial | `AGENTS.md`, `replit.md`, `docs/workbench.md`, and `docs/current-state-and-maturation.md` now consistently separate public source, local runtime, and non-production maturity. | A small wording audit could still tighten any stale phrasing in sibling docs, but no contradiction remains in the core repo guidance. |
+| F02 | complete | `AGENTS.md`, `replit.md`, `docs/workbench.md`, and `docs/current-state-and-maturation.md` now consistently separate public source, local runtime, and non-production maturity. | No specific contradiction is established in the core guidance. A speculative wording sweep is not an outstanding task. |
 | F03 | complete | `schemas/manifest.schema.yaml`, `schemas/registry.schema.yaml`, and `tests/test_registry_validation.py` cover schema parity and private-lock restrictions. | None for the original mapping. |
 | F04 | complete | `workbench/service.py` plus `tests/test_workbench.py` cover `repo_name()` and `validate_project()` boundaries, including aj03 and client-overlay rules. | None for the original mapping. |
 | F05 | complete | `workbench/service.py`, `tests/test_workbench.py`, and `tests/test_export_acceptance.py` prove generated template rendering, provenance, and `ABOUT.md` exclusion. | None for the original mapping. |
@@ -51,15 +53,13 @@ Status key:
 
 Current evidence makes the original queue mostly complete in-repo:
 
-- Complete: F01, F03-F20, F22-F24
-- Partial: F02, F21
+- Complete: F01-F20, F22-F24
+- Partial future proposal: F21
 - Open: none
 
-The two partial items are documentation-centric. F02 is now directionally
-resolved but may still benefit from a final stale-wording sweep in adjacent
-docs. F21 has the strongest remaining gap: a dedicated unsaved-navigation
-regression if the original task wording needs to be exercised literally rather
-than through the current stale-save recovery coverage.
+F21 is optional future regression coverage. Stale-save recovery is not proof
+of unsaved-navigation protection. This mapping does not commission that work
+or expand the completed acceptance assignment.
 
 ## Verification run
 
