@@ -9,6 +9,10 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+- Recovered F17-F20 onboarding, validated synthetic pilots and controlled Skillz
+  refresh guidance; corrected the README public-source description.
+
+
 ### Collaboration and repository visibility
 - Added shared task ownership and handoff instructions for ChatGPT/Codex,
   Claude, Copilot, and Replit, with cost-conscious routing and validation reuse.

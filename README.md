@@ -43,7 +43,7 @@ OKHP3/OverKill-Hill          ← Universe governance
 | Storefront / Portfolio | [askjamie.bot](https://askjamie.bot/) |
 | Public Portfolio Repo | [OKHP3/AskJamie](https://github.com/OKHP3/AskJamie) |
 | Public Portfolio Project | [replit.com/t/askjamie/repls/AskJamie](https://replit.com/t/askjamie/repls/AskJamie) |
-| **This FoundRy (private workbench)** | **[OKHP3/AskJamie-FoundRy](https://github.com/OKHP3/AskJamie-FoundRy)** |
+| **This FoundRy (public source, private local drafts)** | **[OKHP3/AskJamie-FoundRy](https://github.com/OKHP3/AskJamie-FoundRy)** |
 | **This Replit Project** | **[replit.com/t/askjamie/repls/AskJamie-FoundRy](https://replit.com/t/askjamie/repls/AskJamie-FoundRy)** |
 | Parent Universe | [overkillhill.com/universe](https://overkillhill.com/universe/) |
 | Mentor pattern and relay lineage | [OKHP3/OverKill-Hill-FoundRy](https://github.com/OKHP3/OverKill-Hill-FoundRy) |

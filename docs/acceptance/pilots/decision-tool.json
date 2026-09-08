@@ -1,0 +1,40 @@
+{
+  "title": "Synthetic decision-tool",
+  "slug": "pilot-decision-tool",
+  "code": "aj05",
+  "family": "core-capability",
+  "kind": "decision-tool",
+  "purpose": "Translate a request into a bounded next step.",
+  "audience": "People planning a capability.",
+  "source_text": "Synthetic acceptance source only.",
+  "source_reference": "synthetic-pilot-20260908",
+  "instructions": "Clarify the request and preserve uncertainty.",
+  "output_contract": "Return a bounded recommendation.",
+  "constraints": "Never imply publication.",
+  "client_org": "",
+  "parent_capability": "",
+  "bfs_firewall": false,
+  "visibility_lock": "",
+  "skill_ids": [],
+  "workflow_steps": [],
+  "decision": {
+    "start": "start",
+    "nodes": [
+      {
+        "id": "start",
+        "question": "Is it clear?",
+        "yes": "answer",
+        "no": "clarify"
+      },
+      {
+        "id": "answer",
+        "result": "Proceed."
+      },
+      {
+        "id": "clarify",
+        "result": "Ask."
+      }
+    ]
+  },
+  "eval_cases": []
+}
