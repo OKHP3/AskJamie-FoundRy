@@ -44,6 +44,8 @@ Versioning follows [Semantic Versioning](https://semver.org/).
   lightweight FoundRy posture reports to use current repository paths.
 - Removed the raw Foundry evaluation workspace after preserving its historical
   aggregate evidence, and refreshed the local skill catalog from 18 to 50 skills.
+- Removed the obsolete duplicate `okhp3-repl-repo-janitor copy` skill snapshot;
+  the maintained `okhp3-replit-repl-janitor` package is the canonical successor.
 - Added a scoped AskJamie repository and local-clone inventory, including the
   canonical-remote versus legacy-origin reconciliation finding.
 - Added `docs/technology-inventory.md`, pinned Python dependencies, an active
