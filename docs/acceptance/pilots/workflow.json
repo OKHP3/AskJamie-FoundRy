@@ -1,0 +1,25 @@
+{
+  "title": "Synthetic workflow",
+  "slug": "pilot-workflow",
+  "code": "aj05",
+  "family": "core-capability",
+  "kind": "workflow",
+  "purpose": "Translate a request into a bounded next step.",
+  "audience": "People planning a capability.",
+  "source_text": "Synthetic acceptance source only.",
+  "source_reference": "synthetic-pilot-20260908",
+  "instructions": "Clarify the request and preserve uncertainty.",
+  "output_contract": "Return a bounded recommendation.",
+  "constraints": "Never imply publication.",
+  "client_org": "",
+  "parent_capability": "",
+  "bfs_firewall": false,
+  "visibility_lock": "",
+  "skill_ids": [],
+  "workflow_steps": [
+    "Clarify scope",
+    "Record next action"
+  ],
+  "decision": {},
+  "eval_cases": []
+}
