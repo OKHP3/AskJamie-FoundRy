@@ -37,11 +37,11 @@ Use the [operating guide](workbench.md) to start and back up the application. St
 
 ## Evidence and limitations
 
-The initial integrated version passed 19 tests on Python 3.11.15 and 3.14.5. Follow-up review fixes add regression checks for private file modes and non-finite numbers. The current local suite passes 22 tests in the repository virtual environment. Manifest/registry validation, JavaScript syntax and diff checks pass. GitHub CI results should be checked against the current PR head before merge.
+The initial integrated version passed 19 tests on Python 3.11.15 and 3.14.5. Follow-up review fixes add regression checks for private file modes and non-finite numbers. The current local suite passes 31 tests in the repository virtual environment. Manifest/registry validation, JavaScript syntax and diff checks pass. GitHub CI results should be checked against the current PR head before merge.
 
 Browser acceptance covered creation, editing, saving, reopening after server restart, both decision branches, Skillz selection, two passing authored evaluations, retained history/results, ZIP download, registry names and cancel behavior. Review feedback also corrected the search toolbar and a validator return annotation.
 
-Unverified areas remain explicit: direct browser execution of the exported local HTML was blocked by browser URL policy; narrow-screen visual QA and a full accessibility audit are incomplete. Automated checks cover the HTML's structure and escaping. No real-user pilot, external assistant evaluation, production deployment or backup-restoration acceptance has been completed. See the [validation record](research/2026-09-07-universe/validation.md).
+Follow-up delegate acceptance exercised the exported runner through an allowed local browser context, narrow screens, keyboard navigation, stale-save recovery, and synthetic backup/restore. These checks do not establish full assistive-technology accessibility, real-user pilot acceptance, external assistant quality, or production deployment. See the [validation record](research/2026-09-07-universe/validation.md).
 
 ## Recommended maturation sequence
 
@@ -49,7 +49,7 @@ These are proposed next steps, not completed features or promised dates.
 
 | Order | Work | Evidence required to advance |
 |---|---|---|
-| 1. Stabilize the baseline | Keep the merged research, workbench, and collaboration changes on main; verify the launch guide and the local suite from a clean checkout | Main stays clean, the current local suite passes 22 tests, and startup still works |
+| 1. Stabilize the baseline | Keep the merged research, workbench, and collaboration changes on main; verify the launch guide and the local suite from a clean checkout | Main stays clean, the current local suite passes 31 tests, and startup still works |
 | 2. Pilot real work | Build one useful AskJamie assistant specification, one decision tool and one workflow from owner-approved source | Each has a reviewed export, representative cases and a record of friction found during use |
 | 3. Complete reliability and usability | Exercise exported HTML in an allowed browser environment; test narrow screens, keyboard and assistive technology; perform backup/restore; automate core browser journeys | Reproducible acceptance evidence, successful restore without lost source/history, no unresolved blocking usability issues |
 | 4. Make mentoring operational | Compare relevant OverKill Found-Ry patterns; record adoption/adaptation decisions; propose proven AskJamie improvements to the mentor or Glee-fully; define controlled Skillz snapshot refresh | One documented round trip of a useful pattern, with provenance, validation and regional ownership retained |
