@@ -192,14 +192,109 @@ jobs:
 
           python - <<'PY'
           import asyncio
+          import json
           import os
+          from pathlib import Path
 
           from playwright.async_api import async_playwright
 
+          ARTIFACT_DIR = Path(os.environ["RUNNER_TEMP"]) / "foundry-browser-artifacts"
+          MAX_DIAGNOSTIC_ENTRIES = 200
+          MAX_DIAGNOSTIC_VALUE_LENGTH = 2000
+
+          class BrowserDiagnostics:
+              def __init__(self):
+                  self.console_messages = []
+                  self.failed_requests = []
+                  self.console_dropped = 0
+                  self.failed_request_dropped = 0
+
+              @staticmethod
+              def bounded(value):
+                  return str(value)[:MAX_DIAGNOSTIC_VALUE_LENGTH]
+
+              def append(self, entries, entry, kind):
+                  if len(entries) < MAX_DIAGNOSTIC_ENTRIES:
+                      entries.append(entry)
+                  elif kind == "console":
+                      self.console_dropped += 1
+                  else:
+                      self.failed_request_dropped += 1
+
+              def attach(self, page, label):
+                  page.on("console", lambda message: self.record_console(label, message))
+                  page.on(
+                      "requestfailed",
+                      lambda request: self.record_failed_request(
+                          label,
+                          request,
+                          status=None,
+                          failure=request.failure,
+                      ),
+                  )
+                  page.on("response", lambda response: self.record_response(label, response))
+
+              def record_console(self, label, message):
+                  self.append(
+                      self.console_messages,
+                      {
+                          "page": label,
+                          "type": self.bounded(message.type),
+                          "text": self.bounded(message.text),
+                      },
+                      "console",
+                  )
+
+              def record_failed_request(self, label, request, *, status, failure):
+                  self.append(
+                      self.failed_requests,
+                      {
+                          "page": label,
+                          "method": self.bounded(request.method),
+                          "url": self.bounded(request.url),
+                          "resource_type": self.bounded(request.resource_type),
+                          "status": status,
+                          "failure": self.bounded(failure or "unknown"),
+                      },
+                      "request",
+                  )
+
+              def record_response(self, label, response):
+                  if response.status >= 400:
+                      self.record_failed_request(
+                          label,
+                          response.request,
+                          status=response.status,
+                          failure=f"HTTP {response.status}",
+                      )
+
+              def write_jsonl(self, path, entries, dropped):
+                  lines = [json.dumps(entry, sort_keys=True) for entry in entries]
+                  if dropped:
+                      lines.append(json.dumps({"truncated": dropped}, sort_keys=True))
+                  if not lines:
+                      lines.append(json.dumps({"message": "No evidence captured."}))
+                  path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+              def write(self):
+                  ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
+                  self.write_jsonl(
+                      ARTIFACT_DIR / "export-console.jsonl",
+                      self.console_messages,
+                      self.console_dropped,
+                  )
+                  self.write_jsonl(
+                      ARTIFACT_DIR / "export-failed-requests.jsonl",
+                      self.failed_requests,
+                      self.failed_request_dropped,
+                  )
+
           async def check_export():
+              diagnostics = BrowserDiagnostics()
               async with async_playwright() as playwright:
                   browser = await playwright.chromium.launch()
                   page = await browser.new_page()
+                  diagnostics.attach(page, "export-runner")
                   try:
                       await page.goto(
                           "http://127.0.0.1:8767/index.html",
@@ -215,14 +310,18 @@ jobs:
                       await page.get_by_role("button", name="Restart").click()
                       assert await page.locator("#question").inner_text() == "Is the request clear?"
                   except Exception:
-                      await page.screenshot(
-                          path=os.path.join(
-                              os.environ["RUNNER_TEMP"],
-                              "foundry-browser-artifacts",
-                              "export-failure.png",
-                          ),
-                          full_page=True,
-                      )
+                      try:
+                          await page.screenshot(
+                              path=os.path.join(
+                                  os.environ["RUNNER_TEMP"],
+                                  "foundry-browser-artifacts",
+                                  "export-failure.png",
+                              ),
+                              full_page=True,
+                          )
+                      except Exception:
+                          pass
+                      diagnostics.write()
                       raise
                   finally:
                       await browser.close()
