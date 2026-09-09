@@ -1,2 +1,3 @@
 - [AskJamie FoundRy Structure](askjamie-foundry.md) — full governance relay layout, naming conventions, and upgrade path for this repo.
 - [GitHub Branch Protection API](github-branch-protection.md) — user-owned repositories reject reviewer dismissal restrictions in protection payloads.
+- [Package installation side effects](package-installation-side-effects.md) — keep browser tooling isolated and review project metadata after package-manager installs.

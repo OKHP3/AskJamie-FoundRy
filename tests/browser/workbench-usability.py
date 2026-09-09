@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import socket
 import subprocess
+import sys
 import tempfile
 import time
 from contextlib import closing
@@ -13,7 +15,13 @@ from playwright.async_api import async_playwright
 
 
 ROOT = Path(__file__).resolve().parents[2]
-PYTHON = ROOT / ".venv" / "bin" / "python"
+PYTHON = Path(os.environ.get("FOUNDRY_PYTHON", sys.executable))
+ARTIFACT_DIR = (
+    Path(os.environ["BROWSER_ARTIFACTS_DIR"])
+    if os.environ.get("BROWSER_ARTIFACTS_DIR")
+    else None
+)
+BROWSER_EXECUTABLE = os.environ.get("BROWSER_EXECUTABLE_PATH")
 DRAFT_FIELDS = [
     "title",
     "slug",
@@ -82,6 +90,8 @@ def put_json(port: int, path: str, payload: dict) -> None:
 
 async def main() -> None:
     port = find_free_port()
+    if ARTIFACT_DIR:
+        ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as data_dir:
         server = subprocess.Popen(
             [str(PYTHON), "-m", "workbench", "--port", str(port), "--data-dir", data_dir],
@@ -90,10 +100,17 @@ async def main() -> None:
             stderr=subprocess.STDOUT,
             text=True,
         )
+        browser = None
+        page = None
         try:
             wait_for_health(port)
             async with async_playwright() as playwright:
-                browser = await playwright.chromium.launch()
+                launch_options = (
+                    {"executable_path": BROWSER_EXECUTABLE}
+                    if BROWSER_EXECUTABLE
+                    else {}
+                )
+                browser = await playwright.chromium.launch(**launch_options)
 
                 async def load_with_delay(width: int, height: int):
                     context = await browser.new_context(viewport={"width": width, "height": height})
@@ -103,23 +120,32 @@ async def main() -> None:
                         await asyncio.sleep(0.75)
                         await route.continue_()
 
-                    await page.route("**/api/projects", slow_route)
-                    await page.route("**/api/skills", slow_route)
-                    await page.goto(f"http://127.0.0.1:{port}", wait_until="domcontentloaded")
-                    await page.wait_for_timeout(150)
-                    loading_text = await page.locator("body").inner_text()
-                    assert "Loading saved work" in loading_text or "Getting the desk ready" in loading_text
-                    await page.wait_for_load_state("networkidle")
-                    metrics = await page.evaluate(
-                        """() => ({
-                            sw: document.documentElement.scrollWidth,
-                            cw: document.documentElement.clientWidth,
-                            sh: document.documentElement.scrollHeight,
-                            ch: document.documentElement.clientHeight,
-                        })"""
-                    )
-                    assert metrics["sw"] == metrics["cw"], metrics
-                    await context.close()
+                    try:
+                        await page.route("**/api/projects", slow_route)
+                        await page.route("**/api/skills", slow_route)
+                        await page.goto(f"http://127.0.0.1:{port}", wait_until="domcontentloaded")
+                        await page.wait_for_timeout(150)
+                        loading_text = await page.locator("body").inner_text()
+                        assert "Loading saved work" in loading_text or "Getting the desk ready" in loading_text
+                        await page.wait_for_load_state("networkidle")
+                        metrics = await page.evaluate(
+                            """() => ({
+                                sw: document.documentElement.scrollWidth,
+                                cw: document.documentElement.clientWidth,
+                                sh: document.documentElement.scrollHeight,
+                                ch: document.documentElement.clientHeight,
+                            })"""
+                        )
+                        assert metrics["sw"] == metrics["cw"], metrics
+                    except Exception:
+                        if ARTIFACT_DIR:
+                            await page.screenshot(
+                                path=str(ARTIFACT_DIR / f"loading-{width}x{height}.png"),
+                                full_page=True,
+                            )
+                        raise
+                    finally:
+                        await context.close()
 
                 for size in [(1440, 900), (768, 900), (390, 844), (320, 568)]:
                     await load_with_delay(*size)
@@ -185,13 +211,29 @@ async def main() -> None:
                 assert title == "External update"
 
                 await context.close()
-                await browser.close()
+        except Exception:
+            if ARTIFACT_DIR and page is not None:
+                try:
+                    await page.screenshot(
+                        path=str(ARTIFACT_DIR / "workbench-usability-failure.png"),
+                        full_page=True,
+                    )
+                except Exception:
+                    pass
+            raise
         finally:
+            if browser is not None:
+                await browser.close()
             server.terminate()
             try:
                 server.wait(timeout=10)
             except subprocess.TimeoutExpired:  # pragma: no cover - cleanup
                 server.kill()
+            if ARTIFACT_DIR and server.stdout is not None:
+                (ARTIFACT_DIR / "workbench-server.log").write_text(
+                    server.stdout.read(),
+                    encoding="utf-8",
+                )
 
 
 if __name__ == "__main__":
