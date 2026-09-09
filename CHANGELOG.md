@@ -11,6 +11,9 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 - Recovered F17-F20 onboarding, validated synthetic pilots and controlled Skillz
   refresh guidance; corrected the README public-source description.
+- Protected `main` with required review approval and the supported-Python
+  compatibility check; documented the merge policy and ensured the check runs
+  for every pull request targeting `main`.
 
 
 ### Collaboration and repository visibility

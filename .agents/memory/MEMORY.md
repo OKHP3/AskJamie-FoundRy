@@ -1,1 +1,2 @@
 - [AskJamie FoundRy Structure](askjamie-foundry.md) — full governance relay layout, naming conventions, and upgrade path for this repo.
+- [GitHub Branch Protection API](github-branch-protection.md) — user-owned repositories reject reviewer dismissal restrictions in protection payloads.

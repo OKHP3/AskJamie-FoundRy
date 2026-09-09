@@ -2,16 +2,8 @@ name: Technology Compatibility
 
 on:
   pull_request:
-    paths:
-      - requirements.txt
-      - scripts/**
-      - workbench/**
-      - tests/**
-      - _template/**
-      - schemas/**
-      - manifest.yaml
-      - registry/**
-      - .github/workflows/**
+    branches:
+      - main
   push:
     branches:
       - main
