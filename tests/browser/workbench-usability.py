@@ -268,6 +268,26 @@ async def main() -> None:
                 diagnostics.attach(page, "workbench")
                 await page.goto(f"http://127.0.0.1:{port}", wait_until="networkidle")
 
+                async def navigate_with_confirmation(view: str, accept: bool) -> str:
+                    prompt: dict[str, str] = {}
+
+                    async def handle_dialog(dialog) -> None:
+                        prompt["type"] = dialog.type
+                        prompt["message"] = dialog.message
+                        if accept:
+                            await dialog.accept()
+                        else:
+                            await dialog.dismiss()
+
+                    page.once("dialog", handle_dialog)
+                    await page.locator(f"button.nav-item[data-view='{view}']").click()
+                    assert prompt.get("type") == "confirm", prompt
+                    assert (
+                        prompt.get("message")
+                        == "This project has unsaved changes. Leave without saving?"
+                    ), prompt
+                    return prompt["message"]
+
                 focus_labels = []
                 for _ in range(7):
                     await page.keyboard.press("Tab")
@@ -323,6 +343,23 @@ async def main() -> None:
                 await page.get_by_label("Title").wait_for()
                 title = await page.get_by_label("Title").input_value()
                 assert title == "External update"
+
+                await page.get_by_label("Title").fill("Unsaved draft stays safe")
+                assert await page.locator(".save-state").inner_text() == "Unsaved changes"
+
+                await navigate_with_confirmation("workbench", accept=False)
+                assert await page.locator("#view-title").inner_text() == "Saved capability projects"
+                assert await page.get_by_label("Title").input_value() == "Unsaved draft stays safe"
+                assert await page.locator(".save-state").inner_text() == "Unsaved changes"
+
+                await navigate_with_confirmation("workbench", accept=True)
+                assert await page.locator("#view-title").inner_text() == "Your capability desk"
+                assert not await page.get_by_label("Title").count()
+
+                await navigate_with_confirmation("projects", accept=True)
+                await page.get_by_label("Title").wait_for()
+                assert await page.get_by_label("Title").input_value() == "Unsaved draft stays safe"
+                assert await page.locator(".save-state").inner_text() == "Unsaved changes"
 
                 await context.close()
         except Exception:
