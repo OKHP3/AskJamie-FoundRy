@@ -37,6 +37,9 @@ DRAFT_FIELDS = [
     "instructions",
     "output_contract",
     "constraints",
+    "target",
+    "phase",
+    "evidence",
     "client_org",
     "parent_capability",
     "bfs_firewall",
@@ -360,6 +363,23 @@ async def main() -> None:
                 await page.get_by_label("Title").wait_for()
                 assert await page.get_by_label("Title").input_value() == "Unsaved draft stays safe"
                 assert await page.locator(".save-state").inner_text() == "Unsaved changes"
+
+                await page.get_by_role("button", name="Save changes").click()
+                await page.get_by_text("Saved. The desk has a new revision.").wait_for()
+                await page.locator(".save-state").filter(has_text="Saved locally").wait_for()
+                page.once("dialog", lambda dialog: dialog.accept())
+                await page.get_by_role("button", name="Duplicate").click()
+                await page.get_by_text(
+                    "Private copy created. Its evaluation history starts fresh."
+                ).wait_for()
+                await page.get_by_label("Title").wait_for()
+                duplicate_title = await page.get_by_label("Title").input_value()
+                assert duplicate_title == "Unsaved draft stays safe copy", duplicate_title
+                page.once("dialog", lambda dialog: dialog.accept())
+                await page.get_by_role("button", name="Delete").click()
+                await page.get_by_text("The editor is waiting").wait_for()
+                assert await page.locator(".editor").count() == 0
+                assert await page.get_by_text("Saved capability projects").count() >= 1
 
                 await context.close()
         except Exception:

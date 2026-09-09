@@ -5,6 +5,17 @@ Local drafts and protected exports remain private.
 The local application authors assistant specifications, decision tools and
 workflows; saves SQLite drafts; records evaluations; and exports governed ZIPs.
 
+## Surface boundary
+
+`public/` is a separately scoped, read-only Pages orientation artifact. It
+communicates AskJamie’s relationship to OverKill Hill, Glee-fully, and shared
+Skillz, and uses only relative assets. It never reads the local API, SQLite,
+`.foundry-data/`, drafts, client records, secrets, or generated packages.
+
+The authoring workbench is a Python standard-library/SQLite application bound to
+`127.0.0.1`. It is not hosted in Replit preview or deployment. Public repository
+visibility proves source visibility only, not hosted capability operation.
+
 ## Run locally
 
 ```bash
@@ -32,6 +43,7 @@ metadata is provenance. See [ecosystem map](docs/ecosystem-map.md).
 - `_template/`, `schemas/`, `registry/`: authoritative scaffold/governance assets.
 - `tests/`: runtime and validation regression checks.
 - `.foundry-data/`: ignored private local state.
+- `docs/parity-matrix.md`: evidence-led mentor parity decisions.
 
 Preserve visibility locks, client isolation, lineage, and the locked AutoCAD
 R10 constraint. Exports are private packages with pending registry proposals.

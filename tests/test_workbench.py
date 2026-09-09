@@ -336,6 +336,42 @@ class HttpTests(unittest.TestCase):
         self.assertEqual(status, 400)
         self.assertIn("non-question", json.loads(payload)["error"])
 
+    def test_lifecycle_requires_confirmation_and_backup_import_is_transactional(self):
+        status, _, payload = self.request("POST", "/api/projects", draft())
+        self.assertEqual(status, 201)
+        project = json.loads(payload)
+
+        self.assertEqual(self.request("POST", f"/api/projects/{project['id']}/duplicate", {})[0], 400)
+        status, _, payload = self.request(
+            "POST", f"/api/projects/{project['id']}/duplicate", {"confirm": True}
+        )
+        self.assertEqual(status, 201)
+        duplicate = json.loads(payload)
+        self.assertEqual(duplicate["revision"], 1)
+        self.assertTrue(duplicate["slug"].endswith("-copy"))
+
+        status, headers, backup_payload = self.request("GET", "/api/backup")
+        self.assertEqual(status, 200)
+        self.assertIn("attachment", headers["Content-Disposition"])
+        backup = json.loads(backup_payload)
+        self.assertEqual(backup["schema_version"], "1")
+        self.assertEqual(len(backup["projects"]), 2)
+
+        status, _, payload = self.request("POST", "/api/import", {"backup": backup, "confirm": False})
+        self.assertEqual(status, 400)
+        self.assertIn("confirmation", json.loads(payload)["error"])
+        status, _, payload = self.request("POST", "/api/import", {"backup": backup, "confirm": True})
+        self.assertEqual(status, 200)
+        self.assertEqual(json.loads(payload)["imported"], 2)
+
+        self.assertEqual(self.request("DELETE", f"/api/projects/{duplicate['id']}", {})[0], 400)
+        status, _, payload = self.request(
+            "DELETE", f"/api/projects/{duplicate['id']}", {"confirm": True}
+        )
+        self.assertEqual(status, 200)
+        self.assertEqual(json.loads(payload)["deleted"], duplicate["id"])
+        self.assertEqual(self.request("GET", f"/api/projects/{duplicate['id']}")[0], 404)
+
     def test_invalid_framing_json_and_unknown_route(self):
         status, _, _ = self.request("POST", "/api/projects", b"{not-json")
         self.assertEqual(status, 400)

@@ -80,6 +80,9 @@
     instructions: "",
     output_contract: "",
     constraints: "",
+    target: "offline-specification",
+    phase: "draft",
+    evidence: "",
     client_org: "",
     parent_capability: "",
     bfs_firewall: false,
@@ -149,6 +152,9 @@
     "instructions",
     "output_contract",
     "constraints",
+    "target",
+    "phase",
+    "evidence",
     "client_org",
     "parent_capability",
     "bfs_firewall",
@@ -453,7 +459,11 @@
         "THE PROJECT SHELF",
         "Saved capability projects",
         "Drafts are editable, revisioned, and private. No project is implied until you save it.",
-        button("＋ New project", "primary-button", () => openDialog()),
+         el("div", { class: "top-actions" }, [
+           button("Download backup", "quiet-button", downloadBackup),
+           button("Import backup", "quiet-button", chooseBackup),
+           button("＋ New project", "primary-button", () => openDialog()),
+         ]),
       ),
     );
     if (state.error) section.append(showError());
@@ -535,14 +545,31 @@
     );
     head.append(
       heading,
-      el("div", {
-        class: `save-state${project._dirty ? " dirty" : ""}`,
-        role: "status",
-        "aria-live": "polite",
-        "aria-atomic": "true",
-        text: project._dirty ? "Unsaved changes" : "Saved locally",
+      el("div", { class: "editor-head-actions" }, [
+        el("div", {
+          class: `save-state${project._dirty ? " dirty" : ""}`,
+          role: "status",
+          "aria-live": "polite",
+          "aria-atomic": "true",
+          text: project._dirty ? "Unsaved changes" : "Saved locally",
+        }),
+        button("Duplicate", "quiet-button", duplicateProject),
+        button("Delete", "danger-button", deleteProject),
+      ]),
+    );
+    const lifecycle = el("div", { class: "lifecycle-strip" });
+    lifecycle.append(
+      el("span", { class: "badge", text: `Phase: ${project.phase || "draft"}` }),
+      el("span", {
+        class: "badge neutral",
+        text: `Target: ${project.target || "offline-specification"}`,
+      }),
+      el("span", {
+        class: "field-hint",
+        text: "Reference → shape → evidence → review",
       }),
     );
+    editor.append(lifecycle);
     editor.append(head);
     if (state.error) editor.append(showError());
     if (state.notice)
@@ -652,6 +679,26 @@
       field("Constraints", "constraints", p.constraints, {
         full: true,
         textarea: true,
+      }),
+      field("Delivery target", "target", p.target, {
+        select: true,
+        options: [
+          ["offline-specification", "Offline specification"],
+          ["openai-custom-gpt", "OpenAI Custom GPT"],
+          ["microsoft-copilot", "Microsoft Copilot"],
+          ["gemini-gem", "Gemini Gem"],
+          ["workflow-checklist", "Workflow checklist"],
+        ],
+        hint: "A planning target only. Nothing is provisioned by this workbench.",
+      }),
+      field("Lifecycle phase", "phase", p.phase, {
+        select: true,
+        options: [
+          ["draft", "Draft"],
+          ["shaping", "Shaping"],
+          ["evidence", "Evidence"],
+          ["review", "Ready for review"],
+        ],
       }),
     );
     return form;
@@ -1051,6 +1098,12 @@
         full: true,
         hint: "A provenance note or stable locator. This does not fetch remote content.",
       }),
+      field("Evidence notes", "evidence", p.evidence, {
+        full: true,
+        textarea: true,
+        rows: 4,
+        hint: "Record what has been checked and what remains unknown.",
+      }),
     );
     const heading = el("div", { class: "subsection-head" });
     heading.append(el("h4", { text: "Skillz references" }));
@@ -1342,6 +1395,123 @@
       anchor.remove();
       URL.revokeObjectURL(url);
       announce("Private ZIP downloaded");
+    } catch (error) {
+      state.error = error.message;
+      render();
+    }
+  }
+  async function downloadBackup() {
+    try {
+      const response = await api("/api/backup");
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = "askjamie-workbench-backup-v1.json";
+      document.body.append(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+      state.notice = "Private backup downloaded.";
+      state.error = "";
+      render();
+      announce("Private backup downloaded");
+    } catch (error) {
+      state.error = error.message;
+      render();
+    }
+  }
+  function chooseBackup() {
+    const input = el("input", {
+      type: "file",
+      accept: "application/json,.json",
+      "aria-label": "Choose a workbench backup",
+    });
+    input.addEventListener("change", () => {
+      if (input.files?.[0]) importBackup(input.files[0]);
+    });
+    input.click();
+  }
+  async function importBackup(file) {
+    if (!canLeaveCurrent()) return;
+    const confirmed = window.confirm(
+      "Importing a backup replaces every saved local project, its history, and evaluations. Continue?",
+    );
+    if (!confirmed) return;
+    try {
+      const backup = JSON.parse(await file.text());
+      const result = await api("/api/import", {
+        method: "POST",
+        body: JSON.stringify({ backup, confirm: true }),
+      });
+      state.current = null;
+      state.history = [];
+      state.evaluation = null;
+      state.preview = null;
+      state.previewAnswers = {};
+      state.recovery = null;
+      state.notice = `Imported ${result.imported} project${result.imported === 1 ? "" : "s"}.`;
+      state.error = "";
+      await loadProjects();
+      render();
+      announce("Backup imported");
+    } catch (error) {
+      state.error = `Backup import failed: ${error.message}`;
+      render();
+    }
+  }
+  async function duplicateProject() {
+    if (!requireSavedProject("duplicating")) return;
+    if (
+      !window.confirm(
+        "Duplicate this saved project as a new private draft without its evaluation history?",
+      )
+    )
+      return;
+    try {
+      const duplicate = await api(
+        `/api/projects/${encodeURIComponent(state.current.id)}/duplicate`,
+        { method: "POST", body: JSON.stringify({ confirm: true }) },
+      );
+      state.current = duplicate;
+      state.history = [{ revision: 1, updated_at: duplicate.updated_at }];
+      state.evaluation = null;
+      state.preview = null;
+      state.previewAnswers = {};
+      state.notice = "Private copy created. Its evaluation history starts fresh.";
+      state.error = "";
+      await loadProjects();
+      render();
+      announce("Project duplicated");
+    } catch (error) {
+      state.error = error.message;
+      render();
+    }
+  }
+  async function deleteProject() {
+    if (!requireSavedProject("deleting")) return;
+    if (
+      !window.confirm(
+        "Delete this saved project, its revision history, and evaluations? This cannot be undone.",
+      )
+    )
+      return;
+    const projectId = state.current.id;
+    try {
+      await api(`/api/projects/${encodeURIComponent(projectId)}`, {
+        method: "DELETE",
+        body: JSON.stringify({ confirm: true }),
+      });
+      state.current = null;
+      state.history = [];
+      state.evaluation = null;
+      state.preview = null;
+      state.previewAnswers = {};
+      state.notice = "Project deleted from the local workbench.";
+      state.error = "";
+      await loadProjects();
+      render();
+      announce("Project deleted");
     } catch (error) {
       state.error = error.message;
       render();

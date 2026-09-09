@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Added an evidence-led mentor parity matrix and made the public Pages
+  orientation artifact distinct from the private loopback authoring workbench.
+- Added confirmed project duplication/deletion and versioned, validated,
+  transactional backup/import recovery controls.
+
 All notable changes to **AskJamie FoundRy** are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).

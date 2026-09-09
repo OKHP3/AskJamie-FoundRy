@@ -48,9 +48,23 @@ visibility_control:
   default_child_visibility: private
   client_org_repos_public_graduation_allowed: false
 
+surface_boundary:
+  public_artifact:
+    kind: static-pages-orientation
+    path: public/
+    expected_url: https://okhp3.github.io/AskJamie-FoundRy/
+    access: read-only
+    contains_private_state: false
+  private_workbench:
+    kind: python-loopback-authoring
+    bind: 127.0.0.1
+    data_dir: .foundry-data/
+    access: local-owner
+    contains_private_state: true
+
 maintainers:
   - handle: OKHP3
     role: owner
 
 created: "2024-01-01"
-updated: "2026-09-07"
+updated: "2026-09-09"

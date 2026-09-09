@@ -454,6 +454,20 @@ select:focus-visible {
   border-bottom: 1px solid var(--line);
   padding-bottom: 20px;
 }
+.editor-head-actions {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.lifecycle-strip {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 12px 0 2px;
+}
 .editor-head h2 {
   font: 500 26px var(--display);
   margin: 3px 0;
@@ -1052,6 +1066,10 @@ select:focus-visible {
   }
   .editor-head {
     display: block;
+  }
+  .editor-head-actions {
+    justify-content: flex-start;
+    margin-top: 14px;
   }
   .editor-head .top-actions {
     margin-top: 14px;

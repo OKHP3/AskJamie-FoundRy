@@ -20,6 +20,9 @@ DRAFT_FIELDS = {
     "instructions",
     "output_contract",
     "constraints",
+    "target",
+    "phase",
+    "evidence",
     "client_org",
     "parent_capability",
     "bfs_firewall",
@@ -65,6 +68,9 @@ def default_draft() -> dict[str, Any]:
         "instructions": "",
         "output_contract": "",
         "constraints": "",
+        "target": "offline-specification",
+        "phase": "draft",
+        "evidence": "",
         "client_org": "",
         "parent_capability": "",
         "bfs_firewall": False,
@@ -109,7 +115,8 @@ def normalize_draft(raw: Any, *, allow_revision: bool = False) -> tuple[dict[str
     draft.update({key: value for key, value in raw.items() if key in DRAFT_FIELDS})
     short_fields = {
         "title", "slug", "code", "family", "kind", "purpose", "audience",
-        "source_reference", "client_org", "parent_capability", "visibility_lock",
+        "source_reference", "target", "phase", "client_org", "parent_capability",
+        "visibility_lock",
     }
     for field in DRAFT_FIELDS - {"bfs_firewall", "skill_ids", "workflow_steps", "decision", "eval_cases"}:
         draft[field] = _clean_text(draft[field], field, MAX_SHORT if field in short_fields else MAX_TEXT)
@@ -117,6 +124,19 @@ def normalize_draft(raw: Any, *, allow_revision: bool = False) -> tuple[dict[str
         raise InputError(f"family must be one of: {', '.join(sorted(FAMILIES))}")
     if draft["kind"] not in KINDS:
         raise InputError(f"kind must be one of: {', '.join(sorted(KINDS))}")
+    if draft["phase"] not in {"draft", "shaping", "evidence", "review"}:
+        raise InputError("phase must be one of: draft, shaping, evidence, review")
+    if draft["target"] not in {
+        "offline-specification",
+        "openai-custom-gpt",
+        "microsoft-copilot",
+        "gemini-gem",
+        "workflow-checklist",
+    }:
+        raise InputError(
+            "target must be one of: offline-specification, openai-custom-gpt, "
+            "microsoft-copilot, gemini-gem, workflow-checklist"
+        )
     if draft["code"] and not CODE_RE.fullmatch(draft["code"]):
         raise InputError("code must be aj01-aj99 or brg00-brg99")
     for field in ("slug", "client_org"):

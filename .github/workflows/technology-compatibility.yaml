@@ -13,6 +13,7 @@ on:
       - workbench/**
       - tests/**
       - _template/**
+      - public/**
       - schemas/**
       - manifest.yaml
       - registry/**
@@ -44,6 +45,53 @@ jobs:
 
       - name: Test workbench and governance
         run: python -m unittest discover -s tests -v
+
+  public-artifact:
+    name: Validate public Pages artifact
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
+      - name: Check and build read-only artifact
+        run: python scripts/build-public-artifact.py --build
+
+      - name: Smoke-test built artifact over HTTP
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4173 --directory dist/pages >"${RUNNER_TEMP}/pages-http.log" 2>&1 &
+          server_pid=$!
+          trap 'kill "${server_pid}" 2>/dev/null || true' EXIT
+          python3 - <<'PY'
+          import time
+          import urllib.request
+
+          for _ in range(40):
+              try:
+                  with urllib.request.urlopen("http://127.0.0.1:4173/", timeout=1) as response:
+                      assert response.status == 200
+                      assert "AskJamie FoundRy" in response.read().decode("utf-8")
+                  with urllib.request.urlopen("http://127.0.0.1:4173/styles.css", timeout=1) as response:
+                      assert response.status == 200
+                  break
+              except OSError:
+                  time.sleep(0.25)
+          else:
+              raise RuntimeError("built Pages artifact did not become reachable")
+          PY
+
+      - name: Upload public artifact evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: askjamie-pages-artifact
+          path: dist/pages
+          retention-days: 7
 
   browser-acceptance:
     name: Browser acceptance

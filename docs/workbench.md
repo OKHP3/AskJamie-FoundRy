@@ -14,7 +14,9 @@ python -m pip install -r requirements.txt
 python -m workbench --port 8765
 ```
 
-Open http://127.0.0.1:8765. Stop with Ctrl+C. The interface has no build step.
+Open http://127.0.0.1:8765. Stop with Ctrl+C. The private interface has no build
+step. The separate `public/` directory is a static, read-only Pages artifact
+and never reads this server or its local state.
 The application binds to loopback and makes no model-provider calls. It is a
 single-user local tool, not a hosted multiuser service. Do not proxy it onto
 the internet or expose it through a Replit preview without a separate access
@@ -39,6 +41,25 @@ control design.
    evidence status and source commit. Selecting a reference does not install or
    execute a skill.
 8. Save, validate and export. Resolve any naming, missing-content or graph errors.
+
+The brief also records a planning `target` and `phase`, while Evidence records
+what has been checked and what remains unknown. These labels guide review; they
+do not provision a Custom GPT, call a model, or graduate a package.
+
+## Lifecycle and recovery
+
+From Projects, use **Download backup** to save a version-one JSON envelope
+containing this workbench’s projects, complete revision history, and evaluation
+records. **Import backup** requires both a browser confirmation and the server’s
+explicit confirmation field. The server validates every project, revision,
+history entry, evaluation reference, and supported draft field before opening a
+transaction. A malformed file leaves the existing database untouched.
+
+Saved projects can be **duplicated** into a fresh private revision-one draft.
+Duplicate evaluation history is intentionally not copied. **Delete** requires a
+saved project and explicit confirmation, then removes its history and
+evaluations with the project. These controls never alter the canonical registry
+or publish a package.
 
 Saved revisions and evaluation runs are durable. A test run belongs to a
 specific revision; editing creates a new revision and does not inherit a pass.
@@ -98,3 +119,7 @@ establish hosted deployment, model quality, external GPT behavior, or Replit
 workspace parity. The [research](research/2026-09-07-universe/universe-research.md)
 and [execution plan](research/2026-09-07-universe/execution-plan.md) record evidence
 and unresolved access limits.
+
+For the public artifact, run `python scripts/build-public-artifact.py --build`.
+It checks relative asset references and rejects private/runtime markers before
+writing `dist/pages/`. A Pages release is manual and separately reviewed.
