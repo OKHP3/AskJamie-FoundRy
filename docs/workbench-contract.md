@@ -2,6 +2,13 @@
 
 Private, single-user local application. Python 3.11, existing PyYAML/jsonschema, SQLite, standard-library HTTP server bound to 127.0.0.1 only. Plain HTML/CSS/JS, no frontend build or external runtime dependencies. No provider calls or arbitrary code execution. Program starts with `python3 -m workbench --port 8765`; data in ignored `.foundry-data/` (override `--data-dir`). The separate `public/` artifact is static Pages orientation only and never calls this API. Coordinator owns governance/research/docs and final integration. Backend owns `workbench/*.py` and unit tests. Frontend owns `workbench/static/` only.
 
+Hosted authoring is not part of this contract. The service must remain
+loopback-only until the owner approves
+[the hosted authoring boundary design](hosted-authoring-boundary.md) and its
+required evidence. No hosted workflow, authentication integration, provider
+call, remote data store, or migration of local state may be added as an
+implementation shortcut.
+
 ## HTTP
 
 JSON requests/responses. Errors `{error: string}` with 400 invalid, 404 missing, 409 stale revision. Limit bodies to 1 MiB. Reject invalid JSON, malformed types and unknown fields. All responses no-store. Strict local Host and same Origin on state-changing requests, require JSON content type plus `X-Foundry-Request: 1` to prevent cross-origin writes. Static routes explicitly allowlisted, no filesystem browsing. No arbitrary URL fetching.

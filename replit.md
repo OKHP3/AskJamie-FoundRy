@@ -15,6 +15,11 @@ Skillz, and uses only relative assets. It never reads the local API, SQLite,
 The authoring workbench is a Python standard-library/SQLite application bound to
 `127.0.0.1`. It is not hosted in Replit preview or deployment. Public repository
 visibility proves source visibility only, not hosted capability operation.
+The hosted boundary is documented in
+[docs/hosted-authoring-boundary.md](docs/hosted-authoring-boundary.md) and is
+design-only. It does not authorize a workflow, hosted database, authentication
+connector, provider call, telemetry service, or upload of `.foundry-data/`,
+backups, client records, or generated packages.
 
 ## Run locally
 

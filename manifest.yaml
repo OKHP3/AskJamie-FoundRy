@@ -62,9 +62,15 @@ surface_boundary:
     access: local-owner
     contains_private_state: true
 
+# Hosted authoring remains design-only. See docs/hosted-authoring-boundary.md.
+# There is intentionally no hosted API deployment surface.
+deployment_surfaces:
+  - name: api
+    status: none
+
 maintainers:
   - handle: OKHP3
     role: owner
 
 created: "2024-01-01"
-updated: "2026-09-09"
+updated: "2026-09-10"

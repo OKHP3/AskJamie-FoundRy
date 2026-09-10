@@ -12,6 +12,7 @@
 |---|---|
 | [`agent-collaboration.md`](agent-collaboration.md) | Agent ownership, cost routing, and handoff protocol |
 | [`workbench.md`](workbench.md) | Local application operating guide |
+| [`hosted-authoring-boundary.md`](hosted-authoring-boundary.md) | Design-only boundary and proof plan for any future hosted authoring |
 | [`research/2026-09-07-universe/universe-research.md`](research/2026-09-07-universe/universe-research.md) | Seven-element research and evidence gaps |
 | [`relay-design.md`](relay-design.md) | Architecture and design rationale for this relay layer |
 | [`governance.md`](governance.md) | Full governance reference — roles, rules, and obligations |

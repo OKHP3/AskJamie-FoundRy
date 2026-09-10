@@ -35,7 +35,7 @@ boundary.
 | Registry and graduation audits | adapt | Governance owner: registry remains read-only in the workbench; exports are pending proposals; `public_graduation_allowed: false` remains locked | No UI mutation or automatic child publication | Registry validation and generated private package assertions |
 | Broader mentor governance/graduation surfaces | defer | Governance owner: document the gap and require an owner-approved audit design before adding | Could expose or promote protected material if copied prematurely | This matrix and maturation docs record the unresolved difference |
 | Multi-artifact pnpm/React authoring runtime | out of scope | Runtime owner: retain Python standard library/SQLite and plain static UI | Replacing it would change state handling and could invite unintended hosting | Workbench contract and Replit guidance retain Python loopback operation |
-| Hosted multi-user authoring, auth, model calls, paid inference | defer | Owner decision required after a data-routing and access-control design | High risk: would move private source and drafts across a trust boundary | Explicitly not claimed by docs, manifest, or Pages artifact |
+| Hosted multi-user authoring, auth, model calls, paid inference | defer | Owner decision required after the [hosted authoring boundary design](hosted-authoring-boundary.md), including authentication, workspace routing, client-record handling, retention, and leak-prevention proof | High risk: would move private source and drafts across a trust boundary; the first hosted authoring release must make no model, inference, external-data, or arbitrary-URL provider call | Design is explicitly non-authorizing; owner approval and the Section 7 evidence set are required before any hosted runtime |
 | Automatic child repositories, public graduation, package deployment | out of scope | Governance owner: keep proposals pending and capabilities private | Prevents accidental publication of client or draft material | Export proposal, manifest controls, and CI do not publish packages |
 | Mentor Pages deployment workflow | adapt | Release owner: provide a manual Pages workflow and optional deployed URL smoke check, without auto-publishing from normal CI | Only `public/` is eligible for upload | Manual workflow builds `dist/pages`, deploys only when dispatched, and curls its output URL |
 
@@ -45,4 +45,5 @@ The accepted surface is a public, read-only orientation artifact plus a private
 loopback authoring workbench. The matrix is complete for this parity pass when
 the mechanical checks and judgment checks in the final validation record pass.
 Any hosted authoring, model quality, public graduation, or child-repository
-claim remains unresolved until a separately approved design and evidence exist.
+claim remains unresolved until the separately approved design and evidence in
+[`hosted-authoring-boundary.md`](hosted-authoring-boundary.md) exist.

@@ -6,6 +6,10 @@
   orientation artifact distinct from the private loopback authoring workbench.
 - Added confirmed project duplication/deletion and versioned, validated,
   transactional backup/import recovery controls.
+- Added a design-only hosted authoring boundary covering authentication,
+  workspace routing, client-record isolation, backup retention, and the
+  evidence required to prove that private state and generated packages cannot
+  leak. No hosted runtime or provider integration was added.
 
 All notable changes to **AskJamie FoundRy** are documented here.
 
