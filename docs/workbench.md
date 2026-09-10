@@ -54,6 +54,13 @@ records. **Import backup** requires both a browser confirmation and the serverâ€
 explicit confirmation field. The server validates every project, revision,
 history entry, evaluation reference, and supported draft field before opening a
 transaction. A malformed file leaves the existing database untouched.
+History must contain every revision from one through the saved revision, and
+each evaluation must reference a revision in that history. JSON downloads are
+limited to 63 MiB and 1,000 records in each collection; the import request has
+a separate 64 MiB allowance for the confirmation envelope. Larger stores must
+use the stopped-server directory backup procedure below. The download is
+rejected explicitly if it would exceed the import contract. Ordinary draft
+requests retain their 1 MiB limit.
 
 Saved projects can be **duplicated** into a fresh private revision-one draft.
 Duplicate evaluation history is intentionally not copied. **Delete** requires a

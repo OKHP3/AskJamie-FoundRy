@@ -177,7 +177,7 @@ class BrowserDiagnostics:
                 )
                 lines.append(
                     "- "
-                    f"{self._summary_value(request['url'])} — "
+                    f"{self._summary_value(request['url'])}: "
                     f"status {self._summary_value(status)} "
                     f"({self._summary_value(request['failure'])})"
                 )

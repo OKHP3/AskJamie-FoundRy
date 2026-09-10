@@ -7,6 +7,8 @@
 - Fixed the missing Python heredoc terminator in browser acceptance CI and
   synchronized agent guidance with the public/private surface boundary.
 - Made the public artifact build result consistent across Windows and POSIX.
+- Fixed review findings in backup size limits, revision/evaluation validation,
+  maximum-length duplicate naming, and browser evidence punctuation.
 
 - Added an evidence-led mentor parity matrix and made the public Pages
   orientation artifact distinct from the private loopback authoring workbench.

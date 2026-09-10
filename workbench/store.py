@@ -171,9 +171,15 @@ class Store:
                 raise MissingProject(project_id)
             draft = deepcopy(json.loads(row["draft_json"]))
             if draft.get("title"):
-                draft["title"] = f"{draft['title']} copy"[:4000]
+                original = draft["title"]
+                draft["title"] = f"{original[:3995]} copy"
+                if draft["title"] == original:
+                    draft["title"] = f"{original[:3993]} copy 2"
             if draft.get("slug"):
-                draft["slug"] = f"{draft['slug']}-copy"[:4000]
+                original = draft["slug"]
+                draft["slug"] = f"{original[:3995]}-copy"
+                if draft["slug"] == original:
+                    draft["slug"] = f"{original[:3993]}-copy-2"
             project_id = str(uuid.uuid4())
             now = utc_now()
             encoded = json.dumps(draft, ensure_ascii=False, separators=(",", ":"))
@@ -205,7 +211,7 @@ class Store:
                 "SELECT project_id, revision, evaluated_at, record_json FROM evaluations "
                 "ORDER BY project_id, id"
             ).fetchall()
-        return {
+        backup = {
             "format": "askjamie-workbench-backup",
             "schema_version": BACKUP_SCHEMA_VERSION,
             "created_at": utc_now(),
@@ -238,6 +244,8 @@ class Store:
                 for row in evaluation_rows
             ],
         }
+        # Do not offer a download that the import contract cannot restore.
+        return self._validate_backup(backup)
 
     @staticmethod
     def _validate_backup(backup: Any) -> dict[str, Any]:
@@ -329,6 +337,8 @@ class Store:
                 or not isinstance(item["record"], dict)
             ):
                 raise InvalidBackup(f"backup.evaluations[{index}] is invalid")
+            if (item["project_id"], item["revision"]) not in history_keys:
+                raise InvalidBackup(f"backup.evaluations[{index}] references an unknown history revision")
             evaluations.append(item)
 
         project_by_id = {item["id"]: item for item in projects}
@@ -336,6 +346,11 @@ class Store:
             latest = (item["id"], item["revision"])
             if latest not in history_keys:
                 raise InvalidBackup(f"backup is missing the current history for project {item['id']}")
+            revisions = sorted(revision for project_id, revision in history_keys if project_id == item["id"])
+            if len(revisions) != item["revision"] or any(
+                revision != index for index, revision in enumerate(revisions, 1)
+            ):
+                raise InvalidBackup(f"backup has incomplete history for project {item['id']}")
         for project_id, revision in history_keys:
             if revision > project_by_id[project_id]["revision"]:
                 raise InvalidBackup(f"backup history exceeds current revision for {project_id}")

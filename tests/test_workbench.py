@@ -272,6 +272,27 @@ class ExportTests(unittest.TestCase):
 
 
 class HttpTests(unittest.TestCase):
+    def test_generated_backup_over_one_mib_can_be_restored(self):
+        normalized, _ = normalize_draft(draft(source_text="x" * 400000))
+        project = self.server.store.create(normalized)
+        self.server.store.update(project["id"], 1, normalized)
+        status, _, payload = self.request("GET", "/api/backup")
+        self.assertEqual(status, 200)
+        self.assertGreater(len(payload), 1024 * 1024)
+        status, _, result = self.request("POST", "/api/import", {"backup": json.loads(payload), "confirm": True})
+        self.assertEqual(status, 200, result)
+        self.assertEqual(self.server.store.get(project["id"])["revision"], 2)
+        self.assertEqual(len(self.server.store.history(project["id"])), 2)
+
+    def test_oversized_backup_download_is_explicitly_rejected(self):
+        normalized, _ = normalize_draft(draft())
+        project = self.server.store.create(normalized)
+        with patch("workbench.server.MAX_BACKUP_DOWNLOAD", 1):
+            status, _, payload = self.request("GET", "/api/backup")
+        self.assertEqual(status, 400)
+        self.assertIn(b"data-directory backup", payload)
+        self.assertEqual(self.server.store.get(project["id"])["revision"], 1)
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.server = create_server(0, Path(self.temp.name))

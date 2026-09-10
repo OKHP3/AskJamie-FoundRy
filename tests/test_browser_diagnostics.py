@@ -161,7 +161,7 @@ class BrowserDiagnosticsTests(unittest.TestCase):
             self.assertIn("- Failed request events captured: 1 (dropped: 0)", summary)
             self.assertIn("[workbench] error: Console failure", summary)
             self.assertIn(
-                "https://example.test/api/projects — status 503 (HTTP 503)",
+                "https://example.test/api/projects: status 503 (HTTP 503)",
                 summary,
             )
 

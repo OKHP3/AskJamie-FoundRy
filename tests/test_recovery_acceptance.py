@@ -51,6 +51,43 @@ def create_project(store: Store, **changes):
 
 
 class RecoveryAcceptanceTests(unittest.TestCase):
+    def test_evaluation_for_unknown_revision_leaves_state_unchanged(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            store = Store(Path(temp_dir))
+            project, _ = create_project(store)
+            evaluate_project(project, store)
+            backup = store.backup()
+            backup["evaluations"][0]["revision"] = 2
+            with self.assertRaisesRegex(InvalidBackup, "unknown history revision"):
+                store.import_backup(backup)
+            self.assertEqual(store.get(project["id"])["revision"], 1)
+            self.assertEqual(store.evaluations(project["id"])[0]["revision"], 1)
+
+    def test_maximum_length_duplicate_retains_suffix(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            store = Store(Path(temp_dir))
+            project, _ = create_project(store, title="t" * 4000, slug="s" * 4000)
+            duplicate = store.duplicate(project["id"])
+            self.assertEqual(duplicate["slug"], "s" * 3995 + "-copy")
+            self.assertEqual(duplicate["title"], "t" * 3995 + " copy")
+            another = store.duplicate(duplicate["id"])
+            self.assertNotEqual(another["slug"], duplicate["slug"])
+            self.assertNotEqual(another["title"], duplicate["title"])
+            self.assertLessEqual(len(another["slug"]), 4000)
+
+    def test_incomplete_history_import_preserves_existing_state(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            store = Store(Path(temp_dir))
+            project, normalized = create_project(store)
+            for revision in (1, 2):
+                store.update(project["id"], revision, dict(normalized, title=f"Revision {revision + 1}"))
+            backup = store.backup()
+            backup["history"] = [item for item in backup["history"] if item["revision"] != 2]
+            with self.assertRaisesRegex(InvalidBackup, "incomplete history"):
+                store.import_backup(backup)
+            self.assertEqual([item["revision"] for item in store.history(project["id"])], [3, 2, 1])
+            self.assertEqual(store.get(project["id"])["title"], "Revision 3")
+
     def test_duplicate_starts_private_revision_one_without_evaluation_history(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             store = Store(Path(temp_dir))

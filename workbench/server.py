@@ -17,6 +17,8 @@ from .store import MissingProject, StaleRevision, Store
 
 
 MAX_BODY = 1024 * 1024
+MAX_BACKUP_BODY = 64 * 1024 * 1024
+MAX_BACKUP_DOWNLOAD = 63 * 1024 * 1024
 PROJECT_ROUTE = re.compile(
     r"^/api/projects/([0-9a-fA-F-]{36})(?:/"
     r"(history|validate|preview|evaluate|evaluations|export|duplicate))?$"
@@ -80,7 +82,7 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
             return False
         return True
 
-    def _read_json(self) -> Any:
+    def _read_json(self, max_body: int = MAX_BODY) -> Any:
         if self.headers.get("Transfer-Encoding") is not None:
             raise InputError("Transfer-Encoding is not accepted")
         lengths = self.headers.get_all("Content-Length", [])
@@ -92,8 +94,8 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
         length = int(raw_length)
         if length < 1:
             raise InputError("request body is required")
-        if length > MAX_BODY:
-            raise InputError("request body exceeds 1 MiB")
+        if length > max_body:
+            raise InputError(f"request body exceeds {max_body // (1024 * 1024)} MiB")
         content_type = self.headers.get("Content-Type", "").split(";", 1)[0].strip().lower()
         if content_type != "application/json":
             raise InputError("Content-Type must be application/json")
@@ -141,7 +143,9 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
                 self._json(HTTPStatus.OK, read_skills())
             elif path == "/api/backup":
                 backup = self.server.store.backup()
-                body = json.dumps(backup, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+                body = json.dumps(backup, ensure_ascii=True, separators=(",", ":")).encode("utf-8")
+                if len(body) > MAX_BACKUP_DOWNLOAD:
+                    raise InputError("JSON backup exceeds 63 MiB; use the stopped-server data-directory backup procedure")
                 self._bytes(
                     HTTPStatus.OK,
                     body,
@@ -213,7 +217,8 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
         self.close_connection = True
         path = urlsplit(self.path).path
         try:
-            body = self._read_json()
+            limit = MAX_BACKUP_BODY if method == "POST" and path == "/api/import" else MAX_BODY
+            body = self._read_json(limit)
             if method == "POST" and path == "/api/projects":
                 draft, _ = normalize_draft(body)
                 self._json(HTTPStatus.CREATED, self.server.store.create(draft))
