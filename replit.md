@@ -62,3 +62,30 @@ Share a compact checkpoint through its GitHub issue or PR so ChatGPT/Codex,
 Claude, or Copilot can take a bounded part without repeating the whole task.
 Replit remains the executor for checks that require its actual workspace.
 A GitHub merge alone does not prove this workspace has pulled the change.
+
+## GitHub sync and protected main
+
+Use a task branch and a pull request for source changes. Direct pushes to
+`main` are rejected: GitHub requires an approving review and the
+`Validate with supported Python runtime` check. Repeating `git pull && git push`
+does not satisfy those requirements.
+
+Before changing branches, inspect the working tree, fetch `origin` without
+pruning, and record the local and remote commit counts. Preserve pending work.
+For a clean checkout ahead of `origin/main`, create a named `codex/` task branch
+at the existing commit, push that branch, and open a PR targeting `main`.
+
+Replit's GitHub OAuth connection may reject commits that change
+`.github/workflows/` because it lacks `workflow` scope. In that case, preserve
+the commits in a Git bundle and transfer it to an already authorized local
+checkout. Verify the bundle checksum and source commit, fetch it into a task
+branch, then push using that checkout's existing workflow-authorized connection.
+Do not copy credentials into Replit, remove workflow files to hide the change,
+force-push, or weaken branch protection.
+
+After the PR passes CI and receives its required review, merge through GitHub.
+Fetch again in Replit and verify the intended branch and commit. Use
+`git pull --ff-only` only when the histories permit it. If a squash merge leaves
+the old Replit commits divergent, retain that branch and coordinate an explicit
+switch to a clean branch from `origin/main`; do not reset away pending work.
+Pages publication remains a separate, manually approved release.

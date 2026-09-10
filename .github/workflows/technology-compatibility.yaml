@@ -295,6 +295,7 @@ jobs:
                       await browser.close()
 
           asyncio.run(check_export())
+          PY
           echo "Export browser acceptance passed."
 
       - name: Run workbench usability browser acceptance

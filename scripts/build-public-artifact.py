@@ -52,7 +52,7 @@ def build() -> None:
     if OUTPUT.exists():
         shutil.rmtree(OUTPUT)
     shutil.copytree(SOURCE, OUTPUT)
-    print(f"Built {OUTPUT.relative_to(ROOT)}")
+    print(f"Built {OUTPUT.relative_to(ROOT).as_posix()}")
 
 
 if __name__ == "__main__":

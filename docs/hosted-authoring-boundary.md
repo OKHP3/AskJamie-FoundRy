@@ -1,8 +1,8 @@
 # Hosted authoring boundary design
 
-**Status:** design only, owner review required  
+**Status:** design only, owner review required
 **Applies to:** a possible future multi-device or multi-user AskJamie authoring
-runtime  
+runtime
 **Current decision:** keep authoring loopback-only. Do not host this workbench,
 add a provider integration, or move existing drafts online until this design is
 approved and its acceptance evidence exists.
