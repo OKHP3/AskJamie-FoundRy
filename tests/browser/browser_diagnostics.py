@@ -8,6 +8,7 @@ MAX_DIAGNOSTIC_ENTRIES = 200
 MAX_DIAGNOSTIC_VALUE_LENGTH = 2000
 MAX_SUMMARY_ENTRIES = 5
 MAX_SUMMARY_VALUE_LENGTH = 500
+JSONL_ARTIFACT_SUFFIXES = ("console", "failed-requests")
 
 
 class BrowserDiagnostics:
@@ -184,3 +185,28 @@ class BrowserDiagnostics:
             lines.append("- None captured.")
 
         path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def validate_jsonl_outputs(artifact_dir: Path, *, file_prefix: str) -> None:
+    """Verify that a failed browser check produced readable JSONL evidence."""
+    for suffix in JSONL_ARTIFACT_SUFFIXES:
+        path = artifact_dir / f"{file_prefix}-{suffix}.jsonl"
+        if not path.is_file():
+            raise AssertionError(f"Missing browser diagnostics file: {path}")
+
+        lines = path.read_text(encoding="utf-8").splitlines()
+        if not lines:
+            raise AssertionError(f"Empty browser diagnostics file: {path}")
+
+        for line_number, line in enumerate(lines, start=1):
+            try:
+                record = json.loads(line)
+            except json.JSONDecodeError as error:
+                raise AssertionError(
+                    f"Invalid JSONL in {path} at line {line_number}"
+                ) from error
+            if not isinstance(record, dict):
+                raise AssertionError(
+                    f"Browser diagnostics record is not an object in {path} "
+                    f"at line {line_number}"
+                )

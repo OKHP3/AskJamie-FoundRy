@@ -245,7 +245,10 @@ jobs:
 
           from playwright.async_api import async_playwright
 
-          from tests.browser.browser_diagnostics import BrowserDiagnostics
+          from tests.browser.browser_diagnostics import (
+              BrowserDiagnostics,
+              validate_jsonl_outputs,
+          )
 
           ARTIFACT_DIR = Path(os.environ["RUNNER_TEMP"]) / "foundry-browser-artifacts"
 
@@ -286,6 +289,7 @@ jobs:
                           check_name="Exported decision",
                           file_prefix="export",
                       )
+                      validate_jsonl_outputs(ARTIFACT_DIR, file_prefix="export")
                       raise
                   finally:
                       await browser.close()

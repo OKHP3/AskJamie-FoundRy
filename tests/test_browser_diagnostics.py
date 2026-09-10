@@ -15,6 +15,7 @@ from browser_diagnostics import (  # noqa: E402
     MAX_DIAGNOSTIC_VALUE_LENGTH,
     MAX_SUMMARY_ENTRIES,
     BrowserDiagnostics,
+    validate_jsonl_outputs,
 )
 
 
@@ -205,6 +206,40 @@ class BrowserDiagnosticsTests(unittest.TestCase):
                     ],
                     [{"message": "No evidence captured."}],
                 )
+
+    def test_export_failure_artifacts_validate_as_two_jsonl_outputs(self) -> None:
+        diagnostics = BrowserDiagnostics()
+        with tempfile.TemporaryDirectory() as directory:
+            artifact_dir = Path(directory)
+            diagnostics.write(
+                artifact_dir,
+                check_name="Exported decision",
+                file_prefix="export",
+            )
+
+            validate_jsonl_outputs(artifact_dir, file_prefix="export")
+
+            self.assertEqual(
+                sorted(path.name for path in artifact_dir.glob("export-*.jsonl")),
+                [
+                    "export-console.jsonl",
+                    "export-failed-requests.jsonl",
+                ],
+            )
+
+    def test_jsonl_validation_rejects_missing_or_malformed_outputs(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            artifact_dir = Path(directory)
+            (artifact_dir / "export-console.jsonl").write_text("{}\n", encoding="utf-8")
+            with self.assertRaisesRegex(AssertionError, "Missing browser diagnostics"):
+                validate_jsonl_outputs(artifact_dir, file_prefix="export")
+
+            (artifact_dir / "export-failed-requests.jsonl").write_text(
+                "{not-json}\n",
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(AssertionError, "Invalid JSONL"):
+                validate_jsonl_outputs(artifact_dir, file_prefix="export")
 
 
 if __name__ == "__main__":
