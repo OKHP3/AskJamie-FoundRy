@@ -13,6 +13,7 @@ sys.path.insert(0, str(ROOT / "tests" / "browser"))
 from browser_diagnostics import (  # noqa: E402
     MAX_DIAGNOSTIC_ENTRIES,
     MAX_DIAGNOSTIC_VALUE_LENGTH,
+    MAX_SUMMARY_ENTRIES,
     BrowserDiagnostics,
 )
 
@@ -134,6 +135,52 @@ class BrowserDiagnosticsTests(unittest.TestCase):
                 self.assertEqual(records[-1], {"truncated": expected_dropped})
                 self.assertTrue(all(isinstance(record, dict) for record in records))
 
+    def test_failure_summary_contains_counts_and_first_evidence(self) -> None:
+        diagnostics = BrowserDiagnostics()
+        diagnostics._record_console("workbench", FakeConsoleMessage("Console failure"))
+        diagnostics._record_failed_request(
+            "workbench",
+            FakeRequest("https://example.test/api/projects"),
+            status=503,
+            failure="HTTP 503",
+        )
+
+        with tempfile.TemporaryDirectory() as directory:
+            diagnostics.write(
+                Path(directory),
+                check_name="Exported decision",
+                file_prefix="export",
+            )
+
+            summary = (Path(directory) / "export-failure-summary.md").read_text(
+                encoding="utf-8"
+            )
+            self.assertIn("- Check: Exported decision", summary)
+            self.assertIn("- Console events captured: 1 (dropped: 0)", summary)
+            self.assertIn("- Failed request events captured: 1 (dropped: 0)", summary)
+            self.assertIn("[workbench] error: Console failure", summary)
+            self.assertIn(
+                "https://example.test/api/projects — status 503 (HTTP 503)",
+                summary,
+            )
+
+    def test_failure_summary_only_includes_first_entries(self) -> None:
+        diagnostics = BrowserDiagnostics()
+        for index in range(MAX_SUMMARY_ENTRIES + 1):
+            diagnostics._record_console(
+                "workbench",
+                FakeConsoleMessage(f"console message {index}"),
+            )
+
+        with tempfile.TemporaryDirectory() as directory:
+            diagnostics.write(Path(directory))
+            summary = (Path(directory) / "workbench-failure-summary.md").read_text(
+                encoding="utf-8"
+            )
+            self.assertIn("console message 0", summary)
+            self.assertIn("console message 4", summary)
+            self.assertNotIn("console message 5", summary)
+
     def test_empty_failure_artifacts_are_written_as_readable_jsonl(self) -> None:
         diagnostics = BrowserDiagnostics()
         with tempfile.TemporaryDirectory() as directory:
@@ -147,11 +194,15 @@ class BrowserDiagnosticsTests(unittest.TestCase):
                 [
                     "workbench-console.jsonl",
                     "workbench-failed-requests.jsonl",
+                    "workbench-failure-summary.md",
                 ],
             )
-            for path in artifact_dir.iterdir():
+            for path in artifact_dir.glob("*.jsonl"):
                 self.assertEqual(
-                    [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()],
+                    [
+                        json.loads(line)
+                        for line in path.read_text(encoding="utf-8").splitlines()
+                    ],
                     [{"message": "No evidence captured."}],
                 )
 

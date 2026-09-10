@@ -6,6 +6,8 @@ from pathlib import Path
 
 MAX_DIAGNOSTIC_ENTRIES = 200
 MAX_DIAGNOSTIC_VALUE_LENGTH = 2000
+MAX_SUMMARY_ENTRIES = 5
+MAX_SUMMARY_VALUE_LENGTH = 500
 
 
 class BrowserDiagnostics:
@@ -96,6 +98,16 @@ class BrowserDiagnostics:
             )
 
     @staticmethod
+    def _summary_value(value: object) -> str:
+        return (
+            str(value)
+            .replace("`", "'")
+            .replace("\r", " ")
+            .replace("\n", " ")
+            [:MAX_SUMMARY_VALUE_LENGTH]
+        )
+
+    @staticmethod
     def _write_jsonl(
         path: Path,
         entries: list[dict[str, object]],
@@ -108,15 +120,67 @@ class BrowserDiagnostics:
             lines.append(json.dumps({"message": "No evidence captured."}, sort_keys=True))
         path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
-    def write(self, artifact_dir: Path) -> None:
+    def write(
+        self,
+        artifact_dir: Path,
+        *,
+        check_name: str = "Workbench usability",
+        file_prefix: str = "workbench",
+    ) -> None:
         artifact_dir.mkdir(parents=True, exist_ok=True)
         self._write_jsonl(
-            artifact_dir / "workbench-console.jsonl",
+            artifact_dir / f"{file_prefix}-console.jsonl",
             self.console_messages,
             self._console_dropped,
         )
         self._write_jsonl(
-            artifact_dir / "workbench-failed-requests.jsonl",
+            artifact_dir / f"{file_prefix}-failed-requests.jsonl",
             self.failed_requests,
             self._failed_request_dropped,
         )
+        self._write_summary(
+            artifact_dir / f"{file_prefix}-failure-summary.md",
+            check_name,
+        )
+
+    def _write_summary(self, path: Path, check_name: str) -> None:
+        lines = [
+            "# Browser acceptance failure",
+            "",
+            f"- Check: {self._summary_value(check_name)}",
+            f"- Console events captured: {len(self.console_messages)}"
+            f" (dropped: {self._console_dropped})",
+            f"- Failed request events captured: {len(self.failed_requests)}"
+            f" (dropped: {self._failed_request_dropped})",
+            "",
+            "## First console messages",
+        ]
+        if self.console_messages:
+            for message in self.console_messages[:MAX_SUMMARY_ENTRIES]:
+                lines.append(
+                    "- "
+                    f"[{self._summary_value(message['page'])}] "
+                    f"{self._summary_value(message['type'])}: "
+                    f"{self._summary_value(message['text'])}"
+                )
+        else:
+            lines.append("- None captured.")
+
+        lines.extend(["", "## Failed requests"])
+        if self.failed_requests:
+            for request in self.failed_requests[:MAX_SUMMARY_ENTRIES]:
+                status = (
+                    request["status"]
+                    if request["status"] is not None
+                    else "network failure"
+                )
+                lines.append(
+                    "- "
+                    f"{self._summary_value(request['url'])} — "
+                    f"status {self._summary_value(status)} "
+                    f"({self._summary_value(request['failure'])})"
+                )
+        else:
+            lines.append("- None captured.")
+
+        path.write_text("\n".join(lines) + "\n", encoding="utf-8")

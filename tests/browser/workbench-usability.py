@@ -330,7 +330,11 @@ async def main() -> None:
                 except Exception:
                     pass
             if ARTIFACT_DIR:
-                diagnostics.write(ARTIFACT_DIR)
+                diagnostics.write(
+                    ARTIFACT_DIR,
+                    check_name="Workbench usability",
+                    file_prefix="workbench",
+                )
             raise
         finally:
             if browser is not None:
