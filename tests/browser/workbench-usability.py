@@ -257,6 +257,51 @@ async def main() -> None:
                 assert await page.get_by_label("Title").input_value() == "Unsaved draft stays safe"
                 assert await page.locator(".save-state").inner_text() == "Unsaved changes"
 
+                refresh_prompt: dict[str, str] = {}
+
+                async def accept_refresh(dialog) -> None:
+                    refresh_prompt["type"] = dialog.type
+                    await dialog.accept()
+
+                page.once("dialog", accept_refresh)
+                await page.reload(wait_until="networkidle")
+                assert refresh_prompt.get("type") == "beforeunload", refresh_prompt
+                await page.get_by_text("Local drafts found").wait_for()
+                assert await page.get_by_role("button", name="Restore local draft").count() == 1
+                saved_title = await page.evaluate(
+                    """async () => (await (await fetch('/api/projects')).json()).projects[0].title"""
+                )
+                assert saved_title == "External update", saved_title
+
+                await page.get_by_role("button", name="Restore local draft").click()
+                await page.get_by_label("Title").wait_for()
+                assert await page.get_by_label("Title").input_value() == "Unsaved draft stays safe"
+                assert await page.locator(".local-recovery-box").count() >= 1
+                assert await page.locator(".save-state").inner_text() == "Unsaved changes"
+                saved_title = await page.evaluate(
+                    """async () => (await (await fetch('/api/projects')).json()).projects[0].title"""
+                )
+                assert saved_title == "External update", saved_title
+
+                await page.get_by_role("button", name="Save changes").click()
+                await page.get_by_text("Saved. The desk has a new revision.").wait_for()
+                await page.locator(".save-state").filter(has_text="Saved locally").wait_for()
+                await page.get_by_label("Title").fill("Discarded local draft")
+                refresh_prompt = {}
+                page.once("dialog", accept_refresh)
+                await page.reload(wait_until="networkidle")
+                assert refresh_prompt.get("type") == "beforeunload", refresh_prompt
+                await page.get_by_text("Local drafts found").wait_for()
+                await page.get_by_role("button", name="Discard local draft").click()
+                assert await page.get_by_text("Local drafts found").count() == 0
+                saved_title = await page.evaluate(
+                    """async () => (await (await fetch('/api/projects')).json()).projects[0].title"""
+                )
+                assert saved_title == "Unsaved draft stays safe", saved_title
+                await page.locator(".project-row").first.click()
+                await page.get_by_label("Title").wait_for()
+                assert await page.get_by_label("Title").input_value() == "Unsaved draft stays safe"
+
                 await page.get_by_role("button", name="Save changes").click()
                 await page.get_by_text("Saved. The desk has a new revision.").wait_for()
                 await page.locator(".save-state").filter(has_text="Saved locally").wait_for()

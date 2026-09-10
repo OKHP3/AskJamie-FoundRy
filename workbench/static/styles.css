@@ -576,6 +576,27 @@ select:focus-visible {
   border: 1px solid rgba(216, 173, 106, 0.4);
   color: #f2d7a5;
 }
+.local-recovery-box {
+  background: rgba(85, 174, 169, 0.1);
+  border: 1px solid rgba(85, 174, 169, 0.45);
+  color: #b7e3de;
+}
+.local-recovery-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  border-top: 1px solid rgba(85, 174, 169, 0.25);
+  margin-top: 12px;
+  padding-top: 12px;
+}
+.local-recovery-item .field-hint {
+  color: #a7cbc7;
+}
+.local-recovery-item .card-actions {
+  flex-shrink: 0;
+  margin: 0;
+}
 .status-box strong {
   display: block;
   margin-bottom: 4px;
@@ -1053,6 +1074,10 @@ select:focus-visible {
   .skill-picker,
   .catalog-grid {
     grid-template-columns: 1fr;
+  }
+  .local-recovery-item {
+    align-items: flex-start;
+    flex-direction: column;
   }
   .view-heading {
     padding: 30px 0 20px;
