@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Adopted the owner's solo-maintainer merge policy: zero external approvals,
+  while retaining mandatory PRs, strict CI, administrator enforcement, and
+  protection against force pushes and branch deletion.
+
 - Recovered ten pending Replit commits through a preserved Git bundle and a
   protected-main PR; documented the workflow-authorized transfer procedure.
 - Fixed the missing Python heredoc terminator in browser acceptance CI and

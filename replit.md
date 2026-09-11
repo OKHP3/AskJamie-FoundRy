@@ -66,8 +66,9 @@ A GitHub merge alone does not prove this workspace has pulled the change.
 ## GitHub sync and protected main
 
 Use a task branch and a pull request for source changes. Direct pushes to
-`main` are rejected: GitHub requires an approving review and the
-`Validate with supported Python runtime` check. Repeating `git pull && git push`
+`main` are rejected: GitHub requires a PR and the
+`Validate with supported Python runtime` check. As a solo-maintainer repository,
+it requires zero external approving reviews. Repeating `git pull && git push`
 does not satisfy those requirements.
 
 Before changing branches, inspect the working tree, fetch `origin` without
@@ -83,7 +84,7 @@ branch, then push using that checkout's existing workflow-authorized connection.
 Do not copy credentials into Replit, remove workflow files to hide the change,
 force-push, or weaken branch protection.
 
-After the PR passes CI and receives its required review, merge through GitHub.
+After the PR passes CI, the owner can merge through GitHub.
 Fetch again in Replit and verify the intended branch and commit. Use
 `git pull --ff-only` only when the histories permit it. If a squash merge leaves
 the old Replit commits divergent, retain that branch and coordinate an explicit

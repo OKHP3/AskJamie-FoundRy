@@ -213,8 +213,10 @@ isolated branches or worktrees. Do not concurrently mutate a shared checkout.
 If an existing Replit task is underway, coordinate with its owner before taking
 over its files. A stale timestamp does not transfer ownership.
 
-GitHub `main` requires a pull request, an approving review, and the supported
-Python validation check. Follow the sync procedure in `replit.md` for Replit
+GitHub `main` requires a pull request and the supported Python validation check.
+This is a solo-maintainer repository: the owner directed zero required external
+approving reviews on 2026-09-10. Automated review is advisory. Follow the sync
+procedure in `replit.md` for Replit
 OAuth workflow-scope rejections. Preserve commits and use an already authorized
 connection; never weaken protection or transfer credentials to repair a push.
 
