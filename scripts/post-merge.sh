@@ -6,4 +6,5 @@ cd "$ROOT"
 
 python3 scripts/validate-manifest.py manifest.yaml
 python3 scripts/check-registry.py
+python3 scripts/build-public-artifact.py --build
 python3 -m unittest discover -s tests -v

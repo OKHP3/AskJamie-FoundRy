@@ -71,5 +71,17 @@ workbench maintains drafts separately and exports pending registry proposals.
 Client overlays and permanent-private records never become public merely
 because a package validates or is downloaded.
 
+## Two surfaces, one boundary
+
+The public Pages artifact in `public/` is a read-only orientation surface. It
+contains relationship and source links only. It does not load the local API,
+registry, Skillz snapshot, SQLite state, drafts, client records, secrets, or
+generated packages. Its expected project-site path is
+`https://okhp3.github.io/AskJamie-FoundRy/`.
+
+The authoring surface remains the Python workbench on `127.0.0.1`, with private
+state in ignored `.foundry-data/`. Public source visibility never proves hosted
+authoring, model quality, deployment, graduation, or child-repository creation.
+
 See [the seven-element research](research/2026-09-07-universe/universe-research.md)
 for commit-pinned sources, confirmed functionality and access limitations.

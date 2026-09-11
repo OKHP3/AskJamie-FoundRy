@@ -272,6 +272,27 @@ class ExportTests(unittest.TestCase):
 
 
 class HttpTests(unittest.TestCase):
+    def test_generated_backup_over_one_mib_can_be_restored(self):
+        normalized, _ = normalize_draft(draft(source_text="x" * 400000))
+        project = self.server.store.create(normalized)
+        self.server.store.update(project["id"], 1, normalized)
+        status, _, payload = self.request("GET", "/api/backup")
+        self.assertEqual(status, 200)
+        self.assertGreater(len(payload), 1024 * 1024)
+        status, _, result = self.request("POST", "/api/import", {"backup": json.loads(payload), "confirm": True})
+        self.assertEqual(status, 200, result)
+        self.assertEqual(self.server.store.get(project["id"])["revision"], 2)
+        self.assertEqual(len(self.server.store.history(project["id"])), 2)
+
+    def test_oversized_backup_download_is_explicitly_rejected(self):
+        normalized, _ = normalize_draft(draft())
+        project = self.server.store.create(normalized)
+        with patch("workbench.server.MAX_BACKUP_DOWNLOAD", 1):
+            status, _, payload = self.request("GET", "/api/backup")
+        self.assertEqual(status, 400)
+        self.assertIn(b"data-directory backup", payload)
+        self.assertEqual(self.server.store.get(project["id"])["revision"], 1)
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.server = create_server(0, Path(self.temp.name))
@@ -335,6 +356,42 @@ class HttpTests(unittest.TestCase):
         status, _, payload = self.request("POST", f"/api/projects/{project['id']}/preview", {"answers": {"answer": True}})
         self.assertEqual(status, 400)
         self.assertIn("non-question", json.loads(payload)["error"])
+
+    def test_lifecycle_requires_confirmation_and_backup_import_is_transactional(self):
+        status, _, payload = self.request("POST", "/api/projects", draft())
+        self.assertEqual(status, 201)
+        project = json.loads(payload)
+
+        self.assertEqual(self.request("POST", f"/api/projects/{project['id']}/duplicate", {})[0], 400)
+        status, _, payload = self.request(
+            "POST", f"/api/projects/{project['id']}/duplicate", {"confirm": True}
+        )
+        self.assertEqual(status, 201)
+        duplicate = json.loads(payload)
+        self.assertEqual(duplicate["revision"], 1)
+        self.assertTrue(duplicate["slug"].endswith("-copy"))
+
+        status, headers, backup_payload = self.request("GET", "/api/backup")
+        self.assertEqual(status, 200)
+        self.assertIn("attachment", headers["Content-Disposition"])
+        backup = json.loads(backup_payload)
+        self.assertEqual(backup["schema_version"], "1")
+        self.assertEqual(len(backup["projects"]), 2)
+
+        status, _, payload = self.request("POST", "/api/import", {"backup": backup, "confirm": False})
+        self.assertEqual(status, 400)
+        self.assertIn("confirmation", json.loads(payload)["error"])
+        status, _, payload = self.request("POST", "/api/import", {"backup": backup, "confirm": True})
+        self.assertEqual(status, 200)
+        self.assertEqual(json.loads(payload)["imported"], 2)
+
+        self.assertEqual(self.request("DELETE", f"/api/projects/{duplicate['id']}", {})[0], 400)
+        status, _, payload = self.request(
+            "DELETE", f"/api/projects/{duplicate['id']}", {"confirm": True}
+        )
+        self.assertEqual(status, 200)
+        self.assertEqual(json.loads(payload)["deleted"], duplicate["id"])
+        self.assertEqual(self.request("GET", f"/api/projects/{duplicate['id']}")[0], 404)
 
     def test_invalid_framing_json_and_unknown_route(self):
         status, _, _ = self.request("POST", "/api/projects", b"{not-json")

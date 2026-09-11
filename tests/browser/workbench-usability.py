@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import socket
 import subprocess
+import sys
 import tempfile
 import time
 from contextlib import closing
@@ -11,9 +13,20 @@ from pathlib import Path
 
 from playwright.async_api import async_playwright
 
+try:
+    from browser_diagnostics import BrowserDiagnostics
+except ModuleNotFoundError:
+    from tests.browser.browser_diagnostics import BrowserDiagnostics
+
 
 ROOT = Path(__file__).resolve().parents[2]
-PYTHON = ROOT / ".venv" / "bin" / "python"
+PYTHON = Path(os.environ.get("FOUNDRY_PYTHON", sys.executable))
+ARTIFACT_DIR = (
+    Path(os.environ["BROWSER_ARTIFACTS_DIR"])
+    if os.environ.get("BROWSER_ARTIFACTS_DIR")
+    else None
+)
+BROWSER_EXECUTABLE = os.environ.get("BROWSER_EXECUTABLE_PATH")
 DRAFT_FIELDS = [
     "title",
     "slug",
@@ -27,6 +40,9 @@ DRAFT_FIELDS = [
     "instructions",
     "output_contract",
     "constraints",
+    "target",
+    "phase",
+    "evidence",
     "client_org",
     "parent_capability",
     "bfs_firewall",
@@ -36,7 +52,6 @@ DRAFT_FIELDS = [
     "decision",
     "eval_cases",
 ]
-
 
 def find_free_port() -> int:
     with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sock:
@@ -82,6 +97,9 @@ def put_json(port: int, path: str, payload: dict) -> None:
 
 async def main() -> None:
     port = find_free_port()
+    diagnostics = BrowserDiagnostics()
+    if ARTIFACT_DIR:
+        ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as data_dir:
         server = subprocess.Popen(
             [str(PYTHON), "-m", "workbench", "--port", str(port), "--data-dir", data_dir],
@@ -90,43 +108,81 @@ async def main() -> None:
             stderr=subprocess.STDOUT,
             text=True,
         )
+        browser = None
+        page = None
         try:
             wait_for_health(port)
             async with async_playwright() as playwright:
-                browser = await playwright.chromium.launch()
+                launch_options = (
+                    {"executable_path": BROWSER_EXECUTABLE}
+                    if BROWSER_EXECUTABLE
+                    else {}
+                )
+                browser = await playwright.chromium.launch(**launch_options)
 
                 async def load_with_delay(width: int, height: int):
                     context = await browser.new_context(viewport={"width": width, "height": height})
                     page = await context.new_page()
+                    diagnostics.attach(page, f"loading-{width}x{height}")
 
                     async def slow_route(route):
                         await asyncio.sleep(0.75)
                         await route.continue_()
 
-                    await page.route("**/api/projects", slow_route)
-                    await page.route("**/api/skills", slow_route)
-                    await page.goto(f"http://127.0.0.1:{port}", wait_until="domcontentloaded")
-                    await page.wait_for_timeout(150)
-                    loading_text = await page.locator("body").inner_text()
-                    assert "Loading saved work" in loading_text or "Getting the desk ready" in loading_text
-                    await page.wait_for_load_state("networkidle")
-                    metrics = await page.evaluate(
-                        """() => ({
-                            sw: document.documentElement.scrollWidth,
-                            cw: document.documentElement.clientWidth,
-                            sh: document.documentElement.scrollHeight,
-                            ch: document.documentElement.clientHeight,
-                        })"""
-                    )
-                    assert metrics["sw"] == metrics["cw"], metrics
-                    await context.close()
+                    try:
+                        await page.route("**/api/projects", slow_route)
+                        await page.route("**/api/skills", slow_route)
+                        await page.goto(f"http://127.0.0.1:{port}", wait_until="domcontentloaded")
+                        await page.wait_for_timeout(150)
+                        loading_text = await page.locator("body").inner_text()
+                        assert "Loading saved work" in loading_text or "Getting the desk ready" in loading_text
+                        await page.wait_for_load_state("networkidle")
+                        metrics = await page.evaluate(
+                            """() => ({
+                                sw: document.documentElement.scrollWidth,
+                                cw: document.documentElement.clientWidth,
+                                sh: document.documentElement.scrollHeight,
+                                ch: document.documentElement.clientHeight,
+                            })"""
+                        )
+                        assert metrics["sw"] == metrics["cw"], metrics
+                    except Exception:
+                        if ARTIFACT_DIR:
+                            await page.screenshot(
+                                path=str(ARTIFACT_DIR / f"loading-{width}x{height}.png"),
+                                full_page=True,
+                            )
+                        raise
+                    finally:
+                        await context.close()
 
                 for size in [(1440, 900), (768, 900), (390, 844), (320, 568)]:
                     await load_with_delay(*size)
 
                 context = await browser.new_context(viewport={"width": 1440, "height": 900})
                 page = await context.new_page()
+                diagnostics.attach(page, "workbench")
                 await page.goto(f"http://127.0.0.1:{port}", wait_until="networkidle")
+
+                async def navigate_with_confirmation(view: str, accept: bool) -> str:
+                    prompt: dict[str, str] = {}
+
+                    async def handle_dialog(dialog) -> None:
+                        prompt["type"] = dialog.type
+                        prompt["message"] = dialog.message
+                        if accept:
+                            await dialog.accept()
+                        else:
+                            await dialog.dismiss()
+
+                    page.once("dialog", handle_dialog)
+                    await page.locator(f"button.nav-item[data-view='{view}']").click()
+                    assert prompt.get("type") == "confirm", prompt
+                    assert (
+                        prompt.get("message")
+                        == "This project has unsaved changes. Leave without saving?"
+                    ), prompt
+                    return prompt["message"]
 
                 focus_labels = []
                 for _ in range(7):
@@ -184,14 +240,115 @@ async def main() -> None:
                 title = await page.get_by_label("Title").input_value()
                 assert title == "External update"
 
+                await page.get_by_label("Title").fill("Unsaved draft stays safe")
+                assert await page.locator(".save-state").inner_text() == "Unsaved changes"
+
+                await navigate_with_confirmation("workbench", accept=False)
+                assert await page.locator("#view-title").inner_text() == "Saved capability projects"
+                assert await page.get_by_label("Title").input_value() == "Unsaved draft stays safe"
+                assert await page.locator(".save-state").inner_text() == "Unsaved changes"
+
+                await navigate_with_confirmation("workbench", accept=True)
+                assert await page.locator("#view-title").inner_text() == "Your capability desk"
+                assert not await page.get_by_label("Title").count()
+
+                await navigate_with_confirmation("projects", accept=True)
+                await page.get_by_label("Title").wait_for()
+                assert await page.get_by_label("Title").input_value() == "Unsaved draft stays safe"
+                assert await page.locator(".save-state").inner_text() == "Unsaved changes"
+
+                refresh_prompt: dict[str, str] = {}
+
+                async def accept_refresh(dialog) -> None:
+                    refresh_prompt["type"] = dialog.type
+                    await dialog.accept()
+
+                page.once("dialog", accept_refresh)
+                await page.reload(wait_until="networkidle")
+                assert refresh_prompt.get("type") == "beforeunload", refresh_prompt
+                await page.get_by_text("Local drafts found").wait_for()
+                assert await page.get_by_role("button", name="Restore local draft").count() == 1
+                saved_title = await page.evaluate(
+                    """async () => (await (await fetch('/api/projects')).json()).projects[0].title"""
+                )
+                assert saved_title == "External update", saved_title
+
+                await page.get_by_role("button", name="Restore local draft").click()
+                await page.get_by_label("Title").wait_for()
+                assert await page.get_by_label("Title").input_value() == "Unsaved draft stays safe"
+                assert await page.locator(".local-recovery-box").count() >= 1
+                assert await page.locator(".save-state").inner_text() == "Unsaved changes"
+                saved_title = await page.evaluate(
+                    """async () => (await (await fetch('/api/projects')).json()).projects[0].title"""
+                )
+                assert saved_title == "External update", saved_title
+
+                await page.get_by_role("button", name="Save changes").click()
+                await page.get_by_text("Saved. The desk has a new revision.").wait_for()
+                await page.locator(".save-state").filter(has_text="Saved locally").wait_for()
+                await page.get_by_label("Title").fill("Discarded local draft")
+                refresh_prompt = {}
+                page.once("dialog", accept_refresh)
+                await page.reload(wait_until="networkidle")
+                assert refresh_prompt.get("type") == "beforeunload", refresh_prompt
+                await page.get_by_text("Local drafts found").wait_for()
+                await page.get_by_role("button", name="Discard local draft").click()
+                assert await page.get_by_text("Local drafts found").count() == 0
+                saved_title = await page.evaluate(
+                    """async () => (await (await fetch('/api/projects')).json()).projects[0].title"""
+                )
+                assert saved_title == "Unsaved draft stays safe", saved_title
+                await page.locator(".project-row").first.click()
+                await page.get_by_label("Title").wait_for()
+                assert await page.get_by_label("Title").input_value() == "Unsaved draft stays safe"
+
+                await page.get_by_role("button", name="Save changes").click()
+                await page.get_by_text("Saved. The desk has a new revision.").wait_for()
+                await page.locator(".save-state").filter(has_text="Saved locally").wait_for()
+                page.once("dialog", lambda dialog: dialog.accept())
+                await page.get_by_role("button", name="Duplicate").click()
+                await page.get_by_text(
+                    "Private copy created. Its evaluation history starts fresh."
+                ).wait_for()
+                await page.get_by_label("Title").wait_for()
+                duplicate_title = await page.get_by_label("Title").input_value()
+                assert duplicate_title == "Unsaved draft stays safe copy", duplicate_title
+                page.once("dialog", lambda dialog: dialog.accept())
+                await page.get_by_role("button", name="Delete").click()
+                await page.get_by_text("The editor is waiting").wait_for()
+                assert await page.locator(".editor").count() == 0
+                assert await page.get_by_text("Saved capability projects").count() >= 1
+
                 await context.close()
-                await browser.close()
+        except Exception:
+            if ARTIFACT_DIR and page is not None:
+                try:
+                    await page.screenshot(
+                        path=str(ARTIFACT_DIR / "workbench-usability-failure.png"),
+                        full_page=True,
+                    )
+                except Exception:
+                    pass
+            if ARTIFACT_DIR:
+                diagnostics.write(
+                    ARTIFACT_DIR,
+                    check_name="Workbench usability",
+                    file_prefix="workbench",
+                )
+            raise
         finally:
+            if browser is not None:
+                await browser.close()
             server.terminate()
             try:
                 server.wait(timeout=10)
             except subprocess.TimeoutExpired:  # pragma: no cover - cleanup
                 server.kill()
+            if ARTIFACT_DIR and server.stdout is not None:
+                (ARTIFACT_DIR / "workbench-server.log").write_text(
+                    server.stdout.read(),
+                    encoding="utf-8",
+                )
 
 
 if __name__ == "__main__":

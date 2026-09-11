@@ -6,6 +6,16 @@
 
 ---
 
+## Two deliberate surfaces
+
+The public Pages artifact is a read-only orientation to the AskJamie ecosystem:
+[`public/`](public/) is source-backed and contains no private state or authoring
+controls. Its expected project-site path is
+`https://okhp3.github.io/AskJamie-FoundRy/`, subject to a separately approved
+Pages release.
+
+The authoring workbench remains private and loopback-only:
+
 ## Run the workbench
 
 ```bash
@@ -15,7 +25,9 @@ python3 -m workbench --port 8765
 
 Open **http://127.0.0.1:8765**. Python 3.11 or newer is required. No frontend
 build, provider key, or paid inference service is needed. Private drafts persist
-in ignored `.foundry-data/`. See [the operating guide](docs/workbench.md).
+in ignored `.foundry-data/`. The local workbench can download a versioned backup,
+validate a replacement import, duplicate a saved project, and delete it only
+after explicit confirmation. See [the operating guide](docs/workbench.md).
 
 Create a capability, define its behavior, add a decision flow or workflow,
 record evaluations, and download a validated package. Decision exports include
@@ -27,6 +39,8 @@ explains the universe boundaries and current evidence gaps. Skillz is shared;
 the three regional Found-Rys have distinct responsibilities and learn from one
 another, with OverKill Found-Ry as the mentor pattern. See the
 [current-state and maturation assessment](docs/current-state-and-maturation.md).
+The [parity matrix](docs/parity-matrix.md) records which mentor capabilities are
+adopted, adapted, deferred, or out of scope.
 
 ## Ecosystem Position
 

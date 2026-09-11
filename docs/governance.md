@@ -125,6 +125,28 @@ python3 scripts/check-registry.py
 
 ---
 
+## Merge Protection
+
+The `main` branch is protected by repository settings. Pull requests targeting
+`main` must:
+
+- be marked ready for review rather than remaining drafts; GitHub does not allow
+  draft pull requests to merge;
+- pass the `Validate with supported Python runtime` check from
+  `.github/workflows/technology-compatibility.yaml`.
+
+The compatibility workflow runs for every pull request targeting `main`, so
+documentation-only changes cannot leave the required check pending because of
+path filtering. Administrators are subject to the same protection, and force
+pushes and branch deletion are disabled.
+
+This is a solo-maintainer repository. Per the owner's 2026-09-10 direction,
+zero external approving reviews are required. The owner can merge a ready PR
+after CI passes; automated review remains advisory. The PR and CI gates remain
+mandatory, including for administrators.
+
+---
+
 ## Agent Behavior Contract
 
 All AI agents working in this repo or its children must:

@@ -35,12 +35,16 @@ This relay owns:
 - `.github/`: repository metadata, pull-request guidance, and issue templates
 - `.agents/skills/`: project-local Agent Skills and their evaluation resources
 - `assets/`: shared AskJamie brand assets
+- `public/`: read-only Pages orientation source, separate from private authoring
 - `scripts/`: Python governance utilities
 - `workbench/`: local application, static interface and public Skillz metadata snapshot
 - `tests/`: application and governance regression checks
 
 The compatibility workflow is active under `.github/workflows/`. Older workflow
 examples under `docs/github-workflows/` remain reference files.
+The Pages workflow is manually dispatched only; merging source does not
+authorize publication. The manifest's `surface_boundary` separates public
+orientation from the loopback workbench. Hosted authoring remains design-only.
 
 This repository owns its local workbench runtime. It does not own sibling
 application implementations, hosted production configuration, or public release
@@ -105,6 +109,7 @@ documented in `docs/workbench.md`. Verified baseline commands:
 ```bash
 python3 scripts/validate-manifest.py manifest.yaml
 python3 scripts/check-registry.py
+python3 scripts/build-public-artifact.py --build
 python3 -m unittest discover -s tests -v
 ```
 
@@ -114,6 +119,8 @@ ignored `.foundry-data/`; use `--data-dir` to choose another private directory.
 On POSIX systems the dedicated state directory is owner-only (0700), with
 SQLite state files owner read/write (0600). This is not encryption or Windows
 ACL management. Stop the server before copying its data directory for backup.
+The application also supports versioned backup/import and confirmed project
+duplication/deletion. Backup files contain private state and must remain private.
 
 Run the validators after changing `manifest.yaml`, either schema,
 `registry/index.yaml`, or the child template. Run the test suite after runtime,
@@ -205,6 +212,13 @@ integration owner controls each task branch and final merge. Other workers use
 isolated branches or worktrees. Do not concurrently mutate a shared checkout.
 If an existing Replit task is underway, coordinate with its owner before taking
 over its files. A stale timestamp does not transfer ownership.
+
+GitHub `main` requires a pull request and the supported Python validation check.
+This is a solo-maintainer repository: the owner directed zero required external
+approving reviews on 2026-09-10. Automated review is advisory. Follow the sync
+procedure in `replit.md` for Replit
+OAuth workflow-scope rejections. Preserve commits and use an already authorized
+connection; never weaken protection or transfer credentials to repair a push.
 
 All three Found-Ry source repositories are intentionally public by owner
 confirmation. Private draft data and protected child capabilities remain

@@ -17,7 +17,12 @@ from .store import MissingProject, StaleRevision, Store
 
 
 MAX_BODY = 1024 * 1024
-PROJECT_ROUTE = re.compile(r"^/api/projects/([0-9a-fA-F-]{36})(?:/(history|validate|preview|evaluate|evaluations|export))?$")
+MAX_BACKUP_BODY = 64 * 1024 * 1024
+MAX_BACKUP_DOWNLOAD = 63 * 1024 * 1024
+PROJECT_ROUTE = re.compile(
+    r"^/api/projects/([0-9a-fA-F-]{36})(?:/"
+    r"(history|validate|preview|evaluate|evaluations|export|duplicate))?$"
+)
 STATIC_FILES = {
     "/": "index.html",
     "/index.html": "index.html",
@@ -77,7 +82,7 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
             return False
         return True
 
-    def _read_json(self) -> Any:
+    def _read_json(self, max_body: int = MAX_BODY) -> Any:
         if self.headers.get("Transfer-Encoding") is not None:
             raise InputError("Transfer-Encoding is not accepted")
         lengths = self.headers.get_all("Content-Length", [])
@@ -89,8 +94,8 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
         length = int(raw_length)
         if length < 1:
             raise InputError("request body is required")
-        if length > MAX_BODY:
-            raise InputError("request body exceeds 1 MiB")
+        if length > max_body:
+            raise InputError(f"request body exceeds {max_body // (1024 * 1024)} MiB")
         content_type = self.headers.get("Content-Type", "").split(";", 1)[0].strip().lower()
         if content_type != "application/json":
             raise InputError("Content-Type must be application/json")
@@ -136,6 +141,17 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
                 self._json(HTTPStatus.OK, read_registry())
             elif path == "/api/skills":
                 self._json(HTTPStatus.OK, read_skills())
+            elif path == "/api/backup":
+                backup = self.server.store.backup()
+                body = json.dumps(backup, ensure_ascii=True, separators=(",", ":")).encode("utf-8")
+                if len(body) > MAX_BACKUP_DOWNLOAD:
+                    raise InputError("JSON backup exceeds 63 MiB; use the stopped-server data-directory backup procedure")
+                self._bytes(
+                    HTTPStatus.OK,
+                    body,
+                    "application/json; charset=utf-8",
+                    {"Content-Disposition": 'attachment; filename="askjamie-workbench-backup-v1.json"'},
+                )
             else:
                 match = PROJECT_ROUTE.fullmatch(path)
                 if match:
@@ -184,16 +200,35 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
     def do_PUT(self) -> None:
         self._write_request("PUT")
 
+    def do_DELETE(self) -> None:
+        if urlsplit(self.path).path == "/api/projects":
+            self.send_error(HTTPStatus.NOT_IMPLEMENTED)
+            return
+        self._write_request("DELETE")
+
+    @staticmethod
+    def _require_confirmation(body: Any, action: str) -> None:
+        if not isinstance(body, dict) or set(body) != {"confirm"} or body["confirm"] is not True:
+            raise InputError(f"{action} requires an explicit confirmation")
+
     def _write_request(self, method: str) -> None:
         if not self._check_host():
             return
         self.close_connection = True
         path = urlsplit(self.path).path
         try:
-            body = self._read_json()
+            limit = MAX_BACKUP_BODY if method == "POST" and path == "/api/import" else MAX_BODY
+            body = self._read_json(limit)
             if method == "POST" and path == "/api/projects":
                 draft, _ = normalize_draft(body)
                 self._json(HTTPStatus.CREATED, self.server.store.create(draft))
+                return
+            if method == "POST" and path == "/api/import":
+                if not isinstance(body, dict) or set(body) != {"backup", "confirm"}:
+                    raise InputError("import requires backup and explicit confirmation")
+                self._require_confirmation({"confirm": body["confirm"]}, "import")
+                count = self.server.store.import_backup(body["backup"])
+                self._json(HTTPStatus.OK, {"imported": count, "projects": self.server.store.list()})
                 return
             match = PROJECT_ROUTE.fullmatch(path)
             if not match:
@@ -203,6 +238,13 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
             if method == "PUT" and action is None:
                 draft, revision = normalize_draft(body, allow_revision=True)
                 self._json(HTTPStatus.OK, self.server.store.update(project_id, revision, draft))
+            elif method == "DELETE" and action is None:
+                self._require_confirmation(body, "delete")
+                self.server.store.delete(project_id)
+                self._json(HTTPStatus.OK, {"deleted": project_id})
+            elif method == "POST" and action == "duplicate":
+                self._require_confirmation(body, "duplicate")
+                self._json(HTTPStatus.CREATED, self.server.store.duplicate(project_id))
             elif method == "POST" and action == "preview":
                 project = self.server.store.get(project_id)
                 if project["kind"] != "decision-tool":

@@ -1,6 +1,13 @@
 # Workbench implementation contract v1
 
-Private, single-user local application. Python 3.11, existing PyYAML/jsonschema, SQLite, standard-library HTTP server bound to 127.0.0.1 only. Plain HTML/CSS/JS, no frontend build or external runtime dependencies. No provider calls or arbitrary code execution. Program starts with `python3 -m workbench --port 8765`; data in ignored `.foundry-data/` (override `--data-dir`). Coordinator owns governance/research/docs and final integration. Backend owns `workbench/*.py` and unit tests. Frontend owns `workbench/static/` only.
+Private, single-user local application. Python 3.11, existing PyYAML/jsonschema, SQLite, standard-library HTTP server bound to 127.0.0.1 only. Plain HTML/CSS/JS, no frontend build or external runtime dependencies. No provider calls or arbitrary code execution. Program starts with `python3 -m workbench --port 8765`; data in ignored `.foundry-data/` (override `--data-dir`). The separate `public/` artifact is static Pages orientation only and never calls this API. Coordinator owns governance/research/docs and final integration. Backend owns `workbench/*.py` and unit tests. Frontend owns `workbench/static/` only.
+
+Hosted authoring is not part of this contract. The service must remain
+loopback-only until the owner approves
+[the hosted authoring boundary design](hosted-authoring-boundary.md) and its
+required evidence. No hosted workflow, authentication integration, provider
+call, remote data store, or migration of local state may be added as an
+implementation shortcut.
 
 ## HTTP
 
@@ -17,13 +24,17 @@ JSON requests/responses. Errors `{error: string}` with 400 invalid, 404 missing,
 - POST `/api/projects/{id}/evaluate` with `{}` -> `{revision,passed,failed,unrun,cases:[{name,status,detail}],evaluated_at}`; persists record tied to revision. Do not mark missing supplied response as pass.
 - GET `/api/projects/{id}/evaluations` -> `{evaluations: Evaluation[]}`
 - GET `/api/projects/{id}/export` -> ZIP, blocked with 400 if invalid; private package, no publication; response Content-Disposition safe slug filename
+- POST `/api/projects/{id}/duplicate` accepts exactly `{"confirm":true}` -> new private project (201), revision one with fresh evaluation history
+- DELETE `/api/projects/{id}` accepts exactly `{"confirm":true}` -> `{"deleted":id}` (200), cascading history and evaluations
+- GET `/api/backup` -> versioned JSON attachment containing only this workbench’s projects, histories, and evaluations
+- POST `/api/import` accepts `{"backup": Backup, "confirm": true}` -> atomically replaces local state after complete preflight validation
 - GET `/api/registry` -> `{repositories: array, note: string}` from current canonical YAML, read-only
 - GET `/api/skills` -> `{sourceRepository,sourceCommit,generatedAt,retrievedAt,skills:[{id,name,family,description,maturity,evidenceStatus,sourceUrl}]}` from committed public Skillz metadata snapshot `workbench/data/skills.json`; coordinator provides snapshot, backend just reads it. No skill execution/import.
 
 ## Data
 
 Draft has exact fields (defaults allowed):
-`title`, `slug`, `code` (aj01-aj99 or brg00-brg99; export enforces family-specific code reservations), `family` (core-capability, brandguard, enterprise-sleuth, client-overlay, conversation-design, rag-experiment), `kind` (assistant, decision-tool, workflow), `purpose`, `audience`, `source_text`, `source_reference`, `instructions`, `output_contract`, `constraints`, `client_org`, `parent_capability`, `bfs_firewall` (bool), `visibility_lock` (empty or permanent-private), `skill_ids` (string array), `workflow_steps` (string array), `decision` (graph), `eval_cases` (array). Visibility always private, public_graduation_allowed false for all draft exports. No public control accepted. Any client_org, client-overlay, bfs_firewall or visibility_lock enforces permanent-private; once protected, updates cannot clear or change original client identity, family from client-overlay, or protection flags.
+`title`, `slug`, `code` (aj01-aj99 or brg00-brg99; export enforces family-specific code reservations), `family` (core-capability, brandguard, enterprise-sleuth, client-overlay, conversation-design, rag-experiment), `kind` (assistant, decision-tool, workflow), `purpose`, `audience`, `source_text`, `source_reference`, `instructions`, `output_contract`, `constraints`, `target` (planning target), `phase` (draft, shaping, evidence, review), `evidence`, `client_org`, `parent_capability`, `bfs_firewall` (bool), `visibility_lock` (empty or permanent-private), `skill_ids` (string array), `workflow_steps` (string array), `decision` (graph), `eval_cases` (array). Visibility always private, public_graduation_allowed false for all draft exports. No public control accepted. Any client_org, client-overlay, bfs_firewall or visibility_lock enforces permanent-private; once protected, updates cannot clear or change original client identity, family from client-overlay, or protection flags.
 
 Project adds `id` (uuid), `revision` (int), `created_at`, `updated_at`, `visibility:"private"`, `public_graduation_allowed:false`. Cannot accept those derived values as client inputs except PUT revision.
 

@@ -136,6 +136,47 @@ properties:
         type: boolean
         description: If true, treat as BFS-sensitive. Do not share publicly.
 
+  surface_boundary:
+    type: object
+    description: >
+      Separates a public read-only orientation artifact from private authoring
+      state. This is optional for child repositories and explicit for the relay.
+    required: [public_artifact, private_workbench]
+    properties:
+      public_artifact:
+        type: object
+        required: [kind, path, expected_url, access, contains_private_state]
+        properties:
+          kind:
+            type: string
+          path:
+            type: string
+          expected_url:
+            type: string
+            format: uri
+          access:
+            type: string
+            enum: [read-only]
+          contains_private_state:
+            type: boolean
+        additionalProperties: false
+      private_workbench:
+        type: object
+        required: [kind, bind, data_dir, access, contains_private_state]
+        properties:
+          kind:
+            type: string
+          bind:
+            type: string
+          data_dir:
+            type: string
+          access:
+            type: string
+          contains_private_state:
+            type: boolean
+        additionalProperties: false
+    additionalProperties: false
+
   relay_scope:
     type: object
     description: Optional — used only in foundry-relay type manifests.

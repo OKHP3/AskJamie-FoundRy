@@ -2,16 +2,8 @@ name: Technology Compatibility
 
 on:
   pull_request:
-    paths:
-      - requirements.txt
-      - scripts/**
-      - workbench/**
-      - tests/**
-      - _template/**
-      - schemas/**
-      - manifest.yaml
-      - registry/**
-      - .github/workflows/**
+    branches:
+      - main
   push:
     branches:
       - main
@@ -21,6 +13,7 @@ on:
       - workbench/**
       - tests/**
       - _template/**
+      - public/**
       - schemas/**
       - manifest.yaml
       - registry/**
@@ -52,3 +45,272 @@ jobs:
 
       - name: Test workbench and governance
         run: python -m unittest discover -s tests -v
+
+  public-artifact:
+    name: Validate public Pages artifact
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
+      - name: Check and build read-only artifact
+        run: python scripts/build-public-artifact.py --build
+
+      - name: Smoke-test built artifact over HTTP
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4173 --directory dist/pages >"${RUNNER_TEMP}/pages-http.log" 2>&1 &
+          server_pid=$!
+          trap 'kill "${server_pid}" 2>/dev/null || true' EXIT
+          python3 - <<'PY'
+          import time
+          import urllib.request
+
+          for _ in range(40):
+              try:
+                  with urllib.request.urlopen("http://127.0.0.1:4173/", timeout=1) as response:
+                      assert response.status == 200
+                      assert "AskJamie FoundRy" in response.read().decode("utf-8")
+                  with urllib.request.urlopen("http://127.0.0.1:4173/styles.css", timeout=1) as response:
+                      assert response.status == 200
+                  break
+              except OSError:
+                  time.sleep(0.25)
+          else:
+              raise RuntimeError("built Pages artifact did not become reachable")
+          PY
+
+      - name: Upload public artifact evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: askjamie-pages-artifact
+          path: dist/pages
+          retention-days: 7
+
+  browser-acceptance:
+    name: Browser acceptance
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            tests/browser/requirements.txt
+
+      - name: Install pinned browser-test dependencies
+        run: |
+          python -m pip install --requirement requirements.txt
+          python -m pip install --requirement tests/browser/requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Prepare browser diagnostics directory
+        run: mkdir -p "${RUNNER_TEMP}/foundry-browser-artifacts"
+
+      - name: Run exported decision browser acceptance
+        shell: bash
+        run: |
+          set -euo pipefail
+          export EXPORT_DATA_DIR="${RUNNER_TEMP}/foundry-export-data"
+          export EXPORT_ZIP="${RUNNER_TEMP}/foundry-decision-export.zip"
+          export WORKBENCH_LOG="${RUNNER_TEMP}/foundry-browser-artifacts/export-workbench.log"
+          export EXPORT_RUNNER_LOG="${RUNNER_TEMP}/foundry-browser-artifacts/export-runner.log"
+
+          python -m workbench --port 8766 --data-dir "${EXPORT_DATA_DIR}" >"${WORKBENCH_LOG}" 2>&1 &
+          workbench_pid=$!
+          export_runner_pid=""
+          cleanup() {
+            if [[ -n "${export_runner_pid}" ]]; then
+              kill "${export_runner_pid}" 2>/dev/null || true
+              wait "${export_runner_pid}" 2>/dev/null || true
+            fi
+            kill "${workbench_pid}" 2>/dev/null || true
+            wait "${workbench_pid}" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+
+          python - <<'PY'
+          import json
+          import os
+          import time
+          import urllib.request
+
+          base = "http://127.0.0.1:8766"
+          deadline = time.time() + 20
+          while True:
+              try:
+                  with urllib.request.urlopen(f"{base}/api/health", timeout=1) as response:
+                      if response.status == 200:
+                          break
+              except OSError:
+                  if time.time() >= deadline:
+                      raise
+                  time.sleep(0.25)
+
+          payload = {
+              "title": "CI export browser check",
+              "slug": "ci-export-browser-check",
+              "code": "aj05",
+              "family": "core-capability",
+              "kind": "decision-tool",
+              "purpose": "Verify the exported decision runner in a browser.",
+              "audience": "CI",
+              "source_text": "Browser acceptance source.",
+              "source_reference": "technology-compatibility workflow",
+              "instructions": "Follow the decision path.",
+              "output_contract": "Show the selected result.",
+              "constraints": "Stay private.",
+              "client_org": "",
+              "parent_capability": "",
+              "bfs_firewall": False,
+              "visibility_lock": "",
+              "skill_ids": [],
+              "workflow_steps": [],
+              "decision": {
+                  "start": "start",
+                  "nodes": [
+                      {
+                          "id": "start",
+                          "question": "Is the request clear?",
+                          "yes": "answer",
+                          "no": "clarify",
+                      },
+                      {
+                          "id": "answer",
+                          "result": "</script><img src=x onerror=alert(1)>",
+                      },
+                      {"id": "clarify", "result": "Ask for missing context."},
+                  ],
+              },
+              "eval_cases": [],
+          }
+          request = urllib.request.Request(
+              f"{base}/api/projects",
+              data=json.dumps(payload).encode("utf-8"),
+              method="POST",
+              headers={
+                  "Content-Type": "application/json",
+                  "X-Foundry-Request": "1",
+                  "Origin": base,
+              },
+          )
+          with urllib.request.urlopen(request, timeout=5) as response:
+              project = json.load(response)
+
+          request = urllib.request.Request(
+              f"{base}/api/projects/{project['id']}/export",
+              headers={"Origin": base},
+          )
+          with urllib.request.urlopen(request, timeout=5) as response:
+              with open(os.environ["EXPORT_ZIP"], "wb") as export_file:
+                  export_file.write(response.read())
+          PY
+
+          python tests/browser/export-runner.py "${EXPORT_ZIP}" --port 8767 >"${EXPORT_RUNNER_LOG}" 2>&1 &
+          export_runner_pid=$!
+
+          python - <<'PY'
+          import time
+          import urllib.request
+
+          url = "http://127.0.0.1:8767/index.html"
+          deadline = time.time() + 20
+          while True:
+              try:
+                  with urllib.request.urlopen(url, timeout=1) as response:
+                      if response.status == 200:
+                          break
+              except OSError:
+                  if time.time() >= deadline:
+                      raise
+                  time.sleep(0.25)
+          PY
+
+          python - <<'PY'
+          import asyncio
+          import os
+          from pathlib import Path
+
+          from playwright.async_api import async_playwright
+
+          from tests.browser.browser_diagnostics import (
+              BrowserDiagnostics,
+              validate_jsonl_outputs,
+          )
+
+          ARTIFACT_DIR = Path(os.environ["RUNNER_TEMP"]) / "foundry-browser-artifacts"
+
+          async def check_export():
+              diagnostics = BrowserDiagnostics()
+              async with async_playwright() as playwright:
+                  browser = await playwright.chromium.launch()
+                  page = await browser.new_page()
+                  diagnostics.attach(page, "export-runner")
+                  try:
+                      await page.goto(
+                          "http://127.0.0.1:8767/index.html",
+                          wait_until="networkidle",
+                      )
+                      assert await page.get_by_role("button", name="Yes").is_visible()
+                      assert await page.get_by_role("button", name="No").is_visible()
+                      assert await page.get_by_role("button", name="Restart").is_visible()
+                      await page.get_by_role("button", name="Yes").click()
+                      result = await page.locator("#result").inner_text()
+                      assert "<img src=x onerror=alert(1)>" in result
+                      assert await page.locator("img").count() == 0
+                      await page.get_by_role("button", name="Restart").click()
+                      assert await page.locator("#question").inner_text() == "Is the request clear?"
+                  except Exception:
+                      try:
+                          await page.screenshot(
+                              path=os.path.join(
+                                  os.environ["RUNNER_TEMP"],
+                                  "foundry-browser-artifacts",
+                                  "export-failure.png",
+                              ),
+                              full_page=True,
+                          )
+                      except Exception:
+                          pass
+                      diagnostics.write(
+                          ARTIFACT_DIR,
+                          check_name="Exported decision",
+                          file_prefix="export",
+                      )
+                      validate_jsonl_outputs(ARTIFACT_DIR, file_prefix="export")
+                      raise
+                  finally:
+                      await browser.close()
+
+          asyncio.run(check_export())
+          PY
+          echo "Export browser acceptance passed."
+
+      - name: Run workbench usability browser acceptance
+        shell: bash
+        env:
+          BROWSER_ARTIFACTS_DIR: ${{ runner.temp }}/foundry-browser-artifacts
+        run: |
+          set -o pipefail
+          python tests/browser/workbench-usability.py 2>&1 | tee "${BROWSER_ARTIFACTS_DIR}/workbench-usability.log"
+
+      - name: Upload browser diagnostics
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-acceptance-diagnostics
+          path: ${{ runner.temp }}/foundry-browser-artifacts
+          if-no-files-found: ignore
+          retention-days: 7

@@ -18,6 +18,8 @@
     loading: true,
     loadingProjectId: null,
     recovery: null,
+    localDrafts: {},
+    localStorageUnavailable: false,
     saving: false,
   };
   const esc = (value) => String(value ?? "");
@@ -80,6 +82,9 @@
     instructions: "",
     output_contract: "",
     constraints: "",
+    target: "offline-specification",
+    phase: "draft",
+    evidence: "",
     client_org: "",
     parent_capability: "",
     bfs_firewall: false,
@@ -149,6 +154,9 @@
     "instructions",
     "output_contract",
     "constraints",
+    "target",
+    "phase",
+    "evidence",
     "client_org",
     "parent_capability",
     "bfs_firewall",
@@ -160,6 +168,95 @@
   ];
   const draftPayload = (project) =>
     Object.fromEntries(draftFields.map((key) => [key, project[key]]));
+  const LOCAL_DRAFTS_KEY = "askjamie-workbench-local-drafts-v1";
+  function readLocalDrafts() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(LOCAL_DRAFTS_KEY) || "{}");
+      if (
+        !parsed ||
+        parsed.version !== 1 ||
+        !parsed.drafts ||
+        typeof parsed.drafts !== "object" ||
+        Array.isArray(parsed.drafts)
+      )
+        return {};
+      return parsed.drafts;
+    } catch {
+      return {};
+    }
+  }
+  function syncLocalDrafts() {
+    state.localDrafts = readLocalDrafts();
+    return state.localDrafts;
+  }
+  function persistLocalDraft(project) {
+    if (!project?.id) return;
+    const drafts = readLocalDrafts();
+    const baseRevision = project._localBaseRevision || project.revision;
+    drafts[project.id] = {
+      projectId: project.id,
+      baseRevision,
+      savedAt: new Date().toISOString(),
+      draft: draftPayload(project),
+    };
+    try {
+      localStorage.setItem(
+        LOCAL_DRAFTS_KEY,
+        JSON.stringify({ version: 1, drafts }),
+      );
+      state.localDrafts = drafts;
+    } catch {
+      state.localStorageUnavailable = true;
+    }
+  }
+  function markDraftDirty(project) {
+    if (!project) return;
+    if (!project._localBaseRevision)
+      project._localBaseRevision = project.revision;
+    project._dirty = true;
+    persistLocalDraft(project);
+  }
+  function clearLocalDraft(projectId) {
+    if (!projectId) return;
+    const drafts = readLocalDrafts();
+    if (!drafts[projectId]) return;
+    delete drafts[projectId];
+    try {
+      if (Object.keys(drafts).length)
+        localStorage.setItem(
+          LOCAL_DRAFTS_KEY,
+          JSON.stringify({ version: 1, drafts }),
+        );
+      else localStorage.removeItem(LOCAL_DRAFTS_KEY);
+      state.localDrafts = drafts;
+    } catch {
+      state.localStorageUnavailable = true;
+    }
+  }
+  function clearAllLocalDrafts() {
+    try {
+      localStorage.removeItem(LOCAL_DRAFTS_KEY);
+      state.localDrafts = {};
+    } catch {
+      state.localStorageUnavailable = true;
+    }
+  }
+  function recoverableDrafts() {
+    const projectsById = new Map(state.projects.map((project) => [project.id, project]));
+    return Object.values(state.localDrafts || {})
+      .map((localDraft) => {
+        const project = projectsById.get(localDraft.projectId);
+        return project ? { project, localDraft } : null;
+      })
+      .filter(Boolean);
+  }
+  function localRecoveryMessage(project, localDraft) {
+    const savedRevision = project.revision || 0;
+    const baseRevision = localDraft.baseRevision || 0;
+    return baseRevision === savedRevision
+      ? `Saved revision ${savedRevision} is still current. Restore this local copy to continue editing.`
+      : `This local copy began from revision ${baseRevision}, while the saved project is now revision ${savedRevision}. Restore it to review before choosing Save changes.`;
+  }
   async function api(path, options = {}) {
     const response = await fetch(path, {
       cache: "no-store",
@@ -186,6 +283,7 @@
     try {
       const data = await api("/api/projects");
       state.projects = Array.isArray(data.projects) ? data.projects : [];
+      syncLocalDrafts();
     } catch (error) {
       state.error = error.message;
       state.projects = [];
@@ -247,7 +345,7 @@
   function updateDraft(key, value) {
     if (!state.current) return;
     state.current[key] = value;
-    state.current._dirty = true;
+    markDraftDirty(state.current);
     const marker = document.querySelector(".save-state");
     if (marker) {
       marker.textContent = "Unsaved changes";
@@ -453,10 +551,53 @@
         "THE PROJECT SHELF",
         "Saved capability projects",
         "Drafts are editable, revisioned, and private. No project is implied until you save it.",
-        button("＋ New project", "primary-button", () => openDialog()),
+         el("div", { class: "top-actions" }, [
+           button("Download backup", "quiet-button", downloadBackup),
+           button("Import backup", "quiet-button", chooseBackup),
+           button("＋ New project", "primary-button", () => openDialog()),
+         ]),
       ),
     );
     if (state.error) section.append(showError());
+    const localRecoveries = recoverableDrafts();
+    if (localRecoveries.length) {
+      const recovery = el("div", {
+        class: "local-recovery-box status-box",
+        role: "status",
+        "aria-live": "polite",
+        "aria-atomic": "true",
+      });
+      recovery.append(
+        el("strong", { text: "Local drafts found" }),
+        el("p", {
+          text: "These browser-local copies were saved while you were editing. They have not changed the saved projects.",
+        }),
+      );
+      localRecoveries.forEach(({ project, localDraft }) => {
+        recovery.append(
+          el("div", { class: "local-recovery-item" }, [
+            el("div", {}, [
+              el("strong", {
+                text: localDraft.draft.title || project.title || "Untitled capability",
+              }),
+              el("p", {
+                class: "field-hint",
+                text: localRecoveryMessage(project, localDraft),
+              }),
+            ]),
+            el("div", { class: "card-actions" }, [
+              button("Restore local draft", "quiet-button", () =>
+                restoreLocalDraft(project.id),
+              ),
+              button("Discard local draft", "danger-button", () =>
+                discardLocalDraft(project.id),
+              ),
+            ]),
+          ]),
+        );
+      });
+      section.append(recovery);
+    }
     const layout = el("div", { class: "project-layout" });
     const list = el("aside", { class: "panel project-list" });
     list.append(
@@ -535,14 +676,31 @@
     );
     head.append(
       heading,
-      el("div", {
-        class: `save-state${project._dirty ? " dirty" : ""}`,
-        role: "status",
-        "aria-live": "polite",
-        "aria-atomic": "true",
-        text: project._dirty ? "Unsaved changes" : "Saved locally",
+      el("div", { class: "editor-head-actions" }, [
+        el("div", {
+          class: `save-state${project._dirty ? " dirty" : ""}`,
+          role: "status",
+          "aria-live": "polite",
+          "aria-atomic": "true",
+          text: project._dirty ? "Unsaved changes" : "Saved locally",
+        }),
+        button("Duplicate", "quiet-button", duplicateProject),
+        button("Delete", "danger-button", deleteProject),
+      ]),
+    );
+    const lifecycle = el("div", { class: "lifecycle-strip" });
+    lifecycle.append(
+      el("span", { class: "badge", text: `Phase: ${project.phase || "draft"}` }),
+      el("span", {
+        class: "badge neutral",
+        text: `Target: ${project.target || "offline-specification"}`,
+      }),
+      el("span", {
+        class: "field-hint",
+        text: "Reference → shape → evidence → review",
       }),
     );
+    editor.append(lifecycle);
     editor.append(head);
     if (state.error) editor.append(showError());
     if (state.notice)
@@ -568,6 +726,30 @@
         el("div", { class: "card-actions" }, [
           button("Reload saved copy", "quiet-button", () =>
             loadProject(project.id, true),
+          ),
+        ]),
+      );
+      editor.append(recovery);
+    }
+    if (project._localRecovery) {
+      const recovery = el("div", {
+        class: "local-recovery-box status-box",
+        role: "status",
+        "aria-live": "polite",
+        "aria-atomic": "true",
+      });
+      recovery.append(
+        el("strong", { text: "Recovered local draft" }),
+        el("p", {
+          text: "This browser-local copy is not saved yet. The saved revision remains unchanged until you choose Save changes.",
+        }),
+        el("p", {
+          class: "field-hint",
+          text: `Saved revision ${project.revision || 0} · local base revision ${project._localBaseRevision || project.revision || 0}`,
+        }),
+        el("div", { class: "card-actions" }, [
+          button("Discard local draft", "danger-button", () =>
+            discardLocalDraft(project.id),
           ),
         ]),
       );
@@ -653,6 +835,26 @@
         full: true,
         textarea: true,
       }),
+      field("Delivery target", "target", p.target, {
+        select: true,
+        options: [
+          ["offline-specification", "Offline specification"],
+          ["openai-custom-gpt", "OpenAI Custom GPT"],
+          ["microsoft-copilot", "Microsoft Copilot"],
+          ["gemini-gem", "Gemini Gem"],
+          ["workflow-checklist", "Workflow checklist"],
+        ],
+        hint: "A planning target only. Nothing is provisioned by this workbench.",
+      }),
+      field("Lifecycle phase", "phase", p.phase, {
+        select: true,
+        options: [
+          ["draft", "Draft"],
+          ["shaping", "Shaping"],
+          ["evidence", "Evidence"],
+          ["review", "Ready for review"],
+        ],
+      }),
     );
     return form;
   }
@@ -714,7 +916,7 @@
                 forbidden: [],
               },
         ];
-        p._dirty = true;
+        markDraftDirty(p);
         render();
       }),
     );
@@ -727,7 +929,7 @@
         el("strong", { text: `CASE ${index + 1}` }),
         button("Remove", "icon-button", () => {
           p.eval_cases.splice(index, 1);
-          p._dirty = true;
+          markDraftDirty(p);
           render();
         }),
       );
@@ -737,7 +939,7 @@
         .querySelector(`#field-case-name-${index}`)
         .addEventListener("input", (event) => {
           item.name = event.target.value;
-          p._dirty = true;
+          markDraftDirty(p);
         });
       if (p.kind === "decision-tool") {
         (p.decision?.nodes || [])
@@ -765,7 +967,7 @@
               item.answers ||= {};
               if (select.value === "") delete item.answers[node.id];
               else item.answers[node.id] = select.value === "true";
-              p._dirty = true;
+              markDraftDirty(p);
             });
             card.append(label, select);
           });
@@ -781,7 +983,7 @@
           .querySelector(`#field-case-result-${index}`)
           .addEventListener("input", (event) => {
             item.expected_result = event.target.value;
-            p._dirty = true;
+            markDraftDirty(p);
           });
       } else {
         card.append(
@@ -812,7 +1014,7 @@
             .querySelector(`#field-case-${key}-${index}`)
             .addEventListener("input", (event) => {
               item[key] = event.target.value;
-              p._dirty = true;
+              markDraftDirty(p);
             }),
         );
         ["required", "forbidden"].forEach((key) =>
@@ -823,7 +1025,7 @@
                 .split(",")
                 .map((value) => value.trim())
                 .filter(Boolean);
-              p._dirty = true;
+              markDraftDirty(p);
             }),
         );
       }
@@ -845,7 +1047,7 @@
       el("h4", { text: "Ordered workflow steps" }),
       button("＋ Add step", "quiet-button", () => {
         p.workflow_steps = [...(p.workflow_steps || []), "New step"];
-        p._dirty = true;
+        markDraftDirty(p);
         render();
       }),
     ]);
@@ -865,14 +1067,14 @@
       });
       input.addEventListener("input", () => {
         p.workflow_steps[index] = input.value;
-        p._dirty = true;
+        markDraftDirty(p);
       });
       item.append(
         input,
         el("div", { class: "inline-actions" }, [
           button("×", "icon-button", () => {
             p.workflow_steps.splice(index, 1);
-            p._dirty = true;
+            markDraftDirty(p);
             render();
           }),
         ]),
@@ -897,7 +1099,7 @@
       .querySelector("#field-decision-start")
       .addEventListener("input", (event) => {
         p.decision.start = event.target.value;
-        p._dirty = true;
+        markDraftDirty(p);
       });
     const list = el("div", { class: "guided-list" });
     p.decision.nodes.forEach((node, index) => {
@@ -910,7 +1112,7 @@
         }),
         button("Remove", "icon-button", () => {
           p.decision.nodes.splice(index, 1);
-          p._dirty = true;
+          markDraftDirty(p);
           render();
         }),
       );
@@ -924,7 +1126,7 @@
         .querySelector(`#field-node-id-${index}`)
         .addEventListener("input", (event) => {
           node.id = event.target.value;
-          p._dirty = true;
+          markDraftDirty(p);
         });
       if (node.question !== undefined) {
         card.append(
@@ -936,7 +1138,7 @@
           .querySelector(`#field-node-q-${index}`)
           .addEventListener("input", (event) => {
             node.question = event.target.value;
-            p._dirty = true;
+            markDraftDirty(p);
           });
         card.append(
           field("Yes → node ID", `node-y-${index}`, node.yes || ""),
@@ -947,7 +1149,7 @@
             .querySelector(`#field-node-${dir}-${index}`)
             .addEventListener("input", (event) => {
               node[dir === "y" ? "yes" : "no"] = event.target.value;
-              p._dirty = true;
+              markDraftDirty(p);
             }),
         );
       } else {
@@ -960,7 +1162,7 @@
           .querySelector(`#field-node-r-${index}`)
           .addEventListener("input", (event) => {
             node.result = event.target.value;
-            p._dirty = true;
+            markDraftDirty(p);
           });
       }
       list.append(card);
@@ -975,7 +1177,7 @@
           yes: "",
           no: "",
         });
-        p._dirty = true;
+        markDraftDirty(p);
         render();
       }),
       button("＋ Result node", "quiet-button", () => {
@@ -983,7 +1185,7 @@
           id: `result-${p.decision.nodes.length}`,
           result: "Add the outcome.",
         });
-        p._dirty = true;
+        markDraftDirty(p);
         render();
       }),
     );
@@ -1051,6 +1253,12 @@
         full: true,
         hint: "A provenance note or stable locator. This does not fetch remote content.",
       }),
+      field("Evidence notes", "evidence", p.evidence, {
+        full: true,
+        textarea: true,
+        rows: 4,
+        hint: "Record what has been checked and what remains unknown.",
+      }),
     );
     const heading = el("div", { class: "subsection-head" });
     heading.append(el("h4", { text: "Skillz references" }));
@@ -1091,7 +1299,7 @@
             ...(p.skill_ids || []).filter((id) => id !== skill.id),
             ...(input.checked ? [skill.id] : []),
           ];
-          p._dirty = true;
+          markDraftDirty(p);
         });
         const text = el("span");
         text.append(
@@ -1215,6 +1423,7 @@
             body: JSON.stringify(p),
           });
       state.current = saved;
+      clearLocalDraft(projectId);
       state.preview = null;
       state.previewAnswers = {};
       const history = await api(
@@ -1228,6 +1437,7 @@
       state.notice = "Saved. The desk has a new revision.";
       state.error = "";
       state.recovery = null;
+      state.localStorageUnavailable = false;
       await loadProjects();
       state.saving = false;
       render();
@@ -1347,6 +1557,125 @@
       render();
     }
   }
+  async function downloadBackup() {
+    try {
+      const response = await api("/api/backup");
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = "askjamie-workbench-backup-v1.json";
+      document.body.append(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+      state.notice = "Private backup downloaded.";
+      state.error = "";
+      render();
+      announce("Private backup downloaded");
+    } catch (error) {
+      state.error = error.message;
+      render();
+    }
+  }
+  function chooseBackup() {
+    const input = el("input", {
+      type: "file",
+      accept: "application/json,.json",
+      "aria-label": "Choose a workbench backup",
+    });
+    input.addEventListener("change", () => {
+      if (input.files?.[0]) importBackup(input.files[0]);
+    });
+    input.click();
+  }
+  async function importBackup(file) {
+    if (!canLeaveCurrent()) return;
+    const confirmed = window.confirm(
+      "Importing a backup replaces every saved local project, its history, and evaluations. Continue?",
+    );
+    if (!confirmed) return;
+    try {
+      const backup = JSON.parse(await file.text());
+      const result = await api("/api/import", {
+        method: "POST",
+        body: JSON.stringify({ backup, confirm: true }),
+      });
+      state.current = null;
+      state.history = [];
+      state.evaluation = null;
+      state.preview = null;
+      state.previewAnswers = {};
+      state.recovery = null;
+      clearAllLocalDrafts();
+      state.notice = `Imported ${result.imported} project${result.imported === 1 ? "" : "s"}.`;
+      state.error = "";
+      await loadProjects();
+      render();
+      announce("Backup imported");
+    } catch (error) {
+      state.error = `Backup import failed: ${error.message}`;
+      render();
+    }
+  }
+  async function duplicateProject() {
+    if (!requireSavedProject("duplicating")) return;
+    if (
+      !window.confirm(
+        "Duplicate this saved project as a new private draft without its evaluation history?",
+      )
+    )
+      return;
+    try {
+      const duplicate = await api(
+        `/api/projects/${encodeURIComponent(state.current.id)}/duplicate`,
+        { method: "POST", body: JSON.stringify({ confirm: true }) },
+      );
+      state.current = duplicate;
+      state.history = [{ revision: 1, updated_at: duplicate.updated_at }];
+      state.evaluation = null;
+      state.preview = null;
+      state.previewAnswers = {};
+      state.notice = "Private copy created. Its evaluation history starts fresh.";
+      state.error = "";
+      await loadProjects();
+      render();
+      announce("Project duplicated");
+    } catch (error) {
+      state.error = error.message;
+      render();
+    }
+  }
+  async function deleteProject() {
+    if (!requireSavedProject("deleting")) return;
+    if (
+      !window.confirm(
+        "Delete this saved project, its revision history, and evaluations? This cannot be undone.",
+      )
+    )
+      return;
+    const projectId = state.current.id;
+    try {
+      await api(`/api/projects/${encodeURIComponent(projectId)}`, {
+        method: "DELETE",
+        body: JSON.stringify({ confirm: true }),
+      });
+      clearLocalDraft(projectId);
+      state.current = null;
+      state.history = [];
+      state.evaluation = null;
+      state.preview = null;
+      state.previewAnswers = {};
+      state.notice = "Project deleted from the local workbench.";
+      state.error = "";
+      await loadProjects();
+      render();
+      announce("Project deleted");
+    } catch (error) {
+      state.error = error.message;
+      render();
+    }
+  }
   function navigate(view) {
     if (view === state.view || !canLeaveCurrent()) return;
     state.view = view;
@@ -1371,6 +1700,42 @@
           state.error = error.message;
           render();
         });
+  }
+  async function restoreLocalDraft(projectId) {
+    const localDraft = state.localDrafts?.[projectId];
+    if (!localDraft) return;
+    try {
+      await loadProject(projectId, true);
+      if (!state.current) return;
+      state.current = {
+        ...state.current,
+        ...localDraft.draft,
+        _dirty: true,
+        _localRecovery: true,
+        _localBaseRevision: localDraft.baseRevision,
+      };
+      state.view = "projects";
+      state.notice = "Local draft restored. Save changes when you are ready.";
+      state.error = "";
+      render();
+      announce("Local draft restored and not yet saved");
+    } catch (error) {
+      state.error = `Local draft recovery failed: ${error.message}`;
+      render();
+    }
+  }
+  function discardLocalDraft(projectId) {
+    const currentIsRecovery =
+      state.current?.id === projectId && state.current?._localRecovery;
+    clearLocalDraft(projectId);
+    if (currentIsRecovery) {
+      loadProject(projectId, true);
+      return;
+    }
+    state.notice = "The browser-local draft was discarded. The saved project was not changed.";
+    state.error = "";
+    render();
+    announce("Local draft discarded");
   }
   function skillsView() {
     const section = el("section");
@@ -1607,6 +1972,10 @@
         state.error = error.message;
       }),
   ]).then(() => {
+    if (recoverableDrafts().length) {
+      state.view = "projects";
+      state.notice = "A browser-local draft is available to recover.";
+    }
     state.loading = false;
     render();
   });

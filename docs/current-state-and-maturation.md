@@ -18,14 +18,15 @@ This model guides future development: inspect the mentor's relevant pattern, ada
 
 | Area | Implemented behavior | Boundary |
 |---|---|---|
-| Project authoring | Create assistant, decision-tool or workflow drafts; edit purpose, audience, behavior, constraints and sources | The user supplies the substance; no AI authoring service runs |
-| Persistence | Save/reopen projects, retain revision history, reject stale writes | Local single-user SQLite; no collaboration or synchronization |
+| Project authoring | Create assistant, decision-tool or workflow drafts; edit purpose, audience, behavior, constraints, sources, target and phase | The user supplies the substance; no AI authoring service runs |
+| Persistence | Save/reopen, duplicate, delete with confirmation, retain revision history, reject stale writes | Local single-user SQLite; no collaboration or synchronization |
 | Decision tools | Author Yes/No questions and results; validate and execute paths; export HTML runner | Deterministic graph, not arbitrary code generation |
 | Evaluations | Execute decision cases; record results against saved revisions; check supplied response text | Text checks do not establish model behavior or semantic quality |
 | Skillz | Search 342 entries from a dated public snapshot; retain selected metadata and source provenance | Selection does not install, execute or independently validate skills |
 | Export | Generate private ZIP containing scaffold, manifest, source, instructions, specification and evidence | Registration remains a pending proposal; no remote repository is created |
 | Governance | Read nine canonical records, validate registry schema, preserve lineage and client protections | Registry entries do not prove deployment or operational status |
-| Privacy | Loopback service, guarded JSON writes, isolated exports, irreversible client flags; owner-only POSIX state permissions | No internet-hosted authentication, encryption layer or Windows ACL management |
+| Recovery | Versioned JSON backup/import with full preflight validation and atomic replacement; malformed imports preserve current state | Backup files contain private source and must stay owner-controlled |
+| Privacy | Loopback service, guarded JSON writes, isolated exports, irreversible client flags; owner-only POSIX state permissions; read-only public orientation artifact | No internet-hosted authentication, encryption layer or Windows ACL management |
 
 ## Architecture and operating model
 
@@ -57,7 +58,11 @@ These are proposed next steps, not completed features or promised dates.
 | 6. Add assistance selectively | If pilots show value, add optional model-assisted drafting/evaluation with explicit cost limits, data routing, provider abstraction and measured quality | Improvement over the manual baseline with known cost and acceptable data handling |
 | 7. Choose deployment deliberately | If cross-device or team use is required, design authenticated hosting, authorization, backups, migrations and operations before Replit or other exposure | Tested access boundaries, restore/recovery procedure, ownership and deployment evidence |
 
-The next useful milestone is a repeatable, tested AskJamie capability produced by this workbench and successfully used outside it. Feature breadth should follow that evidence. Preserve the low-cost local mode as additional integrations mature.
+The next useful milestone is a repeatable, tested AskJamie capability produced by
+this workbench and successfully used outside it. Feature breadth should follow
+that evidence. Preserve the low-cost local mode as additional integrations
+mature. See the [parity matrix](parity-matrix.md) for the adopted and deferred
+mentor capabilities.
 
 ## Closeout verification, 2026-09-08
 

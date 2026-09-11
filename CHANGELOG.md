@@ -1,5 +1,28 @@
 # Changelog
 
+## Unreleased
+
+- Adopted the owner's solo-maintainer merge policy: zero external approvals,
+  while retaining mandatory PRs, strict CI, administrator enforcement, and
+  protection against force pushes and branch deletion.
+
+- Recovered ten pending Replit commits through a preserved Git bundle and a
+  protected-main PR; documented the workflow-authorized transfer procedure.
+- Fixed the missing Python heredoc terminator in browser acceptance CI and
+  synchronized agent guidance with the public/private surface boundary.
+- Made the public artifact build result consistent across Windows and POSIX.
+- Fixed review findings in backup size limits, revision/evaluation validation,
+  maximum-length duplicate naming, and browser evidence punctuation.
+
+- Added an evidence-led mentor parity matrix and made the public Pages
+  orientation artifact distinct from the private loopback authoring workbench.
+- Added confirmed project duplication/deletion and versioned, validated,
+  transactional backup/import recovery controls.
+- Added a design-only hosted authoring boundary covering authentication,
+  workspace routing, client-record isolation, backup retention, and the
+  evidence required to prove that private state and generated packages cannot
+  leak. No hosted runtime or provider integration was added.
+
 All notable changes to **AskJamie FoundRy** are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
@@ -11,6 +34,9 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 - Recovered F17-F20 onboarding, validated synthetic pilots and controlled Skillz
   refresh guidance; corrected the README public-source description.
+- Protected `main` with required review approval and the supported-Python
+  compatibility check; documented the merge policy and ensured the check runs
+  for every pull request targeting `main`.
 
 
 ### Collaboration and repository visibility
