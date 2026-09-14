@@ -213,6 +213,33 @@ boundary and export tests cover host/origin controls and package isolation.
 Those checks do not prove network authentication, hosted authorization,
 encryption, object ACLs, retention, or provider egress.
 
+### Provider-independent acceptance harness
+
+`tests/hosted_isolation_harness.py` defines the adapter contract that a future
+hosted implementation must satisfy. `tests/test_hosted_isolation_proof.py`
+runs that contract against a deterministic two-workspace reference adapter and
+produces a JSON-serializable evidence report. It covers foreign valid-ID
+attempts and same-path positive controls for read, write, history, evaluate,
+export, backup, restore, duplicate, and delete using session-mapped principals;
+package and logical-backup inspection; isolated restore; expired and
+foreign backup denial; same-path authorization checks for every operation after
+restore; expired download denial; empty private caches; redacted audit evidence;
+and scans of both `public/` and `dist/pages/`.
+
+Run `python3 scripts/prove-hosted-isolation.py` from the repository root to
+print the reference evidence report as JSON. The command returns a nonzero
+status if any claim fails and does not retain its temporary workspace fixtures.
+
+The reference adapter proves that the acceptance contract is executable and
+that the repository's current package, backup, restore, and public-build
+primitives can meet it in isolated local fixtures. It does **not** prove a
+future provider's authentication, row policy, object ACL, encryption, deletion
+guarantee, egress control, or hosted log pipeline. When a provider is selected,
+its adapter must run this same contract in a disposable environment and attach
+the resulting report plus provider-specific ACL, cache, retention, restore, and
+log evidence. Until that occurs, those hosted claims remain unproven and no
+private draft may be migrated.
+
 ## 8. Implementation gate and prohibited work
 
 Owner approval must be recorded against this document after review of:
