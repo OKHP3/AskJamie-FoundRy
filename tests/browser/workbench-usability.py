@@ -102,6 +102,7 @@ async def main() -> None:
     if ARTIFACT_DIR:
         ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as data_dir:
+        browser_profile = Path(data_dir) / "browser-profile"
         server = subprocess.Popen(
             [str(PYTHON), "-m", "workbench", "--port", str(port), "--data-dir", data_dir],
             cwd=ROOT,
@@ -160,7 +161,14 @@ async def main() -> None:
                 for size in [(1440, 900), (768, 900), (390, 844), (320, 568)]:
                     await load_with_delay(*size)
 
-                context = await browser.new_context(viewport={"width": 1440, "height": 900})
+                await browser.close()
+                browser = None
+                context = await playwright.chromium.launch_persistent_context(
+                    browser_profile,
+                    viewport={"width": 1440, "height": 900},
+                    **launch_options,
+                )
+                browser = context.browser
                 page = await context.new_page()
                 diagnostics.attach(page, "workbench")
                 await page.goto(f"http://127.0.0.1:{port}", wait_until="networkidle")
@@ -319,11 +327,25 @@ async def main() -> None:
                 await page.get_by_text("Saved. The desk has a new revision.").wait_for()
                 await page.locator(".save-state").filter(has_text="Saved locally").wait_for()
                 await page.get_by_label("Title").fill("Discarded local draft")
-                refresh_prompt = {}
-                page.once("dialog", accept_refresh)
-                await page.reload(wait_until="networkidle")
-                assert refresh_prompt.get("type") == "beforeunload", refresh_prompt
+                assert await page.locator(".save-state").inner_text() == "Unsaved changes"
+
+                await browser.close()
+                browser = None
+                context = await playwright.chromium.launch_persistent_context(
+                    browser_profile,
+                    viewport={"width": 1440, "height": 900},
+                    **launch_options,
+                )
+                browser = context.browser
+                page = await context.new_page()
+                diagnostics.attach(page, "reopened-workbench")
+                await page.goto(f"http://127.0.0.1:{port}", wait_until="networkidle")
                 await page.get_by_text("Local drafts found").wait_for()
+                assert await page.get_by_role("button", name="Restore local draft").count() == 1
+                saved_title = await page.evaluate(
+                    """async () => (await (await fetch('/api/projects')).json()).projects[0].title"""
+                )
+                assert saved_title == "Unsaved draft stays safe", saved_title
                 await page.get_by_role("button", name="Discard local draft").click()
                 assert await page.get_by_text("Local drafts found").count() == 0
                 saved_title = await page.evaluate(
