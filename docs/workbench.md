@@ -113,6 +113,33 @@ for backup. Restore that directory and restart with the same `--data-dir`.
 The bundled Skillz catalog is a dated public metadata snapshot. It works
 offline and does not silently refresh. See [snapshot provenance](../workbench/data/README.md).
 
+### Approved policy for any future hosted copy
+
+The local workbench does not automatically retain, upload, or delete backup
+files or ZIPs after you download or copy them; the owner controls those local
+copies. If a future hosted service is separately approved, it must apply the
+owner-approved schedule: 35 days for daily snapshots and destructive-action
+recovery points, 12 weeks for weekly recovery points, 7 days for generated ZIPs,
+and 12 months for content-free audit records. Explicit owner holds pause the
+affected deletion until release.
+
+Hosted deletion must include active rows, revisions, evaluations, temporary and
+object-vault copies, download objects, backups, indexes, caches, and derived
+metadata. Access is revoked first, but deletion is not described as complete
+until the provider supplies evidence for every in-scope copy. User-downloaded
+copies remain outside service control. Encryption keys must be owner-controlled
+and separate from the data service.
+
+A hosted restore must first enter an isolated environment with public routes,
+egress, normal user access, and downloads disabled. Manifest, checksum, schema,
+privacy flags, workspace ownership, revision/evaluation integrity, and
+cross-workspace isolation must pass before any separately approved promotion.
+Cleanup remains pending until provider evidence confirms deletion of the
+temporary restore and its copies. The full policy and runbook are in the
+[hosted authoring boundary](hosted-authoring-boundary.md#6-backup-and-retention-design).
+No host has been selected or certified, and this policy does not authorize
+hosting or upload of local private state.
+
 ## Verification and limits
 
 ```bash

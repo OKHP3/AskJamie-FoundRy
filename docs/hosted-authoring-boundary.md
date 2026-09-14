@@ -166,10 +166,11 @@ field.
 
 ## 6. Backup and retention design
 
-The following is the bounded proposal to approve or revise before selecting a
-host. It is not a claim about the current local backup behavior.
+The following owner-approved schedule is the provider-independent minimum for a
+future hosted service. It is not a claim about the current local backup behavior
+or evidence that any provider can meet it.
 
-| Item | Required handling | Proposed retention |
+| Item | Required handling | Approved retention |
 |---|---|---|
 | Database backup | Encrypted, workspace-aware backup; encryption keys are separate from the data service; access is owner-only | Daily snapshots for 35 days |
 | Recovery points | Immutable copy before destructive migration, restore, or deletion; tagged with actor and reason | 35 days unless a hold applies |
@@ -178,16 +179,82 @@ host. It is not a claim about the current local backup behavior.
 | Generated ZIP | Encrypted private object, no public cache, no anonymous link | 7 days by default, then delete |
 | Audit record | Keep action, actor, workspace, object class, result, and timestamp; do not store source content | 12 months, subject to owner policy |
 
+The schedule applies by data class as follows:
+
+| Data class | Normal lifecycle and deletion scope |
+|---|---|
+| Active project data | Retained while the workspace is active. An approved workspace or project deletion removes the active rows and tenant-scoped metadata. |
+| Revisions and evaluations | Follow the owning project. They are deleted with it and cannot be retained as detached history. |
+| Object copies | Temporary render, staging, quarantine, support, and migration copies inherit the source object's retention label and must be included in deletion reports. Untracked copies are prohibited. |
+| Download objects and generated ZIPs | Expire after 7 days by default. Revocation blocks retrieval immediately; physical provider deletion follows the provider's documented deletion window. A user-downloaded copy is outside service control and the interface must say so before download. |
+| Backups and recovery points | Age out on the 35-day or 12-week schedule above. A logical deletion prevents ordinary restore of the deleted workspace; physical backup copies expire under the schedule unless a hold applies. |
+| Search indexes, caches, and derived metadata | Contain no source text by default and are purged or rebuilt without the deleted workspace as part of the deletion operation. |
+| Audit records | Content-free records remain for 12 months, then expire. They may retain the fact and result of a deletion, but not deleted source, package contents, client names, or reconstructable payloads. |
+
+### Holds, deletion, and key control
+
+- Only an owner may create, extend, or release a legal, contractual, release, or
+  governance hold. Every hold names its scope, reason, creator, creation time,
+  review or expiry date, and release result.
+- A hold pauses physical deletion only for the named objects and their required
+  recovery copies. It does not make them downloadable, widen membership, permit
+  public use, or suspend access controls. Expired holds require owner review;
+  they do not silently become permanent.
+- A deletion request first revokes sessions and download access, then removes
+  active data, revisions, evaluations, object copies, indexes, caches, and
+  derived metadata. Backup expiry and provider-side physical deletion are
+  tracked separately. The service reports `deletion pending` until every
+  in-scope provider copy is evidenced as deleted or an active hold is recorded.
+- Encryption keys must be owner-controlled and separate from the data service.
+  The selected provider may operate the key service, but must support
+  owner-authorized rotation, revocation, access logs, and cryptographic erasure
+  for workspace- or vault-scoped keys. Provider-managed-only keys are not
+  acceptable.
+- A selected host must contractually document deletion behavior for primary
+  storage, replicas, object versions, caches, indexes, logs, snapshots, and
+  disaster-recovery copies; the maximum deletion window after retention expiry;
+  hold handling; subprocessors; and evidence available on completion. If any
+  class cannot meet this policy, private drafts cannot move to that provider.
+- Deletion evidence must identify the workspace, object classes, request and
+  completion times, held exceptions, provider operation or report identifiers,
+  and the actor who verified completion. It must not contain private payloads.
+
 Backups must not be treated as a second public export path. Restore is performed
 into an isolated, access-controlled environment first. A restore is not complete
 until schema validation, checksum verification, workspace-isolation tests, and
 public-route checks pass. Retention jobs must report failures and must not
 silently claim deletion when a provider copy remains.
 
-The owner must approve the final retention periods, deletion guarantees, key
-ownership, disaster-recovery region, recovery point objective, and recovery time
-objective. Those decisions are deployment-specific and cannot be inferred from
-the local SQLite implementation.
+### Restore and deletion verification runbook
+
+1. Record the owner-approved restore purpose, workspace scope, recovery point,
+   operator, and expected checksum. Reject expired, foreign-workspace, unlabelled,
+   or held-for-an-incompatible-purpose recovery points.
+2. Restore into a disposable isolated environment with public routes, outbound
+   egress, ordinary users, and package downloads disabled. Never restore over
+   active production data.
+3. Verify the manifest, checksum, schema, revision continuity, evaluation
+   references, privacy flags, object ownership, and retention labels before
+   enabling application reads.
+4. Run the provider adapter acceptance harness against the restored environment,
+   including same-workspace positive controls, cross-workspace denials, public
+   route scans, expired-link denial, and private cache/index inspection.
+5. Reconcile restored object counts and identifiers to the approved workspace
+   scope. Any commingled, missing, or unlabelled object fails the restore.
+6. Record the result without private content. Promote data only through a
+   separately approved recovery action; otherwise destroy the isolated restore
+   and obtain provider evidence for its database, object, cache, index, log,
+   snapshot, and key copies.
+7. Keep the result as `restore cleanup pending` or `deletion pending` until the
+   provider's documented evidence confirms completion. A successful application
+   delete, inaccessible URL, empty query, retention-job request, or key-revocation
+   request is not by itself evidence of physical deletion.
+
+The owner has approved the retention periods, deletion requirements, key
+ownership model, 24-hour recovery point objective, and 72-hour recovery time
+objective above. Provider selection, data location, disaster-recovery region,
+and proof that the provider satisfies these guarantees remain deployment-specific
+gates and cannot be inferred from the local SQLite implementation.
 
 ## 7. Leak-prevention proof
 

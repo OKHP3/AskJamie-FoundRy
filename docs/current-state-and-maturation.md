@@ -58,6 +58,18 @@ These are proposed next steps, not completed features or promised dates.
 | 6. Add assistance selectively | If pilots show value, add optional model-assisted drafting/evaluation with explicit cost limits, data routing, provider abstraction and measured quality | Improvement over the manual baseline with known cost and acceptable data handling |
 | 7. Choose deployment deliberately | If cross-device or team use is required, design authenticated hosting, authorization, backups, migrations and operations before Replit or other exposure | Tested access boundaries, restore/recovery procedure, ownership and deployment evidence |
 
+The owner-approved hosted design now sets a provider-independent private-data
+policy: daily snapshots and destructive-action recovery points expire after 35
+days, weekly recovery points after 12 weeks, generated ZIPs after 7 days, and
+content-free audit records after 12 months. Named holds pause only the affected
+deletions; they do not widen access. Deletion covers active data, revisions,
+evaluations, object copies, downloads, backups, indexes, caches, and derived
+metadata, and remains pending until provider evidence confirms every in-scope
+copy. Owner-controlled keys must remain separate from the data service. These
+are requirements for selecting and certifying a future host, not claims about a
+provider or authorization to move local data online. See
+[the hosted authoring boundary](hosted-authoring-boundary.md#6-backup-and-retention-design).
+
 The next useful milestone is a repeatable, tested AskJamie capability produced by
 this workbench and successfully used outside it. Feature breadth should follow
 that evidence. Preserve the low-cost local mode as additional integrations
