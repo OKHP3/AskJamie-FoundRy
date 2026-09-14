@@ -257,6 +257,13 @@
       ? `Saved revision ${savedRevision} is still current. Restore this local copy to continue editing.`
       : `This local copy began from revision ${baseRevision}, while the saved project is now revision ${savedRevision}. Restore it to review before choosing Save changes.`;
   }
+  function hasUnreconciledLocalRevisionMismatch(project) {
+    return Boolean(
+      project?._localRecovery &&
+        project._localBaseRevision !== project.revision &&
+        !project._localRevisionReconciled,
+    );
+  }
   async function api(path, options = {}) {
     const response = await fetch(path, {
       cache: "no-store",
@@ -732,6 +739,7 @@
       editor.append(recovery);
     }
     if (project._localRecovery) {
+      const revisionMismatch = hasUnreconciledLocalRevisionMismatch(project);
       const recovery = el("div", {
         class: "local-recovery-box status-box",
         role: "status",
@@ -739,15 +747,30 @@
         "aria-atomic": "true",
       });
       recovery.append(
-        el("strong", { text: "Recovered local draft" }),
+        el("strong", {
+          text: revisionMismatch
+            ? "Recovered draft is based on an older revision"
+            : "Recovered local draft",
+        }),
         el("p", {
-          text: "This browser-local copy is not saved yet. The saved revision remains unchanged until you choose Save changes.",
+          text: revisionMismatch
+            ? "Review this recovered copy against the newer saved work. Save changes is blocked until you explicitly choose to use this draft as the next revision."
+            : "This browser-local copy is not saved yet. The saved revision remains unchanged until you choose Save changes.",
         }),
         el("p", {
           class: "field-hint",
           text: `Saved revision ${project.revision || 0} · local base revision ${project._localBaseRevision || project.revision || 0}`,
         }),
         el("div", { class: "card-actions" }, [
+          ...(revisionMismatch
+            ? [
+                button(
+                  "Use recovered draft as next revision",
+                  "primary-button",
+                  reconcileLocalRevisionMismatch,
+                ),
+              ]
+            : []),
           button("Discard local draft", "danger-button", () =>
             discardLocalDraft(project.id),
           ),
@@ -794,7 +817,10 @@
     );
     const actions = el("div", { class: "top-actions" });
     const save = button("Save changes", "primary-button", saveProject);
-    save.disabled = state.saving;
+    save.disabled =
+      state.saving || hasUnreconciledLocalRevisionMismatch(project);
+    if (hasUnreconciledLocalRevisionMismatch(project))
+      save.title = "Review and reconcile the recovered draft before saving.";
     actions.append(save);
     footer.append(actions);
     editor.append(footer);
@@ -1408,6 +1434,14 @@
   }
   async function saveProject() {
     if (!state.current || state.saving) return;
+    if (hasUnreconciledLocalRevisionMismatch(state.current)) {
+      state.notice = "";
+      state.error =
+        "This recovered draft began from an older revision. Reconcile it before saving.";
+      render();
+      announce(state.error);
+      return;
+    }
     state.saving = true;
     render();
     const p = draftPayload(state.current);
@@ -1723,6 +1757,15 @@
       state.error = `Local draft recovery failed: ${error.message}`;
       render();
     }
+  }
+  function reconcileLocalRevisionMismatch() {
+    if (!hasUnreconciledLocalRevisionMismatch(state.current)) return;
+    state.current._localRevisionReconciled = true;
+    state.notice =
+      "Revision mismatch acknowledged. Review is complete; Save changes will create the next revision.";
+    state.error = "";
+    render();
+    announce("Recovered draft reconciled and ready to save");
   }
   function discardLocalDraft(projectId) {
     const currentIsRecovery =

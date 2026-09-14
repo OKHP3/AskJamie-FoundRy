@@ -260,6 +260,21 @@ async def main() -> None:
                 assert await page.get_by_label("Title").input_value() == "Unsaved draft stays safe"
                 assert await page.locator(".save-state").inner_text() == "Unsaved changes"
 
+                newer_saved = await page.evaluate(
+                    """async () => {
+                        const response = await fetch('/api/projects');
+                        const data = await response.json();
+                        return data.projects[0];
+                    }"""
+                )
+                newer_saved["title"] = "Newer saved work"
+                put_json(
+                    port,
+                    f"/api/projects/{newer_saved['id']}",
+                    {key: newer_saved[key] for key in DRAFT_FIELDS}
+                    | {"revision": newer_saved["revision"]},
+                )
+
                 refresh_prompt: dict[str, str] = {}
 
                 async def accept_refresh(dialog) -> None:
@@ -274,18 +289,32 @@ async def main() -> None:
                 saved_title = await page.evaluate(
                     """async () => (await (await fetch('/api/projects')).json()).projects[0].title"""
                 )
-                assert saved_title == "External update", saved_title
+                assert saved_title == "Newer saved work", saved_title
 
                 await page.get_by_role("button", name="Restore local draft").click()
                 await page.get_by_label("Title").wait_for()
                 assert await page.get_by_label("Title").input_value() == "Unsaved draft stays safe"
-                assert await page.locator(".local-recovery-box").count() >= 1
+                editor_recovery = page.locator(".editor .local-recovery-box")
+                assert await editor_recovery.count() == 1
+                recovery = await editor_recovery.inner_text()
+                assert "based on an older revision" in recovery
+                assert "Saved revision" in recovery
+                assert "local base revision" in recovery
                 assert await page.locator(".save-state").inner_text() == "Unsaved changes"
+                assert await page.get_by_role("button", name="Save changes").is_disabled()
                 saved_title = await page.evaluate(
                     """async () => (await (await fetch('/api/projects')).json()).projects[0].title"""
                 )
-                assert saved_title == "External update", saved_title
+                assert saved_title == "Newer saved work", saved_title
 
+                await page.get_by_role(
+                    "button", name="Use recovered draft as next revision"
+                ).click()
+                assert await page.get_by_role("button", name="Save changes").is_enabled()
+                saved_title = await page.evaluate(
+                    """async () => (await (await fetch('/api/projects')).json()).projects[0].title"""
+                )
+                assert saved_title == "Newer saved work", saved_title
                 await page.get_by_role("button", name="Save changes").click()
                 await page.get_by_text("Saved. The desk has a new revision.").wait_for()
                 await page.locator(".save-state").filter(has_text="Saved locally").wait_for()
