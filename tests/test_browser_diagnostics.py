@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -50,6 +52,12 @@ class FakeResponse:
 
 
 class BrowserDiagnosticsTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.environment = patch.dict(os.environ)
+        self.environment.start()
+        self.addCleanup(self.environment.stop)
+        os.environ.pop("GITHUB_STEP_SUMMARY", None)
+
     def test_attach_captures_console_and_failed_request_events(self) -> None:
         page = FakePage()
         diagnostics = BrowserDiagnostics()
@@ -181,6 +189,31 @@ class BrowserDiagnosticsTests(unittest.TestCase):
             self.assertIn("console message 0", summary)
             self.assertIn("console message 4", summary)
             self.assertNotIn("console message 5", summary)
+
+    def test_failure_summary_is_appended_to_github_step_summary(self) -> None:
+        diagnostics = BrowserDiagnostics()
+        diagnostics._record_console("workbench", FakeConsoleMessage("Console failure"))
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            step_summary = root / "github-step-summary.md"
+            step_summary.write_text("# Earlier step output\n\n", encoding="utf-8")
+
+            with patch.dict(
+                os.environ,
+                {"GITHUB_STEP_SUMMARY": str(step_summary)},
+            ):
+                diagnostics.write(
+                    root / "artifacts",
+                    check_name="Workbench usability",
+                    file_prefix="workbench",
+                )
+
+            displayed = step_summary.read_text(encoding="utf-8")
+            self.assertTrue(displayed.startswith("# Earlier step output\n\n"))
+            self.assertIn("# Browser acceptance failure", displayed)
+            self.assertIn("- Check: Workbench usability", displayed)
+            self.assertIn("[workbench] error: Console failure", displayed)
 
     def test_empty_failure_artifacts_are_written_as_readable_jsonl(self) -> None:
         diagnostics = BrowserDiagnostics()
