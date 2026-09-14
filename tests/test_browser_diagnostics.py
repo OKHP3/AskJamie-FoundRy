@@ -16,6 +16,7 @@ from browser_diagnostics import (  # noqa: E402
     MAX_DIAGNOSTIC_ENTRIES,
     MAX_DIAGNOSTIC_VALUE_LENGTH,
     MAX_SUMMARY_ENTRIES,
+    MAX_SUMMARY_VALUE_LENGTH,
     BrowserDiagnostics,
     validate_jsonl_outputs,
 )
@@ -171,6 +172,77 @@ class BrowserDiagnosticsTests(unittest.TestCase):
             self.assertIn(
                 "https://example.test/api/projects: status 503 (HTTP 503)",
                 summary,
+            )
+
+    def test_unicode_and_multiline_values_keep_failure_evidence_readable(self) -> None:
+        diagnostics = BrowserDiagnostics()
+        console_text = (
+            "コンソール失敗 🚨\r\nfirst line\nsecond line "
+            + ("界" * MAX_SUMMARY_VALUE_LENGTH)
+        )
+        request_url = (
+            "https://例え.test/失敗\r\nunexpected-url-line?"
+            + ("値" * MAX_SUMMARY_VALUE_LENGTH)
+        )
+        request_failure = (
+            "接続失敗 🔌\rnetwork reset\nretry refused "
+            + ("障" * MAX_SUMMARY_VALUE_LENGTH)
+        )
+        diagnostics._record_console(
+            "作業台\r\nsecondary label",
+            FakeConsoleMessage(console_text),
+        )
+        diagnostics._record_failed_request(
+            "workbench",
+            FakeRequest(request_url),
+            status=None,
+            failure=request_failure,
+        )
+
+        with tempfile.TemporaryDirectory() as directory:
+            artifact_dir = Path(directory)
+            diagnostics.write(artifact_dir)
+
+            validate_jsonl_outputs(artifact_dir, file_prefix="workbench")
+            console_records = [
+                json.loads(line)
+                for line in (artifact_dir / "workbench-console.jsonl")
+                .read_text(encoding="utf-8")
+                .splitlines()
+            ]
+            request_records = [
+                json.loads(line)
+                for line in (artifact_dir / "workbench-failed-requests.jsonl")
+                .read_text(encoding="utf-8")
+                .splitlines()
+            ]
+            self.assertEqual(console_records[0]["text"], console_text)
+            self.assertEqual(request_records[0]["url"], request_url)
+            self.assertEqual(request_records[0]["failure"], request_failure)
+
+            summary_lines = (
+                artifact_dir / "workbench-failure-summary.md"
+            ).read_text(encoding="utf-8").splitlines()
+            console_line = next(
+                line for line in summary_lines if line.startswith("- [作業台")
+            )
+            request_line = next(
+                line for line in summary_lines if line.startswith("- https://例え.test")
+            )
+
+            self.assertNotIn("\r", console_line)
+            self.assertNotIn("\r", request_line)
+            self.assertIn("作業台  secondary label", console_line)
+            self.assertIn("コンソール失敗 🚨  first line second line", console_line)
+            self.assertIn("https://例え.test/失敗  unexpected-url-line?", request_line)
+            self.assertIn("接続失敗 🔌 network reset retry refused", request_line)
+            self.assertLessEqual(
+                len(console_line),
+                8 + (3 * MAX_SUMMARY_VALUE_LENGTH),
+            )
+            self.assertLessEqual(
+                len(request_line),
+                29 + (2 * MAX_SUMMARY_VALUE_LENGTH),
             )
 
     def test_failure_summary_only_includes_first_entries(self) -> None:
