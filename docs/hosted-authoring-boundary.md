@@ -1,11 +1,12 @@
 # Hosted authoring boundary design
 
-**Status:** design only, owner review required
+**Status:** design approved by owner on 2026-09-14; implementation not authorized
 **Applies to:** a possible future multi-device or multi-user AskJamie authoring
 runtime
-**Current decision:** keep authoring loopback-only. Do not host this workbench,
-add a provider integration, or move existing drafts online until this design is
-approved and its acceptance evidence exists.
+**Current decision:** keep authoring loopback-only. This design approval does
+not authorize hosting, a provider integration, or moving existing drafts
+online. Those actions remain prohibited until a separate implementation task is
+authorized and its acceptance evidence exists.
 
 This document defines the minimum boundary for a future hosted authoring
 service. It is not a hosting plan, an authorization to deploy, or evidence that
@@ -212,7 +213,7 @@ boundary and export tests cover host/origin controls and package isolation.
 Those checks do not prove network authentication, hosted authorization,
 encryption, object ACLs, retention, or provider egress.
 
-## 8. Approval gate and prohibited work before approval
+## 8. Implementation gate and prohibited work
 
 Owner approval must be recorded against this document after review of:
 
@@ -226,7 +227,8 @@ Owner approval must be recorded against this document after review of:
 - a manual review of a real or synthetic client-overlay package, with no
   private content added to this public repository.
 
-Until that approval exists, do not:
+Until the design approval, separate implementation authorization, and required
+acceptance evidence all exist, do not:
 
 - bind the workbench to a non-loopback interface or add a Replit workflow;
 - add an authentication connector, provider SDK, model call, or hosted
@@ -238,3 +240,37 @@ Until that approval exists, do not:
 The next implementation, if approved, must be a separate task with an explicit
 provider choice, migration opt-in, test fixtures, and a rollback plan. This
 document does not authorize that task.
+
+## 9. Owner decision record
+
+The owner reviewed and approved this boundary as written on 2026-09-14. The
+approval records these deployment-policy decisions:
+
+- **Identity and hosting posture:** approve the provider-independent identity,
+  authentication, authorization, and hosting requirements in this document.
+  Provider selection, data location, contractual deletion guarantees, and the
+  disaster-recovery region remain deferred until a separate implementation
+  proposal.
+- **Client-record policy:** approve the strict isolated/private policy in
+  Section 5. Client records remain a separate privacy class and cannot enter the
+  public portfolio workspace, public artifact, model training, product
+  analytics, or cross-client processing.
+- **Retention:** approve daily database snapshots and destructive-action
+  recovery points for 35 days, weekly long-term recovery points for 12 weeks,
+  generated ZIP retention for 7 days by default, and content-free audit records
+  for 12 months. Explicit holds continue until released.
+- **Key ownership:** encryption keys must be owner-controlled and separate from
+  the data service. Provider-managed-only key ownership is not approved.
+- **Recovery objectives:** the recovery point objective is 24 hours and the
+  recovery time objective is 72 hours. The disaster-recovery region remains a
+  provider-selection decision.
+- **Migration:** existing local drafts may migrate only through explicit
+  per-project owner opt-in. Migration is never automatic, and continuing in
+  loopback mode cannot require migration.
+
+This approval closes the design-review gate only. It does not satisfy the
+implementation evidence in Section 7 and does not authorize a Replit workflow,
+non-loopback binding, authentication connector, hosted data service, object
+vault, provider or model call, telemetry, deployment secret, or upload of
+private state. The loopback-only and no-provider-call constraints remain in
+force until a separate implementation task is expressly authorized.

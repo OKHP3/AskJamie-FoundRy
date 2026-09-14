@@ -62,8 +62,9 @@ surface_boundary:
     access: local-owner
     contains_private_state: true
 
-# Hosted authoring remains design-only. See docs/hosted-authoring-boundary.md.
-# There is intentionally no hosted API deployment surface.
+# The hosted boundary design is owner-approved, but implementation remains
+# unauthorized. See docs/hosted-authoring-boundary.md. There is intentionally
+# no hosted API deployment surface.
 deployment_surfaces:
   - name: api
     status: none
