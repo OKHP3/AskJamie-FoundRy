@@ -27,6 +27,7 @@ ARTIFACT_DIR = (
     else None
 )
 BROWSER_EXECUTABLE = os.environ.get("BROWSER_EXECUTABLE_PATH")
+CONTROLLED_FAILURE = os.environ.get("BROWSER_CONTROLLED_FAILURE") == "workbench"
 DRAFT_FIELDS = [
     "title",
     "slug",
@@ -163,6 +164,8 @@ async def main() -> None:
                 page = await context.new_page()
                 diagnostics.attach(page, "workbench")
                 await page.goto(f"http://127.0.0.1:{port}", wait_until="networkidle")
+                if CONTROLLED_FAILURE:
+                    raise AssertionError("Controlled workbench browser assertion failure")
 
                 async def navigate_with_confirmation(view: str, accept: bool) -> str:
                     prompt: dict[str, str] = {}
