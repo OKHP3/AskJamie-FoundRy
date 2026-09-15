@@ -14,6 +14,7 @@
 | [`check-registry.py`](check-registry.py) | Registry health check — validates `registry/index.yaml`, reports status summary and graduation candidates | `python3 scripts/check-registry.py` |
 | [`normalize_filenames.py`](normalize_filenames.py) | Filename normalization — converts non-ASCII and non-standard characters to ASCII kebab-case | See below |
 | [`registry-audit.py`](registry-audit.py) | Extended registry audit — checks for orphaned entries, missing repos, or status inconsistencies | `python3 scripts/registry-audit.py` |
+| [`regional-governance-audit.py`](regional-governance-audit.py) | Evidence-led regional mentor audit with registry immutability, protected-client, and owner-approval gates | `python3 scripts/regional-governance-audit.py` |
 | [`foundry-sync.py`](foundry-sync.py) | Check sync posture between this FoundRy and known child repos | `python3 scripts/foundry-sync.py` |
 | [`sync-report.py`](sync-report.py) | Generate a formatted sync status report for review | `python3 scripts/sync-report.py` |
 

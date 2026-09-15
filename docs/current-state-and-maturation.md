@@ -24,7 +24,7 @@ This model guides future development: inspect the mentor's relevant pattern, ada
 | Evaluations | Execute decision cases; record results against saved revisions; check supplied response text | Text checks do not establish model behavior or semantic quality |
 | Skillz | Search 342 entries from a dated public snapshot; retain selected metadata and source provenance | Selection does not install, execute or independently validate skills |
 | Export | Generate private ZIP containing scaffold, manifest, source, instructions, specification and evidence | Registration remains a pending proposal; no remote repository is created |
-| Governance | Read nine canonical records, validate registry schema, preserve lineage and client protections | Registry entries do not prove deployment or operational status |
+| Governance | Read nine canonical records, validate registry schema, preserve lineage and client protections, and run a regional mentor-audit design | Registry entries do not prove deployment or operational status; broader mentor governance and graduation remain deferred |
 | Recovery | Versioned JSON backup/import with full preflight validation and atomic replacement; malformed imports preserve current state | Backup files contain private source and must stay owner-controlled |
 | Privacy | Loopback service, guarded JSON writes, isolated exports, irreversible client flags; owner-only POSIX state permissions; read-only public orientation artifact | No internet-hosted authentication, encryption layer or Windows ACL management |
 

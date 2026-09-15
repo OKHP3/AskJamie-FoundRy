@@ -16,6 +16,8 @@
 
 - Added an evidence-led mentor parity matrix and made the public Pages
   orientation artifact distinct from the private loopback authoring workbench.
+- Added a regional governance audit design with explicit evidence tiers,
+  protected-client checks, registry immutability, and owner-scoped approval.
 - Added confirmed project duplication/deletion and versioned, validated,
   transactional backup/import recovery controls.
 - Added a design-only hosted authoring boundary covering authentication,
