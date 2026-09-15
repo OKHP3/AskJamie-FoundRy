@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import re
 import socket
 import subprocess
 import sys
@@ -367,6 +368,61 @@ async def main() -> None:
                 await page.get_by_label("Title").wait_for()
                 duplicate_title = await page.get_by_label("Title").input_value()
                 assert duplicate_title == "Unsaved draft stays safe copy", duplicate_title
+
+                original_row = page.locator(".project-row").filter(
+                    has=page.locator(
+                        "strong", has_text=re.compile(r"^Unsaved draft stays safe$")
+                    )
+                )
+                duplicate_row = page.locator(".project-row").filter(
+                    has=page.locator(
+                        "strong",
+                        has_text=re.compile(r"^Unsaved draft stays safe copy$"),
+                    )
+                )
+                await original_row.click()
+                await page.get_by_label("Title").wait_for()
+                assert await page.get_by_label("Title").input_value() == "Unsaved draft stays safe"
+                await page.get_by_label("Title").fill("Unsaved original remains")
+                assert await page.locator(".save-state").inner_text() == "Unsaved changes"
+
+                assert await original_row.count() == 1
+                assert await duplicate_row.count() == 1
+                switch_prompt: dict[str, str] = {}
+
+                async def dismiss_project_switch(dialog) -> None:
+                    switch_prompt["type"] = dialog.type
+                    switch_prompt["message"] = dialog.message
+                    await dialog.dismiss()
+
+                page.once("dialog", dismiss_project_switch)
+                await duplicate_row.click()
+                assert switch_prompt.get("type") == "confirm", switch_prompt
+                assert (
+                    switch_prompt.get("message")
+                    == "This project has unsaved changes. Leave without saving?"
+                ), switch_prompt
+                assert await page.get_by_label("Title").input_value() == "Unsaved original remains"
+                assert await page.locator(".save-state").inner_text() == "Unsaved changes"
+                saved_titles = await page.evaluate(
+                    """async () => (await (await fetch('/api/projects')).json()).projects.map((item) => item.title)"""
+                )
+                assert "Unsaved original remains" not in saved_titles, saved_titles
+                assert "Unsaved draft stays safe copy" in saved_titles, saved_titles
+
+                page.once("dialog", lambda dialog: dialog.accept())
+                await duplicate_row.click()
+                await page.get_by_label("Title").wait_for()
+                assert await page.get_by_label("Title").input_value() == duplicate_title
+                assert await page.locator(".save-state").inner_text() == "Saved locally"
+                selected_title = await page.evaluate(
+                    """async () => {
+                        const data = await (await fetch('/api/projects')).json();
+                        return data.projects.find((item) => item.title === "Unsaved draft stays safe copy")?.title;
+                    }"""
+                )
+                assert selected_title == duplicate_title, selected_title
+
                 page.once("dialog", lambda dialog: dialog.accept())
                 await page.get_by_role("button", name="Delete").click()
                 await page.get_by_text("The editor is waiting").wait_for()
