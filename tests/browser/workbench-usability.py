@@ -415,13 +415,108 @@ async def main() -> None:
                 await page.get_by_label("Title").wait_for()
                 assert await page.get_by_label("Title").input_value() == duplicate_title
                 assert await page.locator(".save-state").inner_text() == "Saved locally"
-                selected_title = await page.evaluate(
+                await page.get_by_label("Title").fill("Unsaved duplicate remains")
+                assert await page.locator(".save-state").inner_text() == "Unsaved changes"
+
+                saved_before_reopen = await page.evaluate(
                     """async () => {
                         const data = await (await fetch('/api/projects')).json();
-                        return data.projects.find((item) => item.title === "Unsaved draft stays safe copy")?.title;
+                        return Object.fromEntries(
+                            data.projects.map((item) => [
+                                item.id,
+                                { title: item.title, revision: item.revision },
+                            ]),
+                        );
                     }"""
                 )
-                assert selected_title == duplicate_title, selected_title
+                assert sorted(
+                    item["title"] for item in saved_before_reopen.values()
+                ) == [
+                    "Unsaved draft stays safe",
+                    "Unsaved draft stays safe copy",
+                ], saved_before_reopen
+
+                await browser.close()
+                browser = None
+                context = await playwright.chromium.launch_persistent_context(
+                    browser_profile,
+                    viewport={"width": 1440, "height": 900},
+                    **launch_options,
+                )
+                browser = context.browser
+                page = await context.new_page()
+                diagnostics.attach(page, "reopened-multiple-drafts")
+                await page.goto(f"http://127.0.0.1:{port}", wait_until="networkidle")
+                await page.get_by_text("Local drafts found").wait_for()
+
+                original_recovery = page.locator(".local-recovery-item").filter(
+                    has=page.locator(
+                        "strong", has_text=re.compile(r"^Unsaved original remains$")
+                    )
+                )
+                duplicate_recovery = page.locator(".local-recovery-item").filter(
+                    has=page.locator(
+                        "strong", has_text=re.compile(r"^Unsaved duplicate remains$")
+                    )
+                )
+                assert await original_recovery.count() == 1
+                assert await duplicate_recovery.count() == 1
+
+                await original_recovery.get_by_role(
+                    "button", name="Discard local draft"
+                ).click()
+                assert await original_recovery.count() == 0
+                assert await duplicate_recovery.count() == 1
+                assert await page.get_by_role(
+                    "button", name="Restore local draft"
+                ).count() == 1
+                saved_after_discard = await page.evaluate(
+                    """async () => {
+                        const data = await (await fetch('/api/projects')).json();
+                        return Object.fromEntries(
+                            data.projects.map((item) => [
+                                item.id,
+                                { title: item.title, revision: item.revision },
+                            ]),
+                        );
+                    }"""
+                )
+                assert saved_after_discard == saved_before_reopen, (
+                    saved_before_reopen,
+                    saved_after_discard,
+                )
+
+                await duplicate_recovery.get_by_role(
+                    "button", name="Restore local draft"
+                ).click()
+                await page.get_by_label("Title").wait_for()
+                assert (
+                    await page.get_by_label("Title").input_value()
+                    == "Unsaved duplicate remains"
+                )
+                assert await page.locator(".save-state").inner_text() == "Unsaved changes"
+                saved_after_restore = await page.evaluate(
+                    """async () => {
+                        const data = await (await fetch('/api/projects')).json();
+                        return Object.fromEntries(
+                            data.projects.map((item) => [
+                                item.id,
+                                { title: item.title, revision: item.revision },
+                            ]),
+                        );
+                    }"""
+                )
+                assert saved_after_restore == saved_before_reopen, (
+                    saved_before_reopen,
+                    saved_after_restore,
+                )
+
+                await page.locator(".editor .local-recovery-box").get_by_role(
+                    "button", name="Discard local draft"
+                ).click()
+                await page.get_by_label("Title").wait_for()
+                assert await page.get_by_label("Title").input_value() == duplicate_title
+                assert await page.locator(".save-state").inner_text() == "Saved locally"
 
                 page.once("dialog", lambda dialog: dialog.accept())
                 await page.get_by_role("button", name="Delete").click()
