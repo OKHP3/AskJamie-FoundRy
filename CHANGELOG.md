@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Reject non-mapping approval records without crashing the governance report,
+  remove the approval unknown once verified, preserve zero-valued draft revision
+  metadata, and explicitly close persistent browser contexts before reopening.
+
 - Recovered fourteen additional Replit commits through a checksum-verified Git
   bundle and retained their history for fast-forward synchronization.
 - Fixed Windows restore-location evidence and used the active Python interpreter

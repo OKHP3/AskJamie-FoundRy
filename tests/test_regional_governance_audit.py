@@ -97,12 +97,33 @@ class RegionalGovernanceAuditTests(unittest.TestCase):
             approval_path.write_text(yaml.safe_dump(approval), encoding="utf-8")
             report = MODULE.build_report(root, approval_path=approval_path)
             self.assertEqual(report["owner_approval"]["status"], "APPROVED")
+            self.assertNotIn(
+                "Owner has not approved adoption of this exact scope and digest.",
+                report["remaining_unknowns"],
+            )
+            self.assertEqual(report["audit"]["adoption"], "DEFERRED")
 
             changed = copy.deepcopy(approval)
             changed["scope"] = "public-graduation"
             approval_path.write_text(yaml.safe_dump(changed), encoding="utf-8")
             report = MODULE.build_report(root, approval_path=approval_path)
             self.assertEqual(report["owner_approval"]["status"], "INVALID")
+            self.assertIn(
+                "Owner has not approved adoption of this exact scope and digest.",
+                report["remaining_unknowns"],
+            )
+
+    def test_non_mapping_approval_preserves_an_invalid_evidence_report(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self.copy_fixture(tmp)
+            approval_path = root / "approval.yaml"
+            for content in ("", "null", "approved", "42", "[]", "- approve"):
+                with self.subTest(content=content):
+                    approval_path.write_text(content, encoding="utf-8")
+                    report = MODULE.build_report(root, approval_path=approval_path)
+                    self.assertEqual(report["owner_approval"]["status"], "INVALID")
+                    self.assertEqual(report["audit"]["adoption"], "DEFERRED")
+                    self.assertTrue(report["registry"]["unchanged_during_audit"])
 
 
 if __name__ == "__main__":

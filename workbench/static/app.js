@@ -192,7 +192,7 @@
   function persistLocalDraft(project) {
     if (!project?.id) return;
     const drafts = readLocalDrafts();
-    const baseRevision = project._localBaseRevision || project.revision;
+    const baseRevision = project._localBaseRevision ?? project.revision;
     drafts[project.id] = {
       projectId: project.id,
       baseRevision,
@@ -211,7 +211,7 @@
   }
   function markDraftDirty(project) {
     if (!project) return;
-    if (!project._localBaseRevision)
+    if (project._localBaseRevision == null)
       project._localBaseRevision = project.revision;
     project._dirty = true;
     persistLocalDraft(project);
@@ -759,7 +759,7 @@
         }),
         el("p", {
           class: "field-hint",
-          text: `Saved revision ${project.revision || 0} · local base revision ${project._localBaseRevision || project.revision || 0}`,
+          text: `Saved revision ${project.revision ?? 0} · local base revision ${project._localBaseRevision ?? project.revision ?? 0}`,
         }),
         el("div", { class: "card-actions" }, [
           ...(revisionMismatch
