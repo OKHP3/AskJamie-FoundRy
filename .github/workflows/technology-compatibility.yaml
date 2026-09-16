@@ -121,6 +121,8 @@ jobs:
 
       - name: Run exported decision browser acceptance
         shell: bash
+        env:
+          BROWSER_ARTIFACTS_DIR: ${{ runner.temp }}/foundry-browser-artifacts
         run: |
           set -euo pipefail
           export EXPORT_DATA_DIR="${RUNNER_TEMP}/foundry-export-data"
@@ -238,65 +240,23 @@ jobs:
                   time.sleep(0.25)
           PY
 
+          python tests/browser/export-acceptance.py
+          echo "Export browser acceptance passed."
+
+          if BROWSER_CONTROLLED_FAILURE=export python tests/browser/export-acceptance.py; then
+            echo "Controlled export browser assertion unexpectedly passed." >&2
+            exit 1
+          fi
           python - <<'PY'
-          import asyncio
           import os
           from pathlib import Path
+          from tests.browser.browser_diagnostics import validate_jsonl_outputs
 
-          from playwright.async_api import async_playwright
-
-          from tests.browser.browser_diagnostics import (
-              BrowserDiagnostics,
-              validate_jsonl_outputs,
-          )
-
-          ARTIFACT_DIR = Path(os.environ["RUNNER_TEMP"]) / "foundry-browser-artifacts"
-
-          async def check_export():
-              diagnostics = BrowserDiagnostics()
-              async with async_playwright() as playwright:
-                  browser = await playwright.chromium.launch()
-                  page = await browser.new_page()
-                  diagnostics.attach(page, "export-runner")
-                  try:
-                      await page.goto(
-                          "http://127.0.0.1:8767/index.html",
-                          wait_until="networkidle",
-                      )
-                      assert await page.get_by_role("button", name="Yes").is_visible()
-                      assert await page.get_by_role("button", name="No").is_visible()
-                      assert await page.get_by_role("button", name="Restart").is_visible()
-                      await page.get_by_role("button", name="Yes").click()
-                      result = await page.locator("#result").inner_text()
-                      assert "<img src=x onerror=alert(1)>" in result
-                      assert await page.locator("img").count() == 0
-                      await page.get_by_role("button", name="Restart").click()
-                      assert await page.locator("#question").inner_text() == "Is the request clear?"
-                  except Exception:
-                      try:
-                          await page.screenshot(
-                              path=os.path.join(
-                                  os.environ["RUNNER_TEMP"],
-                                  "foundry-browser-artifacts",
-                                  "export-failure.png",
-                              ),
-                              full_page=True,
-                          )
-                      except Exception:
-                          pass
-                      diagnostics.write(
-                          ARTIFACT_DIR,
-                          check_name="Exported decision",
-                          file_prefix="export",
-                      )
-                      validate_jsonl_outputs(ARTIFACT_DIR, file_prefix="export")
-                      raise
-                  finally:
-                      await browser.close()
-
-          asyncio.run(check_export())
+          artifact_dir = Path(os.environ["BROWSER_ARTIFACTS_DIR"])
+          validate_jsonl_outputs(artifact_dir, file_prefix="export")
+          summary = artifact_dir / "export-failure-summary.md"
+          assert summary.is_file() and summary.stat().st_size > 0, summary
           PY
-          echo "Export browser acceptance passed."
 
       - name: Run workbench usability browser acceptance
         shell: bash
@@ -305,6 +265,28 @@ jobs:
         run: |
           set -o pipefail
           python tests/browser/workbench-usability.py 2>&1 | tee "${BROWSER_ARTIFACTS_DIR}/workbench-usability.log"
+
+      - name: Confirm workbench failures leave diagnostics
+        shell: bash
+        env:
+          BROWSER_ARTIFACTS_DIR: ${{ runner.temp }}/foundry-browser-artifacts
+          BROWSER_CONTROLLED_FAILURE: workbench
+        run: |
+          set -euo pipefail
+          if python tests/browser/workbench-usability.py; then
+            echo "Controlled workbench browser assertion unexpectedly passed." >&2
+            exit 1
+          fi
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          from tests.browser.browser_diagnostics import validate_jsonl_outputs
+
+          artifact_dir = Path(os.environ["BROWSER_ARTIFACTS_DIR"])
+          validate_jsonl_outputs(artifact_dir, file_prefix="workbench")
+          summary = artifact_dir / "workbench-failure-summary.md"
+          assert summary.is_file() and summary.stat().st_size > 0, summary
+          PY
 
       - name: Upload browser diagnostics
         if: ${{ always() }}

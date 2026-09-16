@@ -123,6 +123,17 @@ Registry health check:
 python3 scripts/check-registry.py
 ```
 
+Broader mentor governance and graduation surfaces require the evidence-led
+[regional governance audit](regional-governance-audit.md) before adoption:
+
+```bash
+python3 scripts/regional-governance-audit.py
+```
+
+The audit is read-only. It preserves protected-client controls, records the
+registry digest, and keeps adoption deferred until the named mentor evidence
+and owner approval are attached to the exact scope.
+
 ---
 
 ## Merge Protection

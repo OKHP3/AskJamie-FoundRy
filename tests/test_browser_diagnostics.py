@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -14,6 +16,7 @@ from browser_diagnostics import (  # noqa: E402
     MAX_DIAGNOSTIC_ENTRIES,
     MAX_DIAGNOSTIC_VALUE_LENGTH,
     MAX_SUMMARY_ENTRIES,
+    MAX_SUMMARY_VALUE_LENGTH,
     BrowserDiagnostics,
     validate_jsonl_outputs,
 )
@@ -50,6 +53,12 @@ class FakeResponse:
 
 
 class BrowserDiagnosticsTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.environment = patch.dict(os.environ)
+        self.environment.start()
+        self.addCleanup(self.environment.stop)
+        os.environ.pop("GITHUB_STEP_SUMMARY", None)
+
     def test_attach_captures_console_and_failed_request_events(self) -> None:
         page = FakePage()
         diagnostics = BrowserDiagnostics()
@@ -165,6 +174,159 @@ class BrowserDiagnosticsTests(unittest.TestCase):
                 summary,
             )
 
+    def test_unicode_and_multiline_values_keep_failure_evidence_readable(self) -> None:
+        diagnostics = BrowserDiagnostics()
+        console_text = (
+            "コンソール失敗 🚨\r\nfirst line\nsecond line "
+            + ("界" * MAX_SUMMARY_VALUE_LENGTH)
+        )
+        request_url = (
+            "https://例え.test/失敗\r\nunexpected-url-line?"
+            + ("値" * MAX_SUMMARY_VALUE_LENGTH)
+        )
+        request_failure = (
+            "接続失敗 🔌\rnetwork reset\nretry refused "
+            + ("障" * MAX_SUMMARY_VALUE_LENGTH)
+        )
+        diagnostics._record_console(
+            "作業台\r\nsecondary label",
+            FakeConsoleMessage(console_text),
+        )
+        diagnostics._record_failed_request(
+            "workbench",
+            FakeRequest(request_url),
+            status=None,
+            failure=request_failure,
+        )
+
+        with tempfile.TemporaryDirectory() as directory:
+            artifact_dir = Path(directory)
+            diagnostics.write(artifact_dir)
+
+            validate_jsonl_outputs(artifact_dir, file_prefix="workbench")
+            console_records = [
+                json.loads(line)
+                for line in (artifact_dir / "workbench-console.jsonl")
+                .read_text(encoding="utf-8")
+                .splitlines()
+            ]
+            request_records = [
+                json.loads(line)
+                for line in (artifact_dir / "workbench-failed-requests.jsonl")
+                .read_text(encoding="utf-8")
+                .splitlines()
+            ]
+            self.assertEqual(console_records[0]["text"], console_text)
+            self.assertEqual(request_records[0]["url"], request_url)
+            self.assertEqual(request_records[0]["failure"], request_failure)
+
+            summary_lines = (
+                artifact_dir / "workbench-failure-summary.md"
+            ).read_text(encoding="utf-8").splitlines()
+            console_line = next(
+                line for line in summary_lines if line.startswith("- [作業台")
+            )
+            request_line = next(
+                line for line in summary_lines if line.startswith("- https://例え.test")
+            )
+
+            self.assertNotIn("\r", console_line)
+            self.assertNotIn("\r", request_line)
+            self.assertIn("作業台  secondary label", console_line)
+            self.assertIn("コンソール失敗 🚨  first line second line", console_line)
+            self.assertIn("https://例え.test/失敗  unexpected-url-line?", request_line)
+            self.assertIn("接続失敗 🔌 network reset retry refused", request_line)
+            self.assertLessEqual(
+                len(console_line),
+                8 + (3 * MAX_SUMMARY_VALUE_LENGTH),
+            )
+            self.assertLessEqual(
+                len(request_line),
+                29 + (2 * MAX_SUMMARY_VALUE_LENGTH),
+            )
+
+    def test_unusual_check_name_and_page_label_stay_single_line_and_bounded(
+        self,
+    ) -> None:
+        diagnostics = BrowserDiagnostics()
+        check_name = (
+            "確認 `失敗` 🚨\r\nsecondary check line "
+            + ("検" * MAX_SUMMARY_VALUE_LENGTH)
+        )
+        page_label = (
+            "作業台 `主要`\r\nsecondary page line "
+            + ("頁" * MAX_SUMMARY_VALUE_LENGTH)
+        )
+        diagnostics._record_console(
+            page_label,
+            FakeConsoleMessage("Console failure"),
+        )
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            artifact_dir = root / "artifacts"
+            step_summary = root / "github-step-summary.md"
+
+            with patch.dict(
+                os.environ,
+                {"GITHUB_STEP_SUMMARY": str(step_summary)},
+            ):
+                diagnostics.write(
+                    artifact_dir,
+                    check_name=check_name,
+                    file_prefix="metadata",
+                )
+
+            generated = (
+                artifact_dir / "metadata-failure-summary.md"
+            ).read_text(encoding="utf-8")
+            appended = step_summary.read_text(encoding="utf-8")
+            generated_lines = generated.splitlines()
+            check_line = next(
+                line for line in generated_lines if line.startswith("- Check:")
+            )
+            evidence_line = next(
+                line for line in generated_lines if line.startswith("- [作業台")
+            )
+
+            self.assertEqual(
+                json.loads(
+                    (artifact_dir / "metadata-console.jsonl")
+                    .read_text(encoding="utf-8")
+                    .splitlines()[0]
+                )["page"],
+                page_label,
+            )
+            self.assertNotIn("\r", check_line)
+            self.assertNotIn("\n", check_line)
+            self.assertNotIn("`", check_line)
+            self.assertIn("確認 '失敗' 🚨  secondary check line", check_line)
+            self.assertEqual(
+                len(check_line),
+                len("- Check: ") + MAX_SUMMARY_VALUE_LENGTH,
+            )
+            self.assertNotIn("\r", evidence_line)
+            self.assertNotIn("\n", evidence_line)
+            self.assertNotIn("`", evidence_line)
+            self.assertIn(
+                "[作業台 '主要'  secondary page line",
+                evidence_line,
+            )
+            self.assertLessEqual(
+                len(evidence_line),
+                len("- [] error: Console failure")
+                + MAX_SUMMARY_VALUE_LENGTH,
+            )
+            self.assertEqual(appended, generated + "\n")
+            self.assertEqual(
+                appended.splitlines().count(check_line),
+                1,
+            )
+            self.assertEqual(
+                appended.splitlines().count(evidence_line),
+                1,
+            )
+
     def test_failure_summary_only_includes_first_entries(self) -> None:
         diagnostics = BrowserDiagnostics()
         for index in range(MAX_SUMMARY_ENTRIES + 1):
@@ -181,6 +343,31 @@ class BrowserDiagnosticsTests(unittest.TestCase):
             self.assertIn("console message 0", summary)
             self.assertIn("console message 4", summary)
             self.assertNotIn("console message 5", summary)
+
+    def test_failure_summary_is_appended_to_github_step_summary(self) -> None:
+        diagnostics = BrowserDiagnostics()
+        diagnostics._record_console("workbench", FakeConsoleMessage("Console failure"))
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            step_summary = root / "github-step-summary.md"
+            step_summary.write_text("# Earlier step output\n\n", encoding="utf-8")
+
+            with patch.dict(
+                os.environ,
+                {"GITHUB_STEP_SUMMARY": str(step_summary)},
+            ):
+                diagnostics.write(
+                    root / "artifacts",
+                    check_name="Workbench usability",
+                    file_prefix="workbench",
+                )
+
+            displayed = step_summary.read_text(encoding="utf-8")
+            self.assertTrue(displayed.startswith("# Earlier step output\n\n"))
+            self.assertIn("# Browser acceptance failure", displayed)
+            self.assertIn("- Check: Workbench usability", displayed)
+            self.assertIn("[workbench] error: Console failure", displayed)
 
     def test_empty_failure_artifacts_are_written_as_readable_jsonl(self) -> None:
         diagnostics = BrowserDiagnostics()

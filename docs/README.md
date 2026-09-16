@@ -16,6 +16,7 @@
 | [`research/2026-09-07-universe/universe-research.md`](research/2026-09-07-universe/universe-research.md) | Seven-element research and evidence gaps |
 | [`relay-design.md`](relay-design.md) | Architecture and design rationale for this relay layer |
 | [`governance.md`](governance.md) | Full governance reference — roles, rules, and obligations |
+| [`regional-governance-audit.md`](regional-governance-audit.md) | Evidence tiers and owner-approved audit gate for adapting broader mentor governance |
 | [`naming-conventions.md`](naming-conventions.md) | Canonical naming patterns for repos, files, and folders |
 | [`migration-guide.md`](migration-guide.md) | How to bring legacy or pre-standard repos up to spec |
 | [`ecosystem-map.md`](ecosystem-map.md) | Visual and textual map of the OKHP3 / AskJamie universe |

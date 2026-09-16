@@ -219,6 +219,12 @@ approving reviews on 2026-09-10. Automated review is advisory. Follow the sync
 procedure in `replit.md` for Replit
 OAuth workflow-scope rejections. Preserve commits and use an already authorized
 connection; never weaken protection or transfer credentials to repair a push.
+Confirm the current branch and divergence in the Replit Shell because the Git
+panel can be stale. Keep pulls fast-forward-only, create task branches before
+committing, and independently verify Windows and Replit after integration.
+Retire resolved integration worktrees so the canonical Windows project remains
+unambiguous. Authentication failures and workflow-scope failures are separate
+from the protected-main PR requirement; `replit.md` documents each route.
 
 All three Found-Ry source repositories are intentionally public by owner
 confirmation. Private draft data and protected child capabilities remain

@@ -24,7 +24,7 @@ This model guides future development: inspect the mentor's relevant pattern, ada
 | Evaluations | Execute decision cases; record results against saved revisions; check supplied response text | Text checks do not establish model behavior or semantic quality |
 | Skillz | Search 342 entries from a dated public snapshot; retain selected metadata and source provenance | Selection does not install, execute or independently validate skills |
 | Export | Generate private ZIP containing scaffold, manifest, source, instructions, specification and evidence | Registration remains a pending proposal; no remote repository is created |
-| Governance | Read nine canonical records, validate registry schema, preserve lineage and client protections | Registry entries do not prove deployment or operational status |
+| Governance | Read nine canonical records, validate registry schema, preserve lineage and client protections, and run a regional mentor-audit design | Registry entries do not prove deployment or operational status; broader mentor governance and graduation remain deferred |
 | Recovery | Versioned JSON backup/import with full preflight validation and atomic replacement; malformed imports preserve current state | Backup files contain private source and must stay owner-controlled |
 | Privacy | Loopback service, guarded JSON writes, isolated exports, irreversible client flags; owner-only POSIX state permissions; read-only public orientation artifact | No internet-hosted authentication, encryption layer or Windows ACL management |
 
@@ -57,6 +57,18 @@ These are proposed next steps, not completed features or promised dates.
 | 5. Graduate a capability | Choose one target platform and implement the minimum export/import adapter needed for the pilot; review its pending registry proposal | A real child capability works on that platform, its tests are rerun there, and registration reflects verified state |
 | 6. Add assistance selectively | If pilots show value, add optional model-assisted drafting/evaluation with explicit cost limits, data routing, provider abstraction and measured quality | Improvement over the manual baseline with known cost and acceptable data handling |
 | 7. Choose deployment deliberately | If cross-device or team use is required, design authenticated hosting, authorization, backups, migrations and operations before Replit or other exposure | Tested access boundaries, restore/recovery procedure, ownership and deployment evidence |
+
+The owner-approved hosted design now sets a provider-independent private-data
+policy: daily snapshots and destructive-action recovery points expire after 35
+days, weekly recovery points after 12 weeks, generated ZIPs after 7 days, and
+content-free audit records after 12 months. Named holds pause only the affected
+deletions; they do not widen access. Deletion covers active data, revisions,
+evaluations, object copies, downloads, backups, indexes, caches, and derived
+metadata, and remains pending until provider evidence confirms every in-scope
+copy. Owner-controlled keys must remain separate from the data service. These
+are requirements for selecting and certifying a future host, not claims about a
+provider or authorization to move local data online. See
+[the hosted authoring boundary](hosted-authoring-boundary.md#6-backup-and-retention-design).
 
 The next useful milestone is a repeatable, tested AskJamie capability produced by
 this workbench and successfully used outside it. Feature breadth should follow

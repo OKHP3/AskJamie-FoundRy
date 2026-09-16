@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 
@@ -143,6 +144,12 @@ class BrowserDiagnostics:
             artifact_dir / f"{file_prefix}-failure-summary.md",
             check_name,
         )
+        step_summary = os.environ.get("GITHUB_STEP_SUMMARY")
+        if step_summary:
+            self._append_step_summary(
+                Path(step_summary),
+                artifact_dir / f"{file_prefix}-failure-summary.md",
+            )
 
     def _write_summary(self, path: Path, check_name: str) -> None:
         lines = [
@@ -185,6 +192,12 @@ class BrowserDiagnostics:
             lines.append("- None captured.")
 
         path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    @staticmethod
+    def _append_step_summary(step_summary: Path, failure_summary: Path) -> None:
+        with step_summary.open("a", encoding="utf-8") as summary:
+            summary.write(failure_summary.read_text(encoding="utf-8"))
+            summary.write("\n")
 
 
 def validate_jsonl_outputs(artifact_dir: Path, *, file_prefix: str) -> None:

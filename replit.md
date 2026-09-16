@@ -16,10 +16,11 @@ The authoring workbench is a Python standard-library/SQLite application bound to
 `127.0.0.1`. It is not hosted in Replit preview or deployment. Public repository
 visibility proves source visibility only, not hosted capability operation.
 The hosted boundary is documented in
-[docs/hosted-authoring-boundary.md](docs/hosted-authoring-boundary.md) and is
-design-only. It does not authorize a workflow, hosted database, authentication
-connector, provider call, telemetry service, or upload of `.foundry-data/`,
-backups, client records, or generated packages.
+[docs/hosted-authoring-boundary.md](docs/hosted-authoring-boundary.md). Its
+provider-independent design was owner-approved on 2026-09-14, but implementation
+remains unauthorized. It does not authorize a workflow, hosted database,
+authentication connector, provider call, telemetry service, or upload of
+`.foundry-data/`, backups, client records, or generated packages.
 
 ## Run locally
 
@@ -90,3 +91,43 @@ Fetch again in Replit and verify the intended branch and commit. Use
 the old Replit commits divergent, retain that branch and coordinate an explicit
 switch to a clean branch from `origin/main`; do not reset away pending work.
 Pages publication remains a separate, manually approved release.
+
+### Distinguish the three sync failures
+
+- `GH013` on `main`: push a task branch, pass CI, and merge its PR. Zero
+  external approvals does not remove the PR requirement.
+- `Invalid username or token`: the Shell Git credential is not accepted.
+  A connected GitHub integration does not establish that Shell authentication
+  works. Refresh the existing Git connection or use the verified bundle route
+  above. Do not paste a token into a command, remote URL, or agent message.
+- `without workflow scope`: use the existing workflow-authorized Windows
+  connection for those commits. Repeating login, pull, or push does not make
+  the existing OAuth grant broader.
+
+Use the Shell as the authoritative checkout check. The Git panel can display an
+older branch and commit count until refreshed. Start each source task from a
+clean, current `main`, then create a named task branch before committing:
+
+```bash
+git status --short --branch
+git fetch origin
+git rev-list --left-right --count HEAD...origin/main
+git config --local pull.ff only
+# Continue only after preserving pending work and confirming main can fast-forward.
+git switch main
+git merge --ff-only origin/main
+git switch -c task/descriptive-name
+# After committing the task's reviewed files:
+git push -u origin task/descriptive-name
+```
+
+After the PR merges, fetch and fast-forward `main` in both Replit and the
+Windows project. Confirm clean status and `0 0` divergence in each. Prefer a
+merge commit for recovered Replit history so the original commits remain
+ancestors of `main`. Retire resolved task branches and clean temporary worktrees
+after verifying their work is merged or preserved in dated archive refs.
+
+The canonical Windows folder is `askjamie-foundry` under the owner's GitHub
+mirrors directory. A temporary `askjamie-foundry-sync-*` worktree is an
+integration workspace, not another canonical copy. File Explorer reflects the
+checked-out files in its selected folder; it does not independently sync Git.

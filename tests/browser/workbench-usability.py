@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import re
 import socket
 import subprocess
 import sys
@@ -27,6 +28,7 @@ ARTIFACT_DIR = (
     else None
 )
 BROWSER_EXECUTABLE = os.environ.get("BROWSER_EXECUTABLE_PATH")
+CONTROLLED_FAILURE = os.environ.get("BROWSER_CONTROLLED_FAILURE") == "workbench"
 DRAFT_FIELDS = [
     "title",
     "slug",
@@ -101,6 +103,7 @@ async def main() -> None:
     if ARTIFACT_DIR:
         ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as data_dir:
+        browser_profile = Path(data_dir) / "browser-profile"
         server = subprocess.Popen(
             [str(PYTHON), "-m", "workbench", "--port", str(port), "--data-dir", data_dir],
             cwd=ROOT,
@@ -159,10 +162,19 @@ async def main() -> None:
                 for size in [(1440, 900), (768, 900), (390, 844), (320, 568)]:
                     await load_with_delay(*size)
 
-                context = await browser.new_context(viewport={"width": 1440, "height": 900})
+                await browser.close()
+                browser = None
+                context = await playwright.chromium.launch_persistent_context(
+                    browser_profile,
+                    viewport={"width": 1440, "height": 900},
+                    **launch_options,
+                )
+                browser = context.browser
                 page = await context.new_page()
                 diagnostics.attach(page, "workbench")
                 await page.goto(f"http://127.0.0.1:{port}", wait_until="networkidle")
+                if CONTROLLED_FAILURE:
+                    raise AssertionError("Controlled workbench browser assertion failure")
 
                 async def navigate_with_confirmation(view: str, accept: bool) -> str:
                     prompt: dict[str, str] = {}
@@ -257,6 +269,21 @@ async def main() -> None:
                 assert await page.get_by_label("Title").input_value() == "Unsaved draft stays safe"
                 assert await page.locator(".save-state").inner_text() == "Unsaved changes"
 
+                newer_saved = await page.evaluate(
+                    """async () => {
+                        const response = await fetch('/api/projects');
+                        const data = await response.json();
+                        return data.projects[0];
+                    }"""
+                )
+                newer_saved["title"] = "Newer saved work"
+                put_json(
+                    port,
+                    f"/api/projects/{newer_saved['id']}",
+                    {key: newer_saved[key] for key in DRAFT_FIELDS}
+                    | {"revision": newer_saved["revision"]},
+                )
+
                 refresh_prompt: dict[str, str] = {}
 
                 async def accept_refresh(dialog) -> None:
@@ -271,27 +298,55 @@ async def main() -> None:
                 saved_title = await page.evaluate(
                     """async () => (await (await fetch('/api/projects')).json()).projects[0].title"""
                 )
-                assert saved_title == "External update", saved_title
+                assert saved_title == "Newer saved work", saved_title
 
                 await page.get_by_role("button", name="Restore local draft").click()
                 await page.get_by_label("Title").wait_for()
                 assert await page.get_by_label("Title").input_value() == "Unsaved draft stays safe"
-                assert await page.locator(".local-recovery-box").count() >= 1
+                editor_recovery = page.locator(".editor .local-recovery-box")
+                assert await editor_recovery.count() == 1
+                recovery = await editor_recovery.inner_text()
+                assert "based on an older revision" in recovery
+                assert "Saved revision" in recovery
+                assert "local base revision" in recovery
                 assert await page.locator(".save-state").inner_text() == "Unsaved changes"
+                assert await page.get_by_role("button", name="Save changes").is_disabled()
                 saved_title = await page.evaluate(
                     """async () => (await (await fetch('/api/projects')).json()).projects[0].title"""
                 )
-                assert saved_title == "External update", saved_title
+                assert saved_title == "Newer saved work", saved_title
 
+                await page.get_by_role(
+                    "button", name="Use recovered draft as next revision"
+                ).click()
+                assert await page.get_by_role("button", name="Save changes").is_enabled()
+                saved_title = await page.evaluate(
+                    """async () => (await (await fetch('/api/projects')).json()).projects[0].title"""
+                )
+                assert saved_title == "Newer saved work", saved_title
                 await page.get_by_role("button", name="Save changes").click()
                 await page.get_by_text("Saved. The desk has a new revision.").wait_for()
                 await page.locator(".save-state").filter(has_text="Saved locally").wait_for()
                 await page.get_by_label("Title").fill("Discarded local draft")
-                refresh_prompt = {}
-                page.once("dialog", accept_refresh)
-                await page.reload(wait_until="networkidle")
-                assert refresh_prompt.get("type") == "beforeunload", refresh_prompt
+                assert await page.locator(".save-state").inner_text() == "Unsaved changes"
+
+                await browser.close()
+                browser = None
+                context = await playwright.chromium.launch_persistent_context(
+                    browser_profile,
+                    viewport={"width": 1440, "height": 900},
+                    **launch_options,
+                )
+                browser = context.browser
+                page = await context.new_page()
+                diagnostics.attach(page, "reopened-workbench")
+                await page.goto(f"http://127.0.0.1:{port}", wait_until="networkidle")
                 await page.get_by_text("Local drafts found").wait_for()
+                assert await page.get_by_role("button", name="Restore local draft").count() == 1
+                saved_title = await page.evaluate(
+                    """async () => (await (await fetch('/api/projects')).json()).projects[0].title"""
+                )
+                assert saved_title == "Unsaved draft stays safe", saved_title
                 await page.get_by_role("button", name="Discard local draft").click()
                 assert await page.get_by_text("Local drafts found").count() == 0
                 saved_title = await page.evaluate(
@@ -313,6 +368,156 @@ async def main() -> None:
                 await page.get_by_label("Title").wait_for()
                 duplicate_title = await page.get_by_label("Title").input_value()
                 assert duplicate_title == "Unsaved draft stays safe copy", duplicate_title
+
+                original_row = page.locator(".project-row").filter(
+                    has=page.locator(
+                        "strong", has_text=re.compile(r"^Unsaved draft stays safe$")
+                    )
+                )
+                duplicate_row = page.locator(".project-row").filter(
+                    has=page.locator(
+                        "strong",
+                        has_text=re.compile(r"^Unsaved draft stays safe copy$"),
+                    )
+                )
+                await original_row.click()
+                await page.get_by_label("Title").wait_for()
+                assert await page.get_by_label("Title").input_value() == "Unsaved draft stays safe"
+                await page.get_by_label("Title").fill("Unsaved original remains")
+                assert await page.locator(".save-state").inner_text() == "Unsaved changes"
+
+                assert await original_row.count() == 1
+                assert await duplicate_row.count() == 1
+                switch_prompt: dict[str, str] = {}
+
+                async def dismiss_project_switch(dialog) -> None:
+                    switch_prompt["type"] = dialog.type
+                    switch_prompt["message"] = dialog.message
+                    await dialog.dismiss()
+
+                page.once("dialog", dismiss_project_switch)
+                await duplicate_row.click()
+                assert switch_prompt.get("type") == "confirm", switch_prompt
+                assert (
+                    switch_prompt.get("message")
+                    == "This project has unsaved changes. Leave without saving?"
+                ), switch_prompt
+                assert await page.get_by_label("Title").input_value() == "Unsaved original remains"
+                assert await page.locator(".save-state").inner_text() == "Unsaved changes"
+                saved_titles = await page.evaluate(
+                    """async () => (await (await fetch('/api/projects')).json()).projects.map((item) => item.title)"""
+                )
+                assert "Unsaved original remains" not in saved_titles, saved_titles
+                assert "Unsaved draft stays safe copy" in saved_titles, saved_titles
+
+                page.once("dialog", lambda dialog: dialog.accept())
+                await duplicate_row.click()
+                await page.get_by_label("Title").wait_for()
+                assert await page.get_by_label("Title").input_value() == duplicate_title
+                assert await page.locator(".save-state").inner_text() == "Saved locally"
+                await page.get_by_label("Title").fill("Unsaved duplicate remains")
+                assert await page.locator(".save-state").inner_text() == "Unsaved changes"
+
+                saved_before_reopen = await page.evaluate(
+                    """async () => {
+                        const data = await (await fetch('/api/projects')).json();
+                        return Object.fromEntries(
+                            data.projects.map((item) => [
+                                item.id,
+                                { title: item.title, revision: item.revision },
+                            ]),
+                        );
+                    }"""
+                )
+                assert sorted(
+                    item["title"] for item in saved_before_reopen.values()
+                ) == [
+                    "Unsaved draft stays safe",
+                    "Unsaved draft stays safe copy",
+                ], saved_before_reopen
+
+                await browser.close()
+                browser = None
+                context = await playwright.chromium.launch_persistent_context(
+                    browser_profile,
+                    viewport={"width": 1440, "height": 900},
+                    **launch_options,
+                )
+                browser = context.browser
+                page = await context.new_page()
+                diagnostics.attach(page, "reopened-multiple-drafts")
+                await page.goto(f"http://127.0.0.1:{port}", wait_until="networkidle")
+                await page.get_by_text("Local drafts found").wait_for()
+
+                original_recovery = page.locator(".local-recovery-item").filter(
+                    has=page.locator(
+                        "strong", has_text=re.compile(r"^Unsaved original remains$")
+                    )
+                )
+                duplicate_recovery = page.locator(".local-recovery-item").filter(
+                    has=page.locator(
+                        "strong", has_text=re.compile(r"^Unsaved duplicate remains$")
+                    )
+                )
+                assert await original_recovery.count() == 1
+                assert await duplicate_recovery.count() == 1
+
+                await original_recovery.get_by_role(
+                    "button", name="Discard local draft"
+                ).click()
+                assert await original_recovery.count() == 0
+                assert await duplicate_recovery.count() == 1
+                assert await page.get_by_role(
+                    "button", name="Restore local draft"
+                ).count() == 1
+                saved_after_discard = await page.evaluate(
+                    """async () => {
+                        const data = await (await fetch('/api/projects')).json();
+                        return Object.fromEntries(
+                            data.projects.map((item) => [
+                                item.id,
+                                { title: item.title, revision: item.revision },
+                            ]),
+                        );
+                    }"""
+                )
+                assert saved_after_discard == saved_before_reopen, (
+                    saved_before_reopen,
+                    saved_after_discard,
+                )
+
+                await duplicate_recovery.get_by_role(
+                    "button", name="Restore local draft"
+                ).click()
+                await page.get_by_label("Title").wait_for()
+                assert (
+                    await page.get_by_label("Title").input_value()
+                    == "Unsaved duplicate remains"
+                )
+                assert await page.locator(".save-state").inner_text() == "Unsaved changes"
+                saved_after_restore = await page.evaluate(
+                    """async () => {
+                        const data = await (await fetch('/api/projects')).json();
+                        return Object.fromEntries(
+                            data.projects.map((item) => [
+                                item.id,
+                                { title: item.title, revision: item.revision },
+                            ]),
+                        );
+                    }"""
+                )
+                assert saved_after_restore == saved_before_reopen, (
+                    saved_before_reopen,
+                    saved_after_restore,
+                )
+
+                await page.locator(".editor .local-recovery-box").get_by_role(
+                    "button", name="Discard local draft"
+                ).click()
+                await page.get_by_label("Title").wait_for()
+                assert await page.get_by_label("Title").input_value() == duplicate_title
+                assert await page.locator(".save-state").inner_text() == "Saved locally"
+
                 page.once("dialog", lambda dialog: dialog.accept())
                 await page.get_by_role("button", name="Delete").click()
                 await page.get_by_text("The editor is waiting").wait_for()

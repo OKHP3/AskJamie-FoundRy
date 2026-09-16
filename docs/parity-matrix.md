@@ -1,8 +1,10 @@
 # AskJamie FoundRy parity matrix
 
-Status: owner review required. This matrix records a regional adaptation of the
-OverKill-Hill-FoundRy mentor pattern. It does not authorize public graduation,
-hosted authoring, child-repository creation, or deployment of a capability.
+Status: parity decisions recorded; the hosted boundary design was owner-approved
+on 2026-09-14, but implementation remains unauthorized. This matrix records a
+regional adaptation of the OverKill-Hill-FoundRy mentor pattern. It does not
+authorize public graduation, hosted authoring, child-repository creation, or
+deployment of a capability.
 
 ## Evidence baseline
 
@@ -33,9 +35,9 @@ boundary.
 | Optimistic concurrency and protection | adopt | Existing backend owner: stale revisions, client identity, BFS firewall, lineage, and permanent-private locks remain unchanged | Prevents silent overwrites and privacy downgrades | Existing workbench/boundary suite remains green |
 | Immutable shared Skillz catalog | adopt | Coordinator/backend: retain committed snapshot and provenance; selections are references, not execution/import | Public metadata may be shown; selected project content remains private | Snapshot loader, skills UI, and export tests |
 | Registry and graduation audits | adapt | Governance owner: registry remains read-only in the workbench; exports are pending proposals; `public_graduation_allowed: false` remains locked | No UI mutation or automatic child publication | Registry validation and generated private package assertions |
-| Broader mentor governance/graduation surfaces | defer | Governance owner: document the gap and require an owner-approved audit design before adding | Could expose or promote protected material if copied prematurely | This matrix and maturation docs record the unresolved difference |
+| Broader mentor governance/graduation surfaces | defer | Governance owner: use the evidence-led regional audit; do not add a surface until mentor evidence, regional boundary review, registry immutability, protected-client checks, and owner approval are recorded | Could expose or promote protected material if copied prematurely | `docs/regional-governance-audit.md`; `scripts/regional-governance-audit.py`; this decision remains deferred |
 | Multi-artifact pnpm/React authoring runtime | out of scope | Runtime owner: retain Python standard library/SQLite and plain static UI | Replacing it would change state handling and could invite unintended hosting | Workbench contract and Replit guidance retain Python loopback operation |
-| Hosted multi-user authoring, auth, model calls, paid inference | defer | Owner decision required after the [hosted authoring boundary design](hosted-authoring-boundary.md), including authentication, workspace routing, client-record handling, retention, and leak-prevention proof | High risk: would move private source and drafts across a trust boundary; the first hosted authoring release must make no model, inference, external-data, or arbitrary-URL provider call | Design is explicitly non-authorizing; owner approval and the Section 7 evidence set are required before any hosted runtime |
+| Hosted multi-user authoring, auth, model calls, paid inference | defer | The owner approved the provider-independent [hosted authoring boundary design](hosted-authoring-boundary.md) on 2026-09-14; provider selection and implementation require a separate authorization | High risk: would move private source and drafts across a trust boundary; the first hosted authoring release must make no model, inference, external-data, or arbitrary-URL provider call | Design approval is explicitly non-authorizing; the Section 7 evidence set and a separate implementation approval are required before any hosted runtime |
 | Automatic child repositories, public graduation, package deployment | out of scope | Governance owner: keep proposals pending and capabilities private | Prevents accidental publication of client or draft material | Export proposal, manifest controls, and CI do not publish packages |
 | Mentor Pages deployment workflow | adapt | Release owner: provide a manual Pages workflow and optional deployed URL smoke check, without auto-publishing from normal CI | Only `public/` is eligible for upload | Manual workflow builds `dist/pages`, deploys only when dispatched, and curls its output URL |
 
@@ -45,5 +47,6 @@ The accepted surface is a public, read-only orientation artifact plus a private
 loopback authoring workbench. The matrix is complete for this parity pass when
 the mechanical checks and judgment checks in the final validation record pass.
 Any hosted authoring, model quality, public graduation, or child-repository
-claim remains unresolved until the separately approved design and evidence in
-[`hosted-authoring-boundary.md`](hosted-authoring-boundary.md) exist.
+claim remains unresolved. The hosted boundary design is approved, but the
+separate implementation authorization and evidence in
+[`hosted-authoring-boundary.md`](hosted-authoring-boundary.md) do not yet exist.
