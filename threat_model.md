@@ -2,8 +2,10 @@
 
 ## Decision status
 
-**Review date:** 2026-09-16  
-**Hosted provider:** none selected  
+**Review date:** 2026-09-16
+
+**Hosted provider:** none selected
+
 **Current decision:** **NO-GO for hosted implementation and migration**
 
 The owner declined to select or use a hosted provider on 2026-09-15. This model

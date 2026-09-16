@@ -199,7 +199,7 @@ class ReferenceWorkspaceBackend:
             "status": 200,
             "isolated": True,
             "workspace": workspace_id,
-            "location": str(isolated.data_dir.relative_to(self.root)),
+            "location": isolated.data_dir.relative_to(self.root).as_posix(),
             "project_ids": sorted(item["id"] for item in projects),
             "private": all(
                 item["visibility"] == "private"

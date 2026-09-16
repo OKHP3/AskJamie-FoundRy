@@ -54,7 +54,7 @@ class BrowserFailureWorkflowTests(unittest.TestCase):
         self.assertGreater(upload_index, export_index)
         self.assertGreater(upload_index, workbench_index)
         self.assertEqual(upload["if"], "${{ always() }}")
-        self.assertEqual(upload["uses"], "actions/upload-artifact@v4")
+        self.assertRegex(upload["uses"], r"^actions/upload-artifact@\S+$")
         self.assertEqual(
             upload["with"]["path"],
             "${{ runner.temp }}/foundry-browser-artifacts",

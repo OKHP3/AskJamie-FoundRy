@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 import tempfile
 import unittest
 import zipfile
@@ -235,7 +236,7 @@ class HostedIsolationProofTests(unittest.TestCase):
 
     def test_public_artifacts_contain_no_private_or_runtime_markers(self):
         subprocess.run(
-            ["python3", "scripts/build-public-artifact.py", "--build"],
+            [sys.executable, "scripts/build-public-artifact.py", "--build"],
             cwd=ROOT, check=True, capture_output=True, text=True,
         )
         forbidden = (

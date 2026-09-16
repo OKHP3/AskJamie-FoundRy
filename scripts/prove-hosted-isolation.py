@@ -22,7 +22,7 @@ from tests.hosted_isolation_harness import (
 
 def main() -> int:
     subprocess.run(
-        ["python3", "scripts/build-public-artifact.py", "--build"],
+        [sys.executable, "scripts/build-public-artifact.py", "--build"],
         cwd=ROOT, check=True, capture_output=True, text=True,
     )
     report = add_public_artifact_proof(build_reference_proof(), ROOT)
