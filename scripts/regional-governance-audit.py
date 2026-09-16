@@ -78,6 +78,13 @@ def approval_status(
             "path": str(approval_path),
             "reason": f"Cannot read approval record: {exc}",
         }
+    if not isinstance(approval, dict):
+        return {
+            "required": True,
+            "status": "INVALID",
+            "path": str(approval_path),
+            "reason": "Approval record must be a YAML mapping.",
+        }
     required = {
         "audit": AUDIT_NAME,
         "scope": AUDIT_SCOPE,
@@ -213,8 +220,8 @@ def build_report(
         "remaining_unknowns": [
             "Exact mentor source revision and governance surface are not recorded.",
             "Regional adaptation has not received implementation review.",
-            "Owner has not approved adoption of this exact scope and digest.",
-        ],
+        ] + (["Owner has not approved adoption of this exact scope and digest."]
+             if approval["status"] != "APPROVED" else []),
     }
 
 

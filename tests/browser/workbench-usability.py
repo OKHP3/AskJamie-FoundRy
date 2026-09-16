@@ -330,7 +330,7 @@ async def main() -> None:
                 await page.get_by_label("Title").fill("Discarded local draft")
                 assert await page.locator(".save-state").inner_text() == "Unsaved changes"
 
-                await browser.close()
+                await context.close()
                 browser = None
                 context = await playwright.chromium.launch_persistent_context(
                     browser_profile,
@@ -436,7 +436,7 @@ async def main() -> None:
                     "Unsaved draft stays safe copy",
                 ], saved_before_reopen
 
-                await browser.close()
+                await context.close()
                 browser = None
                 context = await playwright.chromium.launch_persistent_context(
                     browser_profile,
