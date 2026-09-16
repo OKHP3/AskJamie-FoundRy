@@ -48,6 +48,12 @@ class HostedIsolationBackend(Protocol):
     def snapshot_restored(self, principal: str, backup_id: str) -> str: ...
     def expire(self, principal: str, backup_id: str) -> None: ...
     def retention_status(self, principal: str, backup_id: str) -> dict[str, Any]: ...
+    def invoke_with_claimed_workspace(
+        self, principal: str, claimed_workspace: str, operation: str, object_id: str
+    ) -> dict[str, Any]: ...
+    def revoke_session(self, principal: str) -> None: ...
+    def restore_session(self, principal: str, workspace_id: str) -> None: ...
+    def support_probe(self, support_actor: str, workspace_id: str) -> dict[str, Any]: ...
     def unauthenticated_probe(self, path: str) -> dict[str, Any]: ...
     def route_inventory(self) -> list[dict[str, Any]]: ...
     def logs(self) -> list[dict[str, Any]]: ...
@@ -77,6 +83,7 @@ class ReferenceWorkspaceBackend:
         self.root = root
         self.stores: dict[str, Store] = {}
         self.sessions: dict[str, str] = {}
+        self.revoked_sessions: set[str] = set()
         self.owners: dict[str, str] = {}
         self.backups: dict[str, tuple[str, dict[str, Any] | None, bool]] = {}
         self.restores: dict[str, tuple[str, Store]] = {}
@@ -94,6 +101,8 @@ class ReferenceWorkspaceBackend:
         self.owners[object_id] = workspace_id
 
     def _owned(self, principal: str, object_id: str) -> tuple[str, Store]:
+        if principal in self.revoked_sessions:
+            raise MissingProject(object_id)
         workspace_id = self.sessions.get(principal)
         if workspace_id is None:
             raise MissingProject(object_id)
@@ -261,6 +270,26 @@ class ReferenceWorkspaceBackend:
             "status": "deleted" if expired and backup is None else "retained",
             "payload_present": backup is not None,
         }
+
+    def invoke_with_claimed_workspace(
+        self, principal: str, claimed_workspace: str, operation: str, object_id: str
+    ) -> dict[str, Any]:
+        actual_workspace = self.sessions.get(principal)
+        if actual_workspace is None or claimed_workspace != actual_workspace:
+            self._log(actual_workspace or "unknown", operation, "denied")
+            return dict(SAFE_DENIAL)
+        return self.invoke(principal, operation, object_id)
+
+    def revoke_session(self, principal: str) -> None:
+        self.revoked_sessions.add(principal)
+
+    def restore_session(self, principal: str, workspace_id: str) -> None:
+        self.sessions[principal] = workspace_id
+        self.revoked_sessions.discard(principal)
+
+    def support_probe(self, support_actor: str, workspace_id: str) -> dict[str, Any]:
+        self._log(workspace_id, "support-access", "denied")
+        return dict(SAFE_DENIAL)
 
     def unauthenticated_probe(self, path: str) -> dict[str, Any]:
         self._log("unauthenticated", "route-probe", "denied")
@@ -492,6 +521,41 @@ def run_isolation_proof(
                 before_foreign == after_foreign,
                 "Denied foreign operation left projects, history, evaluations, and inventory unchanged.",
             )
+
+    for actor, victim in (("alpha", "beta"), ("beta", "alpha")):
+        before = backend.snapshot(principals[victim])
+        result = backend.invoke_with_claimed_workspace(
+            principals[actor], victim, "read", ids[victim]["own-read"]
+        )
+        evidence.record(
+            f"confused-deputy-claimed-workspace-{actor}-to-{victim}",
+            result == SAFE_DENIAL and before == backend.snapshot(principals[victim]),
+            "A client-supplied workspace claim cannot redirect an authenticated operation.",
+        )
+
+    for workspace in ("alpha", "beta"):
+        principal = principals[workspace]
+        backend.revoke_session(principal)
+        evidence.record(
+            f"revoked-session-{workspace}",
+            backend.invoke(principal, "read", ids[workspace]["own-read"])
+            == SAFE_DENIAL,
+            "A revoked session cannot access an owned object.",
+        )
+        backend.restore_session(principal, workspace)
+        evidence.record(
+            f"rotated-session-positive-control-{workspace}",
+            backend.invoke(principal, "read", ids[workspace]["own-read"]).get("status")
+            == 200,
+            "A newly established session retains authorized same-workspace access.",
+        )
+
+    for workspace in ("alpha", "beta"):
+        evidence.record(
+            f"support-access-denied-{workspace}",
+            backend.support_probe("provider-support", workspace) == SAFE_DENIAL,
+            "Provider support has no standing workspace-data access path.",
+        )
 
     for workspace in ("alpha", "beta"):
         backup_id = backup_ids[workspace]

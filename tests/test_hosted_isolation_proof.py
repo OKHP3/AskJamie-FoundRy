@@ -53,6 +53,12 @@ class HostedIsolationProofTests(unittest.TestCase):
             "retention-payload-deleted-alpha", "retention-payload-deleted-beta",
             "private-route-inventory",
             "log-redaction", "cache-containment",
+            "confused-deputy-claimed-workspace-alpha-to-beta",
+            "confused-deputy-claimed-workspace-beta-to-alpha",
+            "revoked-session-alpha", "revoked-session-beta",
+            "rotated-session-positive-control-alpha",
+            "rotated-session-positive-control-beta",
+            "support-access-denied-alpha", "support-access-denied-beta",
         } <= claims)
         for workspace, other in (("alpha", "beta"), ("beta", "alpha")):
             for operation in (
@@ -155,6 +161,24 @@ class HostedIsolationProofTests(unittest.TestCase):
                     return {"status": 200, "backup": {}}
                 return super().unauthenticated_probe(path)
 
+            def invoke_with_claimed_workspace(
+                self, principal, claimed_workspace, operation, object_id
+            ):
+                if self.sessions.get(principal) == "alpha" and claimed_workspace == "beta":
+                    return {"status": 200, "id": object_id}
+                return super().invoke_with_claimed_workspace(
+                    principal, claimed_workspace, operation, object_id
+                )
+
+            def revoke_session(self, principal):
+                if principal != "principal-alpha":
+                    super().revoke_session(principal)
+
+            def support_probe(self, support_actor, workspace_id):
+                if workspace_id == "alpha":
+                    return {"status": 200}
+                return super().support_probe(support_actor, workspace_id)
+
             def invoke(self, principal, operation, object_id):
                 if (
                     self.sessions[principal] == "alpha"
@@ -204,6 +228,9 @@ class HostedIsolationProofTests(unittest.TestCase):
             "expired-backup-download-alpha", "retention-payload-deleted-alpha",
             "unauthenticated-route-/api/backup",
             "cross-workspace-alpha-to-beta-write-state-unchanged",
+            "confused-deputy-claimed-workspace-alpha-to-beta",
+            "revoked-session-alpha",
+            "support-access-denied-alpha",
         } <= failed)
 
     def test_public_artifacts_contain_no_private_or_runtime_markers(self):
