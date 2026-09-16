@@ -245,6 +245,88 @@ class BrowserDiagnosticsTests(unittest.TestCase):
                 29 + (2 * MAX_SUMMARY_VALUE_LENGTH),
             )
 
+    def test_unusual_check_name_and_page_label_stay_single_line_and_bounded(
+        self,
+    ) -> None:
+        diagnostics = BrowserDiagnostics()
+        check_name = (
+            "確認 `失敗` 🚨\r\nsecondary check line "
+            + ("検" * MAX_SUMMARY_VALUE_LENGTH)
+        )
+        page_label = (
+            "作業台 `主要`\r\nsecondary page line "
+            + ("頁" * MAX_SUMMARY_VALUE_LENGTH)
+        )
+        diagnostics._record_console(
+            page_label,
+            FakeConsoleMessage("Console failure"),
+        )
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            artifact_dir = root / "artifacts"
+            step_summary = root / "github-step-summary.md"
+
+            with patch.dict(
+                os.environ,
+                {"GITHUB_STEP_SUMMARY": str(step_summary)},
+            ):
+                diagnostics.write(
+                    artifact_dir,
+                    check_name=check_name,
+                    file_prefix="metadata",
+                )
+
+            generated = (
+                artifact_dir / "metadata-failure-summary.md"
+            ).read_text(encoding="utf-8")
+            appended = step_summary.read_text(encoding="utf-8")
+            generated_lines = generated.splitlines()
+            check_line = next(
+                line for line in generated_lines if line.startswith("- Check:")
+            )
+            evidence_line = next(
+                line for line in generated_lines if line.startswith("- [作業台")
+            )
+
+            self.assertEqual(
+                json.loads(
+                    (artifact_dir / "metadata-console.jsonl")
+                    .read_text(encoding="utf-8")
+                    .splitlines()[0]
+                )["page"],
+                page_label,
+            )
+            self.assertNotIn("\r", check_line)
+            self.assertNotIn("\n", check_line)
+            self.assertNotIn("`", check_line)
+            self.assertIn("確認 '失敗' 🚨  secondary check line", check_line)
+            self.assertEqual(
+                len(check_line),
+                len("- Check: ") + MAX_SUMMARY_VALUE_LENGTH,
+            )
+            self.assertNotIn("\r", evidence_line)
+            self.assertNotIn("\n", evidence_line)
+            self.assertNotIn("`", evidence_line)
+            self.assertIn(
+                "[作業台 '主要'  secondary page line",
+                evidence_line,
+            )
+            self.assertLessEqual(
+                len(evidence_line),
+                len("- [] error: Console failure")
+                + MAX_SUMMARY_VALUE_LENGTH,
+            )
+            self.assertEqual(appended, generated + "\n")
+            self.assertEqual(
+                appended.splitlines().count(check_line),
+                1,
+            )
+            self.assertEqual(
+                appended.splitlines().count(evidence_line),
+                1,
+            )
+
     def test_failure_summary_only_includes_first_entries(self) -> None:
         diagnostics = BrowserDiagnostics()
         for index in range(MAX_SUMMARY_ENTRIES + 1):
