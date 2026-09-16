@@ -14,6 +14,7 @@ from tests.hosted_isolation_harness import (
     ReferenceWorkspaceBackend,
     add_public_artifact_proof,
     build_reference_proof,
+    record_no_provider_decision,
     run_isolation_proof,
     synthetic_draft,
 )
@@ -225,6 +226,18 @@ class HostedIsolationProofTests(unittest.TestCase):
         report = add_public_artifact_proof(build_reference_proof(), ROOT)
         self.assertEqual(report["checks"][-1]["claim"], "public-artifact-containment")
         self.assertEqual(report["checks"][-1]["status"], "PASS")
+
+    def test_no_provider_decision_cannot_be_mistaken_for_certification(self):
+        reference = build_reference_proof()
+        report = record_no_provider_decision(deepcopy(reference))
+
+        self.assertEqual(reference["status"], "PASS")
+        self.assertEqual(report["status"], "BLOCKED")
+        self.assertEqual(report["reference_contract_status"], "PASS")
+        self.assertEqual(report["host_certification_status"], "NOT_RUN")
+        self.assertIsNone(report["selected_provider"])
+        self.assertFalse(report["migration_authorized"])
+        self.assertFalse(report["private_data_used"])
 
 
 if __name__ == "__main__":

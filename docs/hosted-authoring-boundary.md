@@ -294,8 +294,10 @@ restore; expired download denial; empty private caches; redacted audit evidence;
 and scans of both `public/` and `dist/pages/`.
 
 Run `python3 scripts/prove-hosted-isolation.py` from the repository root to
-print the reference evidence report as JSON. The command returns a nonzero
-status if any claim fails and does not retain its temporary workspace fixtures.
+print the current certification status as JSON. While no provider is selected,
+the report distinguishes a passing local reference contract from a `BLOCKED`
+host certification, records `migration_authorized: false`, and exits with
+status 2. The command does not retain its temporary synthetic fixtures.
 
 The reference adapter proves that the acceptance contract is executable and
 that the repository's current package, backup, restore, and public-build
@@ -368,3 +370,19 @@ non-loopback binding, authentication connector, hosted data service, object
 vault, provider or model call, telemetry, deployment secret, or upload of
 private state. The loopback-only and no-provider-call constraints remain in
 force until a separate implementation task is expressly authorized.
+
+## 10. Hosted certification decision
+
+On 2026-09-15, the owner declined to select or use a hosted provider. Therefore:
+
+- no provider adapter, hosted identity, database, object vault, cache, backup
+  service, logging pipeline, workflow, or deployment was created;
+- hosted certification was not run and must be reported as `BLOCKED`, not
+  `PASS`;
+- the provider-independent reference harness remains a local contract test
+  only;
+- no real drafts, client data, local backups, generated packages, or
+  `.foundry-data/` content were used or moved;
+- existing local drafts remain loopback-only and unmigrated;
+- migration remains unauthorized unless the owner later selects a provider and
+  separately approves a new hosted certification and per-project migration.

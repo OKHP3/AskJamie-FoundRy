@@ -571,6 +571,26 @@ def add_public_artifact_proof(report: dict[str, Any], root: Path) -> dict[str, A
     return report
 
 
+def record_no_provider_decision(report: dict[str, Any]) -> dict[str, Any]:
+    """Mark reference evidence as non-certifying when hosted use is declined."""
+
+    reference_status = report["status"]
+    report.update({
+        "status": "BLOCKED",
+        "proof_scope": "provider-independent-reference",
+        "reference_contract_status": reference_status,
+        "host_certification_status": "NOT_RUN",
+        "selected_provider": None,
+        "migration_authorized": False,
+        "private_data_used": False,
+        "decision": (
+            "No hosted provider was selected. Hosted certification was not run, "
+            "and existing local drafts remain unmigrated."
+        ),
+    })
+    return report
+
+
 def build_reference_proof() -> dict[str, Any]:
     with tempfile.TemporaryDirectory() as temp_dir:
         backend = ReferenceWorkspaceBackend(Path(temp_dir))
