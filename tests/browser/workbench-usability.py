@@ -429,6 +429,62 @@ async def main() -> None:
                 await page.get_by_label("Title").fill("Unsaved duplicate remains")
                 assert await page.locator(".save-state").inner_text() == "Unsaved changes"
 
+                race_projects = await page.evaluate(
+                    """async () => {
+                        const data = await (await fetch('/api/projects')).json();
+                        return Object.fromEntries(
+                            data.projects.map((item) => [
+                                item.id,
+                                { title: item.title, revision: item.revision },
+                            ]),
+                        );
+                    }"""
+                )
+                original_id = next(
+                    project_id
+                    for project_id, item in race_projects.items()
+                    if item["title"] == "Unsaved draft stays safe"
+                )
+                duplicate_id = next(
+                    project_id
+                    for project_id, item in race_projects.items()
+                    if item["title"] == duplicate_title
+                )
+                delayed_project_path = f"/api/projects/{original_id}"
+                delayed_request = {"seen": False}
+
+                async def delay_first_project(route) -> None:
+                    if route.request.url.endswith(delayed_project_path):
+                        delayed_request["seen"] = True
+                        await asyncio.sleep(0.75)
+                    await route.continue_()
+
+                await page.route("**/api/projects/*", delay_first_project)
+                race_prompts: list[str] = []
+
+                async def accept_race_dialog(dialog) -> None:
+                    race_prompts.append(dialog.message)
+                    await dialog.accept()
+
+                page.once("dialog", accept_race_dialog)
+                await original_row.click()
+                page.once("dialog", accept_race_dialog)
+                await duplicate_row.click()
+                await page.wait_for_function(
+                    """expected => document.querySelector("#field-title")?.value === expected""",
+                    arg=duplicate_title,
+                )
+                assert delayed_request["seen"]
+                assert len(race_prompts) == 2, race_prompts
+                assert "Unsaved draft stays safe" in race_prompts[0], race_prompts
+                assert duplicate_title[:50] in race_prompts[1], race_prompts
+                assert await page.get_by_label("Title").input_value() == duplicate_title
+                assert (
+                    f"revision {race_projects[duplicate_id]['revision']}"
+                    in await page.locator(".editor-head p").inner_text()
+                )
+                await page.unroute("**/api/projects/*", delay_first_project)
+
                 saved_before_reopen = await page.evaluate(
                     """async () => {
                         const data = await (await fetch('/api/projects')).json();

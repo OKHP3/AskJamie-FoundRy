@@ -17,6 +17,7 @@
     history: [],
     loading: true,
     loadingProjectId: null,
+    projectLoadToken: 0,
     recovery: null,
     localDrafts: {},
     localStorageUnavailable: false,
@@ -301,15 +302,18 @@
   async function loadProject(id, force = false) {
     const destination = state.projects.find((project) => project.id === id);
     if (!force && !canLeaveCurrent(destination)) return;
+    const loadToken = ++state.projectLoadToken;
     state.loadingProjectId = id;
     state.recovery = null;
     render();
     try {
-      state.current = await api(`/api/projects/${encodeURIComponent(id)}`);
+      const project = await api(`/api/projects/${encodeURIComponent(id)}`);
       const [history, evaluations] = await Promise.allSettled([
         api(`/api/projects/${encodeURIComponent(id)}/history`),
         api(`/api/projects/${encodeURIComponent(id)}/evaluations`),
       ]);
+      if (loadToken !== state.projectLoadToken) return;
+      state.current = project;
       state.history =
         history.status === "fulfilled" && Array.isArray(history.value.history)
           ? history.value.history
@@ -326,6 +330,7 @@
       state.loadingProjectId = null;
       render();
     } catch (error) {
+      if (loadToken !== state.projectLoadToken) return;
       state.loadingProjectId = null;
       state.error = error.message;
       render();
