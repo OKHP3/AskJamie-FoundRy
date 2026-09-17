@@ -11,6 +11,7 @@ deployment of a capability.
 | Evidence | What it establishes |
 |---|---|
 | OverKill-Hill-FoundRy commit `8de1eb2` inspected 2026-09-09 | A public pnpm/React workbench, Custom GPT studio, backup/import and lifecycle controls, governance and graduation audits, browser coverage, and Pages delivery exist in the mentor repository |
+| OverKill-Hill-FoundRy commit `8de1eb212d8db193fd22eb85bf0843f366a0c1a7`, `scripts/public-graduation-audit.py`, reviewed 2026-09-17 by Replit Agent | At this pinned revision, the named public-graduation audit is read-only, checks package/restricted-reference/release-record gates, keeps deployment manual and disabled, and does not grant publication approval or change visibility |
 | `https://okhp3.github.io/OverKill-Hill-FoundRy/` returned HTTP 200 on 2026-09-09 | The mentor’s Pages artifact is deployed and reachable; it does not prove hosted authoring or private-state exposure is appropriate here |
 | AskJamie main baseline through 2026-09-09 | Python standard-library/SQLite loopback workbench, private exports, immutable Skillz metadata, decision/evaluation flows, governance validators, and browser acceptance already exist |
 | `manifest.yaml` and `AGENTS.md` | AskJamie owns interpretation and private fabrication; OverKill is the mentor/centroid; public source visibility does not prove operation |
@@ -44,9 +45,12 @@ boundary.
 ## Acceptance boundary
 
 The accepted surface is a public, read-only orientation artifact plus a private
-loopback authoring workbench. The matrix is complete for this parity pass when
-the mechanical checks and judgment checks in the final validation record pass.
-Any hosted authoring, model quality, public graduation, or child-repository
-claim remains unresolved. The hosted boundary design is approved, but the
+loopback authoring workbench. The named mentor graduation review is confirmed
+only for the pinned revision and path recorded in
+`docs/regional-governance-audit.md`; it does not authorize adaptation. The
+matrix is complete for this parity pass when the mechanical checks and judgment
+checks in the final validation record pass. Any hosted authoring, model
+quality, public graduation, or child-repository claim beyond that reviewed
+surface remains unresolved. The hosted boundary design is approved, but the
 separate implementation authorization and evidence in
 [`hosted-authoring-boundary.md`](hosted-authoring-boundary.md) do not yet exist.

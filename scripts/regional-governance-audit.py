@@ -19,6 +19,23 @@ REGISTRY = ROOT / "registry" / "index.yaml"
 SCHEMA = ROOT / "schemas" / "registry.schema.yaml"
 AUDIT_NAME = "askjamie-regional-governance"
 AUDIT_SCOPE = "broader-mentor-governance-and-graduation"
+MENTOR_REVIEW = {
+    "repository": "OKHP3/OverKill-Hill-FoundRy",
+    "revision": "8de1eb212d8db193fd22eb85bf0843f366a0c1a7",
+    "source_url": (
+        "https://github.com/OKHP3/OverKill-Hill-FoundRy/blob/"
+        "8de1eb212d8db193fd22eb85bf0843f366a0c1a7/"
+        "scripts/public-graduation-audit.py"
+    ),
+    "path": "scripts/public-graduation-audit.py",
+    "reviewed_at": "2026-09-17",
+    "reviewer": "Replit Agent",
+    "observation": (
+        "The read-only dry-run checks release-package completeness, restricted "
+        "references, record consistency, and manual disabled deployment; it "
+        "does not grant publication approval or change repository visibility."
+    ),
+}
 
 
 def load_registry_checker():
@@ -162,10 +179,16 @@ def build_report(
         },
         {
             "claim": "The named OverKill mentor surface has the stated governance or graduation behavior.",
-            "tier": "UNKNOWN",
-            "evidence": [],
+            "tier": "CONFIRMED",
+            "evidence": [
+                MENTOR_REVIEW["source_url"],
+                f"revision:{MENTOR_REVIEW['revision']}",
+                f"path:{MENTOR_REVIEW['path']}",
+                f"reviewed_at:{MENTOR_REVIEW['reviewed_at']}",
+                f"reviewer:{MENTOR_REVIEW['reviewer']}",
+            ],
             "consequence_if_false": "AskJamie could adopt an inaccurate or obsolete pattern.",
-            "next_check": "Review the exact mentor source revision, path, and primary evidence.",
+            "next_check": "Review a later mentor revision before extending this observation.",
         },
         {
             "claim": "The proposed adaptation is safe for AskJamie regional boundaries.",
@@ -194,6 +217,7 @@ def build_report(
             "adoption": "DEFERRED",
         },
         "evidence": evidence,
+        "mentor_review": MENTOR_REVIEW,
         "registry": {
             "path": str(registry_path.relative_to(root)),
             "sha256": before_digest,
@@ -218,7 +242,7 @@ def build_report(
         },
         "owner_approval": approval,
         "remaining_unknowns": [
-            "Exact mentor source revision and governance surface are not recorded.",
+            "The reviewed mentor behavior may differ in a later revision.",
             "Regional adaptation has not received implementation review.",
         ] + (["Owner has not approved adoption of this exact scope and digest."]
              if approval["status"] != "APPROVED" else []),

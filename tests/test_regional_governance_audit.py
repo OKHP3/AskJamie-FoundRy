@@ -52,8 +52,17 @@ class RegionalGovernanceAuditTests(unittest.TestCase):
         tiers = {item["claim"]: item["tier"] for item in report["evidence"]}
         self.assertEqual(
             tiers["The named OverKill mentor surface has the stated governance or graduation behavior."],
-            "UNKNOWN",
+            "CONFIRMED",
         )
+        self.assertEqual(
+            report["mentor_review"]["revision"],
+            "8de1eb212d8db193fd22eb85bf0843f366a0c1a7",
+        )
+        self.assertEqual(
+            report["mentor_review"]["path"],
+            "scripts/public-graduation-audit.py",
+        )
+        self.assertEqual(report["mentor_review"]["reviewer"], "Replit Agent")
 
     def test_baseline_digest_is_required_to_match(self):
         digest = hashlib.sha256(

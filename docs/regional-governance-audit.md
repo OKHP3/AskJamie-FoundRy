@@ -44,6 +44,25 @@ plausible or because several agents repeat it. An external mentor claim is
 `UNKNOWN` until the named mentor source and revision are reviewed in the audit
 record.
 
+## Named mentor-surface review
+
+The first reviewed surface is the OverKill public-graduation audit. This is a
+review of one pinned source revision, not a claim about every current mentor
+workflow or permission.
+
+| Field | Evidence |
+|---|---|
+| Repository revision | `OKHP3/OverKill-Hill-FoundRy@8de1eb212d8db193fd22eb85bf0843f366a0c1a7` |
+| Primary source URL | [`scripts/public-graduation-audit.py`](https://github.com/OKHP3/OverKill-Hill-FoundRy/blob/8de1eb212d8db193fd22eb85bf0843f366a0c1a7/scripts/public-graduation-audit.py) |
+| Path | `scripts/public-graduation-audit.py` |
+| Observation | The read-only dry-run checks release-package completeness, restricted references, record consistency, and manual disabled deployment; it does not grant publication approval or change repository visibility. |
+| Reviewed | 2026-09-17 |
+| Reviewer | Replit Agent |
+
+The observation is `CONFIRMED` for this exact revision and path. It does not
+confirm that a later mentor revision behaves the same way, that the target
+package is safe for AskJamie, or that any publication approval exists.
+
 ## Required audit record
 
 The machine report produced by
@@ -65,6 +84,12 @@ evidence:
     evidence: [...]
     consequence_if_false: ...
     next_check: ...
+mentor_review:
+  repository: OKHP3/OverKill-Hill-FoundRy
+  revision: 8de1eb212d8db193fd22eb85bf0843f366a0c1a7
+  path: scripts/public-graduation-audit.py
+  reviewed_at: "2026-09-17"
+  reviewer: Replit Agent
 registry:
   path: registry/index.yaml
   sha256: ...
@@ -103,12 +128,14 @@ At minimum, record these claims:
 | The AskJamie registry passes the canonical schema and health checks | `CONFIRMED` after the validators run | Keep the validator output with the report |
 | Protected client and BFS records remain private and graduation-disabled | `CONFIRMED` after the protected-record sweep | Keep the record count and any violations |
 | The registry did not change during the audit | `CONFIRMED` when the before/after digest matches | Preserve the SHA-256 digest |
-| The mentor surface has the stated governance or graduation behavior | `UNKNOWN` until the named mentor source is reviewed | Add source revision, path, observation, and reviewer |
+| The mentor surface has the stated governance or graduation behavior | `CONFIRMED` for the pinned revision and path reviewed above; `UNKNOWN` for unreviewed revisions or surfaces | Retain the source revision, path, observation, and reviewer |
 | The proposed AskJamie adaptation is safe for the regional boundary | `PROPOSAL` or `UNKNOWN` | Review privacy, ownership, and acceptance proof |
 | Adoption is authorized | `UNKNOWN` until the owner signs the exact scope | Record owner, date, scope, and digest |
 
 The current parity matrix establishes the first three kinds of local boundary
-evidence. It intentionally does not establish the last three.
+evidence, and the named mentor review above establishes the observed behavior
+of one pinned surface. It intentionally does not establish that the proposed
+AskJamie adaptation is safe or that adoption is authorized.
 
 ### 3. Run local controls without mutation
 
@@ -182,8 +209,8 @@ state until the mentor comparison and owner decision are recorded.
 ## Remaining unknowns
 
 - Which exact OverKill governance and graduation surfaces should be compared
-  first.
-- Whether their current behavior is still present at a reviewed mentor revision.
+  next; this audit covers only `scripts/public-graduation-audit.py`.
+- Whether the reviewed behavior remains present in a later mentor revision.
 - Which parts are useful to AskJamie without changing its Python loopback,
   private-export, and permanent-private boundaries.
 - Whether the owner approves a specific adaptation after those claims are
