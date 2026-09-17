@@ -44,15 +44,21 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
 
-      - name: Verify deployed page HTTP 200
+      - name: Verify deployed page content
         env:
           PAGE_URL: ${{ steps.deployment.outputs.page_url }}
         run: |
           set -euo pipefail
-          curl --fail --location --retry 5 --retry-delay 2 \
-            --header 'Cache-Control: no-cache' \
-            "${PAGE_URL}"
+          python scripts/build-public-artifact.py --check-live "${PAGE_URL}"
