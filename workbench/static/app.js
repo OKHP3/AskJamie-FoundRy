@@ -602,10 +602,17 @@
       );
       localRecoveries.forEach(({ project, localDraft }) => {
         recovery.append(
-          el("div", { class: "local-recovery-item" }, [
+          el("div", {
+            class: "local-recovery-item",
+            "data-project-id": project.id,
+          }, [
             el("div", {}, [
               el("strong", {
                 text: localDraft.draft.title || project.title || "Untitled capability",
+              }),
+              el("p", {
+                class: "field-hint",
+                text: `Saved project: ${project.title || "Untitled capability"} · ID ${project.id}`,
               }),
               el("p", {
                 class: "field-hint",

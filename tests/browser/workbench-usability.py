@@ -485,6 +485,40 @@ async def main() -> None:
                 )
                 await page.unroute("**/api/projects/*", delay_first_project)
 
+                matching_saved_title = "Matching saved project title"
+                await page.evaluate(
+                    """async ({ projectIds, title, draftFields }) => {
+                        for (const projectId of projectIds) {
+                            const project = await (
+                                await fetch(`/api/projects/${encodeURIComponent(projectId)}`)
+                            ).json();
+                            const draft = Object.fromEntries(
+                                draftFields.map((field) => [field, project[field]])
+                            );
+                            const response = await fetch(
+                                `/api/projects/${encodeURIComponent(projectId)}`,
+                                {
+                                    method: "PUT",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                        "X-Foundry-Request": "1",
+                                    },
+                                    body: JSON.stringify({
+                                        ...draft,
+                                        title,
+                                        revision: project.revision,
+                                    }),
+                                },
+                            );
+                            if (!response.ok) throw new Error(await response.text());
+                        }
+                    }""",
+                    {
+                        "projectIds": [original_id, duplicate_id],
+                        "title": matching_saved_title,
+                        "draftFields": DRAFT_FIELDS,
+                    },
+                )
                 saved_before_reopen = await page.evaluate(
                     """async () => {
                         const data = await (await fetch('/api/projects')).json();
@@ -499,8 +533,8 @@ async def main() -> None:
                 assert sorted(
                     item["title"] for item in saved_before_reopen.values()
                 ) == [
-                    "Unsaved draft stays safe",
-                    duplicate_title,
+                    matching_saved_title,
+                    matching_saved_title,
                 ], saved_before_reopen
 
                 await context.close()
@@ -528,6 +562,22 @@ async def main() -> None:
                 )
                 assert await original_recovery.count() == 1
                 assert await duplicate_recovery.count() == 1
+                assert (
+                    await original_recovery.get_attribute("data-project-id")
+                    == original_id
+                )
+                assert (
+                    await duplicate_recovery.get_attribute("data-project-id")
+                    == duplicate_id
+                )
+                assert (
+                    f"Saved project: {matching_saved_title} · ID {original_id}"
+                    in await original_recovery.inner_text()
+                )
+                assert (
+                    f"Saved project: {matching_saved_title} · ID {duplicate_id}"
+                    in await duplicate_recovery.inner_text()
+                )
 
                 await original_recovery.get_by_role(
                     "button", name="Discard local draft"
@@ -582,7 +632,10 @@ async def main() -> None:
                     "button", name="Discard local draft"
                 ).click()
                 await page.get_by_label("Title").wait_for()
-                assert await page.get_by_label("Title").input_value() == duplicate_title
+                assert (
+                    await page.get_by_label("Title").input_value()
+                    == matching_saved_title
+                )
                 assert await page.locator(".save-state").inner_text() == "Saved locally"
 
                 page.once("dialog", lambda dialog: dialog.accept())
