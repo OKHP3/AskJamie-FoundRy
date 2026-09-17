@@ -97,17 +97,20 @@ class RegionalGovernanceAuditTests(unittest.TestCase):
             approval = {
                 "audit": MODULE.AUDIT_NAME,
                 "scope": MODULE.AUDIT_SCOPE,
+                "adaptation": MODULE.ADAPTATION_ID,
                 "decision": "approve",
                 "owner": "OKHP3",
                 "approved_at": "2026-09-14",
                 "registry_sha256": registry_digest,
+                "publication_decision": "not-authorized",
+                "hosting_decision": "not-authorized",
             }
             approval_path = root / "approval.yaml"
             approval_path.write_text(yaml.safe_dump(approval), encoding="utf-8")
             report = MODULE.build_report(root, approval_path=approval_path)
             self.assertEqual(report["owner_approval"]["status"], "APPROVED")
             self.assertNotIn(
-                "Owner has not approved adoption of this exact scope and digest.",
+                "Owner has not recorded a valid decision for this exact adaptation, scope, digest, and release boundary.",
                 report["remaining_unknowns"],
             )
             self.assertEqual(report["audit"]["adoption"], "DEFERRED")
@@ -118,9 +121,78 @@ class RegionalGovernanceAuditTests(unittest.TestCase):
             report = MODULE.build_report(root, approval_path=approval_path)
             self.assertEqual(report["owner_approval"]["status"], "INVALID")
             self.assertIn(
-                "Owner has not approved adoption of this exact scope and digest.",
+                "Owner has not recorded a valid decision for this exact adaptation, scope, digest, and release boundary.",
                 report["remaining_unknowns"],
             )
+
+    def test_defer_decision_is_recorded_without_authorizing_adoption(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self.copy_fixture(tmp)
+            registry_digest = hashlib.sha256(
+                (root / "registry/index.yaml").read_bytes()
+            ).hexdigest()
+            decision_path = root / "decision.yaml"
+            decision_path.write_text(
+                yaml.safe_dump(
+                    {
+                        "audit": MODULE.AUDIT_NAME,
+                        "scope": MODULE.AUDIT_SCOPE,
+                        "adaptation": MODULE.ADAPTATION_ID,
+                        "decision": "defer",
+                        "owner": "OKHP3",
+                        "decided_at": "2026-09-17",
+                        "registry_sha256": registry_digest,
+                        "publication_decision": "not-authorized",
+                        "hosting_decision": "not-authorized",
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            report = MODULE.build_report(root, approval_path=decision_path)
+
+            self.assertEqual(report["owner_approval"]["status"], "DEFERRED")
+            self.assertEqual(report["owner_approval"]["decision"], "defer")
+            self.assertEqual(report["audit"]["adoption"], "DEFERRED")
+            self.assertNotIn(
+                "Owner has not recorded a valid decision for this exact adaptation, scope, digest, and release boundary.",
+                report["remaining_unknowns"],
+            )
+
+    def test_decision_cannot_be_reused_for_a_different_release_boundary(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self.copy_fixture(tmp)
+            registry_digest = hashlib.sha256(
+                (root / "registry/index.yaml").read_bytes()
+            ).hexdigest()
+            decision = {
+                "audit": MODULE.AUDIT_NAME,
+                "scope": MODULE.AUDIT_SCOPE,
+                "adaptation": MODULE.ADAPTATION_ID,
+                "decision": "defer",
+                "owner": "OKHP3",
+                "decided_at": "2026-09-17",
+                "registry_sha256": registry_digest,
+                "publication_decision": "not-authorized",
+                "hosting_decision": "not-authorized",
+            }
+            decision_path = root / "decision.yaml"
+            for field, value in (
+                ("publication_decision", "manual-pages-release"),
+                ("hosting_decision", "hosted-authoring"),
+            ):
+                with self.subTest(field=field):
+                    changed = dict(decision)
+                    changed[field] = value
+                    decision_path.write_text(
+                        yaml.safe_dump(changed), encoding="utf-8"
+                    )
+                    report = MODULE.build_report(
+                        root, approval_path=decision_path
+                    )
+                    self.assertEqual(
+                        report["owner_approval"]["status"], "INVALID"
+                    )
 
     def test_non_mapping_approval_preserves_an_invalid_evidence_report(self):
         with tempfile.TemporaryDirectory() as tmp:
