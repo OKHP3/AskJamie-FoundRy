@@ -1,5 +1,8 @@
 name: AskJamie Pages (manual release)
 
+# Publication is intentionally manual. Release only from a reviewed commit
+# that has already merged to protected main. Corrections belong in public/,
+# never in the private workbench data directory or a generated local copy.
 on:
   workflow_dispatch:
 
