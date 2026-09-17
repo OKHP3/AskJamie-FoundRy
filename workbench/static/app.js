@@ -299,7 +299,8 @@
       state.projects.length;
   }
   async function loadProject(id, force = false) {
-    if (!force && !canLeaveCurrent()) return;
+    const destination = state.projects.find((project) => project.id === id);
+    if (!force && !canLeaveCurrent(destination)) return;
     state.loadingProjectId = id;
     state.recovery = null;
     render();
@@ -330,11 +331,25 @@
       render();
     }
   }
-  function canLeaveCurrent() {
-    return (
-      !state.current?._dirty ||
-      window.confirm("This project has unsaved changes. Leave without saving?")
-    );
+
+  function projectSwitchLabel(project) {
+    const title =
+      String(project?.title || "")
+        .replace(/\s+/g, " ")
+        .trim() || "Untitled capability";
+    const code = String(project?.code || "")
+      .replace(/\s+/g, " ")
+      .trim();
+    const readableTitle =
+      title.length > 96 ? `${title.slice(0, 95)}…` : title;
+    return code ? `${readableTitle} · ${code}` : readableTitle;
+  }
+  function canLeaveCurrent(destination = null) {
+    if (!state.current?._dirty) return true;
+    const message = destination
+      ? `This project has unsaved changes. Leave without saving and open “${projectSwitchLabel(destination)}”?`
+      : "This project has unsaved changes. Leave without saving?";
+    return window.confirm(message);
   }
   function requireSavedProject(action) {
     if (!state.current?.id) {

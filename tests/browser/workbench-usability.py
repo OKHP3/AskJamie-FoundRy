@@ -368,6 +368,14 @@ async def main() -> None:
                 await page.get_by_label("Title").wait_for()
                 duplicate_title = await page.get_by_label("Title").input_value()
                 assert duplicate_title == "Unsaved draft stays safe copy", duplicate_title
+                duplicate_title = (
+                    "Unsaved draft stays safe copy — a long / unusual destination title "
+                    "with extra context " * 5
+                )
+                await page.get_by_label("Title").fill(duplicate_title)
+                await page.get_by_role("button", name="Save changes").click()
+                await page.get_by_text("Saved. The desk has a new revision.").wait_for()
+                await page.locator(".save-state").filter(has_text="Saved locally").wait_for()
 
                 original_row = page.locator(".project-row").filter(
                     has=page.locator(
@@ -377,7 +385,7 @@ async def main() -> None:
                 duplicate_row = page.locator(".project-row").filter(
                     has=page.locator(
                         "strong",
-                        has_text=re.compile(r"^Unsaved draft stays safe copy$"),
+                        has_text=re.compile(rf"^{re.escape(duplicate_title)}$"),
                     )
                 )
                 await original_row.click()
@@ -398,17 +406,20 @@ async def main() -> None:
                 page.once("dialog", dismiss_project_switch)
                 await duplicate_row.click()
                 assert switch_prompt.get("type") == "confirm", switch_prompt
-                assert (
-                    switch_prompt.get("message")
-                    == "This project has unsaved changes. Leave without saving?"
+                switch_message = switch_prompt.get("message", "")
+                assert switch_message.startswith(
+                    "This project has unsaved changes. Leave without saving and open “"
                 ), switch_prompt
+                assert duplicate_title[:50] in switch_message, switch_prompt
+                assert len(switch_message) < 220, switch_prompt
+                assert "\n" not in switch_message, switch_prompt
                 assert await page.get_by_label("Title").input_value() == "Unsaved original remains"
                 assert await page.locator(".save-state").inner_text() == "Unsaved changes"
                 saved_titles = await page.evaluate(
                     """async () => (await (await fetch('/api/projects')).json()).projects.map((item) => item.title)"""
                 )
                 assert "Unsaved original remains" not in saved_titles, saved_titles
-                assert "Unsaved draft stays safe copy" in saved_titles, saved_titles
+                assert duplicate_title in saved_titles, saved_titles
 
                 page.once("dialog", lambda dialog: dialog.accept())
                 await duplicate_row.click()
@@ -433,7 +444,7 @@ async def main() -> None:
                     item["title"] for item in saved_before_reopen.values()
                 ) == [
                     "Unsaved draft stays safe",
-                    "Unsaved draft stays safe copy",
+                    duplicate_title,
                 ], saved_before_reopen
 
                 await context.close()
