@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Audited application, test, CI, documentation and host technology versions
+  against primary stable-release sources, with separate Windows/Replit evidence.
+- Added daily browser dependency update coverage, daily release-audit reports,
+  and weekly compatibility checks including the latest stable Python. Kept
+  owner-reviewed merges, private runtime state and manual Pages publication.
+
 - Reject non-mapping approval records without crashing the governance report,
   remove the approval unknown once verified, preserve zero-valued draft revision
   metadata, and explicitly close persistent browser contexts before reopening.
