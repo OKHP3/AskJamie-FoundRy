@@ -10,6 +10,7 @@
 
 | Script | Purpose | Usage |
 |---|---|---|
+| [`audit-technologies.py`](audit-technologies.py) | Compare source pins and reviewed upstream releases with stable releases; record the executing environment | `python3 scripts/audit-technologies.py` or `--environment-only`; see [update policy](../docs/technology-inventory.md) |
 | [`validate-manifest.py`](validate-manifest.py) | Validate a `manifest.yaml` against `schemas/manifest.schema.yaml` | `python3 scripts/validate-manifest.py path/to/manifest.yaml` |
 | [`check-registry.py`](check-registry.py) | Registry health check — validates `registry/index.yaml`, reports status summary and graduation candidates | `python3 scripts/check-registry.py` |
 | [`normalize_filenames.py`](normalize_filenames.py) | Filename normalization — converts non-ASCII and non-standard characters to ASCII kebab-case | See below |
