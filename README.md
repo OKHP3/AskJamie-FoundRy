@@ -14,8 +14,6 @@ controls. Its expected project-site path is
 `https://okhp3.github.io/AskJamie-FoundRy/`, subject to a separately approved
 Pages release.
 
-The authoring workbench remains private and loopback-only:
-
 ## Recovering a bad Pages publication
 
 Pages recovery is a corrective release, not a database restore. The only source
@@ -52,6 +50,8 @@ publication. The complete operating procedure is in
 [`docs/workbench.md`](docs/workbench.md#recovering-a-bad-pages-publication).
 
 ## Run the workbench
+
+The authoring workbench remains private and loopback-only:
 
 ```bash
 python3 -m pip install -r requirements.txt

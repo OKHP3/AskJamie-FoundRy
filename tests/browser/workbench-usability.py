@@ -12,7 +12,7 @@ import time
 from contextlib import closing
 from pathlib import Path
 
-from playwright.async_api import async_playwright
+from playwright.async_api import async_playwright, expect
 
 try:
     from browser_diagnostics import BrowserDiagnostics
@@ -218,12 +218,12 @@ async def main() -> None:
                 await page.get_by_role("tab", name="Brief").click()
                 await page.get_by_label("Title").fill("Usability check")
                 await page.get_by_role("button", name="Save changes").click()
-                await page.wait_for_selector(".success-box")
-                await page.wait_for_timeout(150)
-                success = await page.locator(".success-box").inner_text()
-                assert "Saved. The desk has a new revision." in success
-                status = await page.locator("#live-region").inner_text()
-                assert "Project saved" in status or "Saved" in status
+                await expect(page.locator(".success-box")).to_contain_text(
+                    "Saved. The desk has a new revision."
+                )
+                await expect(page.locator("#live-region")).to_contain_text(
+                    re.compile(r"Project saved|Saved")
+                )
 
                 project = await page.evaluate(
                     """async () => {
@@ -369,7 +369,7 @@ async def main() -> None:
                 duplicate_title = await page.get_by_label("Title").input_value()
                 assert duplicate_title == "Unsaved draft stays safe copy", duplicate_title
                 duplicate_title = (
-                    "Unsaved draft stays safe copy — a long / unusual destination title "
+                    "Unsaved draft stays safe copy: a long / unusual destination title "
                     "with extra context " * 5
                 )
                 await page.get_by_label("Title").fill(duplicate_title)
@@ -475,6 +475,8 @@ async def main() -> None:
                     arg=duplicate_title,
                 )
                 assert delayed_request["seen"]
+                # Wait for the older response too, so a late overwrite fails here.
+                await page.wait_for_load_state("networkidle")
                 assert len(race_prompts) == 2, race_prompts
                 assert "Unsaved draft stays safe" in race_prompts[0], race_prompts
                 assert duplicate_title[:50] in race_prompts[1], race_prompts

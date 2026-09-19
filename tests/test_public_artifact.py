@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import subprocess
+import sys
 import socket
 import shutil
 import tempfile
@@ -16,7 +17,7 @@ SCRIPT = ROOT / "scripts" / "build-public-artifact.py"
 class PublicArtifactTests(unittest.TestCase):
     def test_public_artifact_builds_with_relative_assets_and_no_private_runtime(self):
         result = subprocess.run(
-            ["python3", str(SCRIPT), "--build"],
+            [sys.executable, str(SCRIPT), "--build"],
             cwd=ROOT,
             check=True,
             capture_output=True,
@@ -34,14 +35,14 @@ class PublicArtifactTests(unittest.TestCase):
     def test_public_artifact_is_served_as_a_pages_style_subpath(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             pages_root = Path(temp_dir) / "AskJamie-FoundRy"
-            subprocess.run(["python3", str(SCRIPT), "--build"], cwd=ROOT, check=True)
+            subprocess.run([sys.executable, str(SCRIPT), "--build"], cwd=ROOT, check=True)
             shutil.copytree(ROOT / "dist/pages", pages_root)
             probe = socket.socket()
             probe.bind(("127.0.0.1", 0))
             port = probe.getsockname()[1]
             probe.close()
             server = subprocess.Popen(
-                ["python3", "-m", "http.server", str(port), "--directory", temp_dir],
+                [sys.executable, "-m", "http.server", str(port), "--bind", "127.0.0.1", "--directory", temp_dir],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
             )
@@ -64,7 +65,7 @@ class PublicArtifactTests(unittest.TestCase):
                 self.assertIn("AskJamie FoundRy", response.read().decode("utf-8"))
                 live_check = subprocess.run(
                     [
-                        "python3",
+                        sys.executable,
                         str(SCRIPT),
                         "--check-live",
                         f"http://127.0.0.1:{port}/AskJamie-FoundRy/",
@@ -86,7 +87,7 @@ class PublicArtifactTests(unittest.TestCase):
     def test_live_pages_check_rejects_wrong_subpath_and_private_runtime_content(self):
         wrong_path = subprocess.run(
             [
-                "python3",
+                sys.executable,
                 str(SCRIPT),
                 "--check-live",
                 "https://example.com/not-the-repository/",
@@ -111,7 +112,7 @@ class PublicArtifactTests(unittest.TestCase):
             port = probe.getsockname()[1]
             probe.close()
             server = subprocess.Popen(
-                ["python3", "-m", "http.server", str(port), "--directory", temp_dir],
+                [sys.executable, "-m", "http.server", str(port), "--bind", "127.0.0.1", "--directory", temp_dir],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
             )
@@ -120,7 +121,7 @@ class PublicArtifactTests(unittest.TestCase):
                     try:
                         live_check = subprocess.run(
                             [
-                                "python3",
+                                sys.executable,
                                 str(SCRIPT),
                                 "--check-live",
                                 f"http://127.0.0.1:{port}/AskJamie-FoundRy/",
