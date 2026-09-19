@@ -1,0 +1,13 @@
+audit: askjamie-regional-governance
+scope: broader-mentor-governance-and-graduation
+adaptation: read-only-regional-mentor-governance-audit
+decision: defer
+owner: OKHP3
+decided_at: "2026-09-17"
+registry_sha256: c81f4f0ae963e02b80172c26343fe3a840fe34c28b0d839d73861a682899a955
+publication_decision: not-authorized
+hosting_decision: not-authorized
+rationale: >
+  Defer adoption of the named mentor governance adaptation. The pinned mentor
+  evidence is confirmed, but the regional adaptation remains a proposal and no
+  publication or hosting decision is authorized.

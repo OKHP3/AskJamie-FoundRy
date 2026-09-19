@@ -1,6 +1,6 @@
 # AskJamie regional governance audit
 
-Status: design ready, adoption deferred.
+Status: design ready, owner decision recorded as defer, adoption deferred.
 
 This audit is the gate for adapting broader OverKill Hill governance or
 graduation surfaces into AskJamie FoundRy. It does not copy a mentor feature,
@@ -21,7 +21,7 @@ The audit covers:
 4. protected-client and BFS firewall handling;
 5. registry immutability during the audit;
 6. evidence classification for every consequential claim;
-7. explicit owner approval for the exact adoption scope.
+7. explicit owner decision for the exact adaptation and adoption scope.
 
 The audit does not cover hosted authoring, model quality, remote child-repository
 existence, or public graduation unless those claims receive separate evidence
@@ -44,6 +44,42 @@ plausible or because several agents repeat it. An external mentor claim is
 `UNKNOWN` until the named mentor source and revision are reviewed in the audit
 record.
 
+## Named mentor-surface review
+
+The first reviewed surface is the OverKill public-graduation audit. This is a
+review of one pinned source revision, not a claim about every current mentor
+workflow or permission.
+
+| Field | Evidence |
+|---|---|
+| Repository revision | `OKHP3/OverKill-Hill-FoundRy@8de1eb212d8db193fd22eb85bf0843f366a0c1a7` |
+| Primary source URL | [`scripts/public-graduation-audit.py`](https://github.com/OKHP3/OverKill-Hill-FoundRy/blob/8de1eb212d8db193fd22eb85bf0843f366a0c1a7/scripts/public-graduation-audit.py) |
+| Path | `scripts/public-graduation-audit.py` |
+| Observation | The read-only dry-run checks release-package completeness, restricted references, record consistency, and manual disabled deployment; it does not grant publication approval or change repository visibility. |
+| Reviewed | 2026-09-17 |
+| Reviewer | Replit Agent |
+
+The observation is `CONFIRMED` for this exact revision and path. It does not
+confirm that a later mentor revision behaves the same way, that the target
+package is safe for AskJamie, or that any publication approval exists.
+
+## Exact AskJamie adaptation
+
+The named adaptation under review is deliberately narrow:
+
+| Field | Record |
+|---|---|
+| Adaptation ID | `read-only-regional-mentor-governance-audit` |
+| Adaptation | Use the pinned mentor audit as evidence for a private AskJamie governance review. Do not copy a governance or graduation surface. |
+| Regional boundary | Keep the Python loopback workbench, private exports, permanent-private client controls, and immutable registry unchanged. |
+| Publication decision | `not-authorized` |
+| Hosting decision | `not-authorized` |
+
+This is an evidence and review adaptation, not adoption of a mentor governance
+or graduation surface. The owner decision is recorded in
+[`regional-governance-decision.yaml`](regional-governance-decision.yaml) and
+is bound to the registry digest in that file.
+
 ## Required audit record
 
 The machine report produced by
@@ -59,12 +95,22 @@ audit:
   mode: design
   status: PASS
   adoption: DEFERRED
+adaptation:
+  id: read-only-regional-mentor-governance-audit
+  publication_decision: not-authorized
+  hosting_decision: not-authorized
 evidence:
   - claim: ...
     tier: CONFIRMED
     evidence: [...]
     consequence_if_false: ...
     next_check: ...
+mentor_review:
+  repository: OKHP3/OverKill-Hill-FoundRy
+  revision: 8de1eb212d8db193fd22eb85bf0843f366a0c1a7
+  path: scripts/public-graduation-audit.py
+  reviewed_at: "2026-09-17"
+  reviewer: Replit Agent
 registry:
   path: registry/index.yaml
   sha256: ...
@@ -75,7 +121,9 @@ protected_client_records:
   violations: []
 owner_approval:
   required: true
-  status: PENDING
+  status: DEFERRED
+  decision: defer
+  decided_at: "2026-09-17"
 ```
 
 The report is evidence about the audit run. It is not itself evidence that the
@@ -103,12 +151,14 @@ At minimum, record these claims:
 | The AskJamie registry passes the canonical schema and health checks | `CONFIRMED` after the validators run | Keep the validator output with the report |
 | Protected client and BFS records remain private and graduation-disabled | `CONFIRMED` after the protected-record sweep | Keep the record count and any violations |
 | The registry did not change during the audit | `CONFIRMED` when the before/after digest matches | Preserve the SHA-256 digest |
-| The mentor surface has the stated governance or graduation behavior | `UNKNOWN` until the named mentor source is reviewed | Add source revision, path, observation, and reviewer |
+| The mentor surface has the stated governance or graduation behavior | `CONFIRMED` for the pinned revision and path reviewed above; `UNKNOWN` for unreviewed revisions or surfaces | Retain the source revision, path, observation, and reviewer |
 | The proposed AskJamie adaptation is safe for the regional boundary | `PROPOSAL` or `UNKNOWN` | Review privacy, ownership, and acceptance proof |
-| Adoption is authorized | `UNKNOWN` until the owner signs the exact scope | Record owner, date, scope, and digest |
+| The owner has decided the exact adaptation | `CONFIRMED` after the decision record matches the adaptation, scope, date, digest, publication boundary, and hosting boundary | Keep `docs/regional-governance-decision.yaml` with the reviewed digest |
 
 The current parity matrix establishes the first three kinds of local boundary
-evidence. It intentionally does not establish the last three.
+evidence, and the named mentor review above establishes the observed behavior
+of one pinned surface. It intentionally does not establish that the proposed
+AskJamie adaptation is safe or that adoption is authorized.
 
 ### 3. Run local controls without mutation
 
@@ -146,25 +196,40 @@ The report may include a count and neutral violation identifiers, but not
 client content. BFS firewall material is not summarized, linked, or mixed into
 the public orientation artifact.
 
-### 5. Require owner approval
+### 5. Record the owner decision
 
-Owner approval is required for adoption, not merely for running the audit. The
-approval record must be separate from the audit output and must include:
+An owner decision is required for adoption, not merely for running the audit. The
+decision record must be separate from the audit output and must include:
 
 ```yaml
 audit: askjamie-regional-governance
 scope: broader-mentor-governance-and-graduation
-decision: approve
+adaptation: read-only-regional-mentor-governance-audit
+decision: defer
 owner: OKHP3
-approved_at: "YYYY-MM-DD"
+decided_at: "YYYY-MM-DD"
 registry_sha256: "<digest from the reviewed report>"
+publication_decision: not-authorized
+hosting_decision: not-authorized
 ```
 
-Approval applies only to the named scope and digest. It does not authorize
-hosted authoring, model calls, child-repository creation, public graduation,
-or a different registry state. If any required claim remains `UNKNOWN`, the
-adoption decision remains `DEFERRED` even when an owner has approved the
-design to continue review.
+`decision` must be `approve`, `defer`, or `reject`. The record applies only to
+the named adaptation, scope, registry digest, publication boundary, and hosting
+boundary. It cannot be reused for a different registry state, a publication
+release, or a hosting decision. An approval also does not authorize hosted
+authoring, model calls, child-repository creation, or public graduation.
+
+The current record is `defer` because the regional adaptation remains a
+proposal. Run the audit with the record to verify the exact binding:
+
+```bash
+python3 scripts/regional-governance-audit.py \
+  --owner-approval docs/regional-governance-decision.yaml \
+  --require-approval
+```
+
+The `--require-approval` flag means a matching record exists. It does not turn
+the deferred adaptation into an approved publication or hosting decision.
 
 ## Decision gate
 
@@ -172,23 +237,24 @@ design to continue review.
 |---|---|
 | Local validator error, protected-record violation, or digest mismatch | `FAIL`, stop |
 | Mentor source, regional adaptation, or owner decision is unverified | `PASS` audit run, `DEFERRED` adoption |
-| All required claims are `CONFIRMED`, protections pass, digest matches, and owner approval matches the scope | Eligible for a separate implementation decision |
+| All required claims are `CONFIRMED`, protections pass, digest matches, and an approving decision matches the exact scope and boundaries | Eligible for a separate implementation decision |
 | Any public graduation or client visibility change is proposed | Stop and open a separate owner-approved graduation review |
 
 The normal result for this repository is currently `PASS` for local controls and
-`DEFERRED` for broader mentor governance adoption. That is the intended safe
-state until the mentor comparison and owner decision are recorded.
+`DEFERRED` for broader mentor governance adoption. The owner decision is
+recorded as `defer`, so no broader mentor governance or graduation surface is
+adopted.
 
 ## Remaining unknowns
 
 - Which exact OverKill governance and graduation surfaces should be compared
-  first.
-- Whether their current behavior is still present at a reviewed mentor revision.
+  next; this audit covers only `scripts/public-graduation-audit.py`.
+- Whether the reviewed behavior remains present in a later mentor revision.
 - Which parts are useful to AskJamie without changing its Python loopback,
   private-export, and permanent-private boundaries.
-- Whether the owner approves a specific adaptation after those claims are
-  confirmed.
+- Whether the owner should revisit the deferred adaptation after the regional
+  boundary review is complete.
 
-The next check is a named mentor-source review followed by an owner decision
-against the resulting evidence ledger. Until then, keep the parity decision at
-`defer`.
+The next check is a regional boundary review against the named adaptation. Until
+that review is complete, keep the parity decision at `defer` and do not reuse
+the decision record for publication or hosting.

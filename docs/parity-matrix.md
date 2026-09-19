@@ -11,6 +11,8 @@ deployment of a capability.
 | Evidence | What it establishes |
 |---|---|
 | OverKill-Hill-FoundRy commit `8de1eb2` inspected 2026-09-09 | A public pnpm/React workbench, Custom GPT studio, backup/import and lifecycle controls, governance and graduation audits, browser coverage, and Pages delivery exist in the mentor repository |
+| OverKill-Hill-FoundRy commit `8de1eb212d8db193fd22eb85bf0843f366a0c1a7`, `scripts/public-graduation-audit.py`, reviewed 2026-09-17 by Replit Agent | At this pinned revision, the named public-graduation audit is read-only, checks package/restricted-reference/release-record gates, keeps deployment manual and disabled, and does not grant publication approval or change visibility |
+| AskJamie registry digest `c81f4f0ae963e02b80172c26343fe3a840fe34c28b0d839d73861a682899a955`, owner decision recorded 2026-09-17 | The owner deferred the exact `read-only-regional-mentor-governance-audit` adaptation for this registry state; publication and hosting remain unauthorized |
 | `https://okhp3.github.io/OverKill-Hill-FoundRy/` returned HTTP 200 on 2026-09-09 | The mentor’s Pages artifact is deployed and reachable; it does not prove hosted authoring or private-state exposure is appropriate here |
 | AskJamie main baseline through 2026-09-09 | Python standard-library/SQLite loopback workbench, private exports, immutable Skillz metadata, decision/evaluation flows, governance validators, and browser acceptance already exist |
 | `manifest.yaml` and `AGENTS.md` | AskJamie owns interpretation and private fabrication; OverKill is the mentor/centroid; public source visibility does not prove operation |
@@ -35,7 +37,7 @@ boundary.
 | Optimistic concurrency and protection | adopt | Existing backend owner: stale revisions, client identity, BFS firewall, lineage, and permanent-private locks remain unchanged | Prevents silent overwrites and privacy downgrades | Existing workbench/boundary suite remains green |
 | Immutable shared Skillz catalog | adopt | Coordinator/backend: retain committed snapshot and provenance; selections are references, not execution/import | Public metadata may be shown; selected project content remains private | Snapshot loader, skills UI, and export tests |
 | Registry and graduation audits | adapt | Governance owner: registry remains read-only in the workbench; exports are pending proposals; `public_graduation_allowed: false` remains locked | No UI mutation or automatic child publication | Registry validation and generated private package assertions |
-| Broader mentor governance/graduation surfaces | defer | Governance owner: use the evidence-led regional audit; do not add a surface until mentor evidence, regional boundary review, registry immutability, protected-client checks, and owner approval are recorded | Could expose or promote protected material if copied prematurely | `docs/regional-governance-audit.md`; `scripts/regional-governance-audit.py`; this decision remains deferred |
+| Broader mentor governance/graduation surfaces | defer | Governance owner: use the exact `read-only-regional-mentor-governance-audit` adaptation; the owner deferred it against the reviewed registry digest, so no mentor surface is added | Could expose or promote protected material if copied prematurely | `docs/regional-governance-audit.md`; `docs/regional-governance-decision.yaml`; `scripts/regional-governance-audit.py`; decision remains deferred |
 | Multi-artifact pnpm/React authoring runtime | out of scope | Runtime owner: retain Python standard library/SQLite and plain static UI | Replacing it would change state handling and could invite unintended hosting | Workbench contract and Replit guidance retain Python loopback operation |
 | Hosted multi-user authoring, auth, model calls, paid inference | defer | The owner approved the provider-independent [hosted authoring boundary design](hosted-authoring-boundary.md) on 2026-09-14; provider selection and implementation require a separate authorization | High risk: would move private source and drafts across a trust boundary; the first hosted authoring release must make no model, inference, external-data, or arbitrary-URL provider call | Design approval is explicitly non-authorizing; the Section 7 evidence set and a separate implementation approval are required before any hosted runtime |
 | Automatic child repositories, public graduation, package deployment | out of scope | Governance owner: keep proposals pending and capabilities private | Prevents accidental publication of client or draft material | Export proposal, manifest controls, and CI do not publish packages |
@@ -44,9 +46,14 @@ boundary.
 ## Acceptance boundary
 
 The accepted surface is a public, read-only orientation artifact plus a private
-loopback authoring workbench. The matrix is complete for this parity pass when
-the mechanical checks and judgment checks in the final validation record pass.
-Any hosted authoring, model quality, public graduation, or child-repository
-claim remains unresolved. The hosted boundary design is approved, but the
+loopback authoring workbench. The named mentor graduation review is confirmed
+only for the pinned revision and path recorded in
+`docs/regional-governance-audit.md`. The exact adaptation decision is recorded
+as `defer` against the reviewed registry digest, so it does not authorize
+adaptation, publication, or hosting. The
+matrix is complete for this parity pass when the mechanical checks and judgment
+checks in the final validation record pass. Any hosted authoring, model
+quality, public graduation, or child-repository claim beyond that reviewed
+surface remains unresolved. The hosted boundary design is approved, but the
 separate implementation authorization and evidence in
 [`hosted-authoring-boundary.md`](hosted-authoring-boundary.md) do not yet exist.

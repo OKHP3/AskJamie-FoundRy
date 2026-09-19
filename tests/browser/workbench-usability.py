@@ -12,7 +12,7 @@ import time
 from contextlib import closing
 from pathlib import Path
 
-from playwright.async_api import async_playwright
+from playwright.async_api import async_playwright, expect
 
 try:
     from browser_diagnostics import BrowserDiagnostics
@@ -218,12 +218,12 @@ async def main() -> None:
                 await page.get_by_role("tab", name="Brief").click()
                 await page.get_by_label("Title").fill("Usability check")
                 await page.get_by_role("button", name="Save changes").click()
-                await page.wait_for_selector(".success-box")
-                await page.wait_for_timeout(150)
-                success = await page.locator(".success-box").inner_text()
-                assert "Saved. The desk has a new revision." in success
-                status = await page.locator("#live-region").inner_text()
-                assert "Project saved" in status or "Saved" in status
+                await expect(page.locator(".success-box")).to_contain_text(
+                    "Saved. The desk has a new revision."
+                )
+                await expect(page.locator("#live-region")).to_contain_text(
+                    re.compile(r"Project saved|Saved")
+                )
 
                 project = await page.evaluate(
                     """async () => {
@@ -368,6 +368,14 @@ async def main() -> None:
                 await page.get_by_label("Title").wait_for()
                 duplicate_title = await page.get_by_label("Title").input_value()
                 assert duplicate_title == "Unsaved draft stays safe copy", duplicate_title
+                duplicate_title = (
+                    "Unsaved draft stays safe copy: a long / unusual destination title "
+                    "with extra context " * 5
+                )
+                await page.get_by_label("Title").fill(duplicate_title)
+                await page.get_by_role("button", name="Save changes").click()
+                await page.get_by_text("Saved. The desk has a new revision.").wait_for()
+                await page.locator(".save-state").filter(has_text="Saved locally").wait_for()
 
                 original_row = page.locator(".project-row").filter(
                     has=page.locator(
@@ -377,7 +385,7 @@ async def main() -> None:
                 duplicate_row = page.locator(".project-row").filter(
                     has=page.locator(
                         "strong",
-                        has_text=re.compile(r"^Unsaved draft stays safe copy$"),
+                        has_text=re.compile(rf"^{re.escape(duplicate_title)}$"),
                     )
                 )
                 await original_row.click()
@@ -398,17 +406,20 @@ async def main() -> None:
                 page.once("dialog", dismiss_project_switch)
                 await duplicate_row.click()
                 assert switch_prompt.get("type") == "confirm", switch_prompt
-                assert (
-                    switch_prompt.get("message")
-                    == "This project has unsaved changes. Leave without saving?"
+                switch_message = switch_prompt.get("message", "")
+                assert switch_message.startswith(
+                    "This project has unsaved changes. Leave without saving and open “"
                 ), switch_prompt
+                assert duplicate_title[:50] in switch_message, switch_prompt
+                assert len(switch_message) < 220, switch_prompt
+                assert "\n" not in switch_message, switch_prompt
                 assert await page.get_by_label("Title").input_value() == "Unsaved original remains"
                 assert await page.locator(".save-state").inner_text() == "Unsaved changes"
                 saved_titles = await page.evaluate(
                     """async () => (await (await fetch('/api/projects')).json()).projects.map((item) => item.title)"""
                 )
                 assert "Unsaved original remains" not in saved_titles, saved_titles
-                assert "Unsaved draft stays safe copy" in saved_titles, saved_titles
+                assert duplicate_title in saved_titles, saved_titles
 
                 page.once("dialog", lambda dialog: dialog.accept())
                 await duplicate_row.click()
@@ -418,6 +429,98 @@ async def main() -> None:
                 await page.get_by_label("Title").fill("Unsaved duplicate remains")
                 assert await page.locator(".save-state").inner_text() == "Unsaved changes"
 
+                race_projects = await page.evaluate(
+                    """async () => {
+                        const data = await (await fetch('/api/projects')).json();
+                        return Object.fromEntries(
+                            data.projects.map((item) => [
+                                item.id,
+                                { title: item.title, revision: item.revision },
+                            ]),
+                        );
+                    }"""
+                )
+                original_id = next(
+                    project_id
+                    for project_id, item in race_projects.items()
+                    if item["title"] == "Unsaved draft stays safe"
+                )
+                duplicate_id = next(
+                    project_id
+                    for project_id, item in race_projects.items()
+                    if item["title"] == duplicate_title
+                )
+                delayed_project_path = f"/api/projects/{original_id}"
+                delayed_request = {"seen": False}
+
+                async def delay_first_project(route) -> None:
+                    if route.request.url.endswith(delayed_project_path):
+                        delayed_request["seen"] = True
+                        await asyncio.sleep(0.75)
+                    await route.continue_()
+
+                await page.route("**/api/projects/*", delay_first_project)
+                race_prompts: list[str] = []
+
+                async def accept_race_dialog(dialog) -> None:
+                    race_prompts.append(dialog.message)
+                    await dialog.accept()
+
+                page.once("dialog", accept_race_dialog)
+                await original_row.click()
+                page.once("dialog", accept_race_dialog)
+                await duplicate_row.click()
+                await page.wait_for_function(
+                    """expected => document.querySelector("#field-title")?.value === expected""",
+                    arg=duplicate_title,
+                )
+                assert delayed_request["seen"]
+                # Wait for the older response too, so a late overwrite fails here.
+                await page.wait_for_load_state("networkidle")
+                assert len(race_prompts) == 2, race_prompts
+                assert "Unsaved draft stays safe" in race_prompts[0], race_prompts
+                assert duplicate_title[:50] in race_prompts[1], race_prompts
+                assert await page.get_by_label("Title").input_value() == duplicate_title
+                assert (
+                    f"revision {race_projects[duplicate_id]['revision']}"
+                    in await page.locator(".editor-head p").inner_text()
+                )
+                await page.unroute("**/api/projects/*", delay_first_project)
+
+                matching_saved_title = "Matching saved project title"
+                await page.evaluate(
+                    """async ({ projectIds, title, draftFields }) => {
+                        for (const projectId of projectIds) {
+                            const project = await (
+                                await fetch(`/api/projects/${encodeURIComponent(projectId)}`)
+                            ).json();
+                            const draft = Object.fromEntries(
+                                draftFields.map((field) => [field, project[field]])
+                            );
+                            const response = await fetch(
+                                `/api/projects/${encodeURIComponent(projectId)}`,
+                                {
+                                    method: "PUT",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                        "X-Foundry-Request": "1",
+                                    },
+                                    body: JSON.stringify({
+                                        ...draft,
+                                        title,
+                                        revision: project.revision,
+                                    }),
+                                },
+                            );
+                            if (!response.ok) throw new Error(await response.text());
+                        }
+                    }""",
+                    {
+                        "projectIds": [original_id, duplicate_id],
+                        "title": matching_saved_title,
+                        "draftFields": DRAFT_FIELDS,
+                    },
+                )
                 saved_before_reopen = await page.evaluate(
                     """async () => {
                         const data = await (await fetch('/api/projects')).json();
@@ -432,8 +535,8 @@ async def main() -> None:
                 assert sorted(
                     item["title"] for item in saved_before_reopen.values()
                 ) == [
-                    "Unsaved draft stays safe",
-                    "Unsaved draft stays safe copy",
+                    matching_saved_title,
+                    matching_saved_title,
                 ], saved_before_reopen
 
                 await context.close()
@@ -461,6 +564,22 @@ async def main() -> None:
                 )
                 assert await original_recovery.count() == 1
                 assert await duplicate_recovery.count() == 1
+                assert (
+                    await original_recovery.get_attribute("data-project-id")
+                    == original_id
+                )
+                assert (
+                    await duplicate_recovery.get_attribute("data-project-id")
+                    == duplicate_id
+                )
+                assert (
+                    f"Saved project: {matching_saved_title} · ID {original_id}"
+                    in await original_recovery.inner_text()
+                )
+                assert (
+                    f"Saved project: {matching_saved_title} · ID {duplicate_id}"
+                    in await duplicate_recovery.inner_text()
+                )
 
                 await original_recovery.get_by_role(
                     "button", name="Discard local draft"
@@ -515,7 +634,10 @@ async def main() -> None:
                     "button", name="Discard local draft"
                 ).click()
                 await page.get_by_label("Title").wait_for()
-                assert await page.get_by_label("Title").input_value() == duplicate_title
+                assert (
+                    await page.get_by_label("Title").input_value()
+                    == matching_saved_title
+                )
                 assert await page.locator(".save-state").inner_text() == "Saved locally"
 
                 page.once("dialog", lambda dialog: dialog.accept())

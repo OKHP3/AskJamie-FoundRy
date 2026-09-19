@@ -19,6 +19,35 @@ REGISTRY = ROOT / "registry" / "index.yaml"
 SCHEMA = ROOT / "schemas" / "registry.schema.yaml"
 AUDIT_NAME = "askjamie-regional-governance"
 AUDIT_SCOPE = "broader-mentor-governance-and-graduation"
+ADAPTATION_ID = "read-only-regional-mentor-governance-audit"
+ADAPTATION = {
+    "id": ADAPTATION_ID,
+    "name": "Read-only regional mentor governance audit",
+    "boundary": (
+        "Use the named mentor audit as evidence for a private AskJamie "
+        "governance review. Do not copy a governance or graduation surface, "
+        "publish a package, or host the authoring workbench."
+    ),
+    "publication_decision": "not-authorized",
+    "hosting_decision": "not-authorized",
+}
+MENTOR_REVIEW = {
+    "repository": "OKHP3/OverKill-Hill-FoundRy",
+    "revision": "8de1eb212d8db193fd22eb85bf0843f366a0c1a7",
+    "source_url": (
+        "https://github.com/OKHP3/OverKill-Hill-FoundRy/blob/"
+        "8de1eb212d8db193fd22eb85bf0843f366a0c1a7/"
+        "scripts/public-graduation-audit.py"
+    ),
+    "path": "scripts/public-graduation-audit.py",
+    "reviewed_at": "2026-09-17",
+    "reviewer": "Replit Agent",
+    "observation": (
+        "The read-only dry-run checks release-package completeness, restricted "
+        "references, record consistency, and manual disabled deployment; it "
+        "does not grant publication approval or change repository visibility."
+    ),
+}
 
 
 def load_registry_checker():
@@ -67,7 +96,7 @@ def approval_status(
             "required": True,
             "status": "PENDING",
             "path": None,
-            "reason": "No owner approval record was supplied.",
+            "reason": "No owner decision record was supplied.",
         }
     try:
         approval = yaml.safe_load(approval_path.read_text(encoding="utf-8"))
@@ -76,39 +105,55 @@ def approval_status(
             "required": True,
             "status": "INVALID",
             "path": str(approval_path),
-            "reason": f"Cannot read approval record: {exc}",
+            "reason": f"Cannot read owner decision record: {exc}",
         }
     if not isinstance(approval, dict):
         return {
             "required": True,
             "status": "INVALID",
             "path": str(approval_path),
-            "reason": "Approval record must be a YAML mapping.",
+            "reason": "Owner decision record must be a YAML mapping.",
         }
     required = {
         "audit": AUDIT_NAME,
         "scope": AUDIT_SCOPE,
-        "decision": "approve",
+        "adaptation": ADAPTATION_ID,
         "owner": "OKHP3",
         "registry_sha256": registry_digest,
+        "publication_decision": ADAPTATION["publication_decision"],
+        "hosting_decision": ADAPTATION["hosting_decision"],
     }
     problems = [
         f"{key} does not match the required value"
         for key, expected in required.items()
         if approval.get(key) != expected
     ]
-    approved_at = approval.get("approved_at")
+    decision = approval.get("decision")
+    if decision not in {"approve", "defer", "reject"}:
+        problems.append("decision must be approve, defer, or reject")
+    decided_at = approval.get("decided_at", approval.get("approved_at"))
     try:
-        date.fromisoformat(str(approved_at))
+        date.fromisoformat(str(decided_at))
     except (TypeError, ValueError):
-        problems.append("approved_at must be an ISO date")
+        problems.append("decided_at must be an ISO date")
+    status_by_decision = {
+        "approve": "APPROVED",
+        "defer": "DEFERRED",
+        "reject": "REJECTED",
+    }
+    status = status_by_decision.get(decision, "INVALID")
     return {
         "required": True,
-        "status": "APPROVED" if not problems else "INVALID",
+        "status": status if not problems else "INVALID",
         "path": str(approval_path),
-        "reason": "Exact scope and registry digest approved."
-        if not problems
-        else "; ".join(problems),
+        "decision": decision,
+        "decided_at": decided_at,
+        "reason": (
+            f"Exact scope, adaptation, registry digest, and release boundaries "
+            f"recorded with decision: {decision}."
+            if not problems
+            else "; ".join(problems)
+        ),
     }
 
 
@@ -162,10 +207,16 @@ def build_report(
         },
         {
             "claim": "The named OverKill mentor surface has the stated governance or graduation behavior.",
-            "tier": "UNKNOWN",
-            "evidence": [],
+            "tier": "CONFIRMED",
+            "evidence": [
+                MENTOR_REVIEW["source_url"],
+                f"revision:{MENTOR_REVIEW['revision']}",
+                f"path:{MENTOR_REVIEW['path']}",
+                f"reviewed_at:{MENTOR_REVIEW['reviewed_at']}",
+                f"reviewer:{MENTOR_REVIEW['reviewer']}",
+            ],
             "consequence_if_false": "AskJamie could adopt an inaccurate or obsolete pattern.",
-            "next_check": "Review the exact mentor source revision, path, and primary evidence.",
+            "next_check": "Review a later mentor revision before extending this observation.",
         },
         {
             "claim": "The proposed adaptation is safe for AskJamie regional boundaries.",
@@ -175,11 +226,13 @@ def build_report(
             "next_check": "Review the adaptation against the local workbench, export, and client controls.",
         },
         {
-            "claim": "Owner approval exists for this exact adoption scope and registry state.",
-            "tier": "CONFIRMED" if approval["status"] == "APPROVED" else "UNKNOWN",
+            "claim": "Owner decision exists for this exact adaptation, scope, and registry state.",
+            "tier": "CONFIRMED"
+            if approval["status"] in {"APPROVED", "DEFERRED", "REJECTED"}
+            else "UNKNOWN",
             "evidence": [approval["path"]] if approval["path"] else [],
             "consequence_if_false": "A design review could be mistaken for authorization to adopt or publish.",
-            "next_check": "Obtain a dated owner decision tied to this scope and registry digest.",
+            "next_check": "Obtain or renew a dated owner decision tied to this adaptation, scope, registry digest, and release boundaries.",
         },
     ]
     return {
@@ -193,7 +246,9 @@ def build_report(
             "status": "PASS" if local_controls_pass else "FAIL",
             "adoption": "DEFERRED",
         },
+        "adaptation": ADAPTATION,
         "evidence": evidence,
+        "mentor_review": MENTOR_REVIEW,
         "registry": {
             "path": str(registry_path.relative_to(root)),
             "sha256": before_digest,
@@ -218,10 +273,11 @@ def build_report(
         },
         "owner_approval": approval,
         "remaining_unknowns": [
-            "Exact mentor source revision and governance surface are not recorded.",
+            "The reviewed mentor behavior may differ in a later revision.",
             "Regional adaptation has not received implementation review.",
-        ] + (["Owner has not approved adoption of this exact scope and digest."]
-             if approval["status"] != "APPROVED" else []),
+        ] + ([
+            "Owner has not recorded a valid decision for this exact adaptation, scope, digest, and release boundary."
+        ] if approval["status"] not in {"APPROVED", "DEFERRED", "REJECTED"} else []),
     }
 
 
@@ -234,12 +290,12 @@ def main() -> int:
     parser.add_argument(
         "--owner-approval",
         type=Path,
-        help="Read an owner approval record tied to the audit scope and digest.",
+        help="Read an owner decision record tied to the adaptation, scope, and digest.",
     )
     parser.add_argument(
         "--require-approval",
         action="store_true",
-        help="Fail unless a matching owner approval record is supplied.",
+        help="Fail unless a matching owner decision record is supplied.",
     )
     args = parser.parse_args()
     report = build_report(
@@ -249,7 +305,11 @@ def main() -> int:
     print(json.dumps(report, indent=2, sort_keys=True))
     if report["audit"]["status"] == "FAIL":
         return 1
-    if args.require_approval and report["owner_approval"]["status"] != "APPROVED":
+    if args.require_approval and report["owner_approval"]["status"] not in {
+        "APPROVED",
+        "DEFERRED",
+        "REJECTED",
+    }:
         return 1
     return 0
 
