@@ -1,0 +1,52 @@
+name: Technology Release Watch
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "47 8 * * *"
+  pull_request:
+    paths:
+      - scripts/audit-technologies.py
+      - .github/technology-watch.json
+      - .github/workflows/technology-watch.yaml
+      - .github/dependabot.yml
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Check stable technology releases
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.x"
+          check-latest: true
+          allow-prereleases: false
+      - name: Record resolved dependency environment
+        run: |
+          python -m pip install -r requirements.txt -r tests/browser/requirements.txt
+          mkdir -p "${RUNNER_TEMP}/technology-audit"
+          python -m pip freeze > "${RUNNER_TEMP}/technology-audit/requirements-resolved.txt"
+      - name: Check upstream releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FAIL_ON_CHANGE: ${{ github.event_name != 'pull_request' && '--fail-on-change' || '' }}
+        run: python scripts/audit-technologies.py --output-dir "${RUNNER_TEMP}/technology-audit" $FAIL_ON_CHANGE
+      - name: Publish audit summary
+        if: ${{ always() }}
+        run: |
+          if [ -f "${RUNNER_TEMP}/technology-audit/report.md" ]; then
+            cat "${RUNNER_TEMP}/technology-audit/report.md" >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Upload audit evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: technology-audit
+          path: ${{ runner.temp }}/technology-audit
+          if-no-files-found: warn
+          retention-days: 30

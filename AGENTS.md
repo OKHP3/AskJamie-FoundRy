@@ -131,6 +131,17 @@ workflow definitions under `docs/github-workflows/` install the pinned
 dependencies from `requirements.txt`. The older staged definitions remain
 reference files unless explicitly activated under `.github/workflows/`.
 
+Technology versions and migration policy are in `docs/technology-inventory.md`.
+Dependabot checks both Python requirements directories and active Actions daily.
+The compatibility workflow also runs weekly and tests the latest stable Python
+separately from the required Python 3.11 check. Run
+`python3 scripts/audit-technologies.py` for stable-release evidence or add
+`--environment-only` for actual interpreter/library versions. The daily release
+watch reports unknown lookups as failures and keeps private state out of its
+artifacts. Baselines in `.github/technology-watch.json` are upstream
+observations, not installed versions. Updates use tested PRs; no automatic
+merge, host migration, or Pages publication is implied.
+
 ## Safe-change rules
 
 - Preserve the parent-child lineage in every manifest and registry entry.
