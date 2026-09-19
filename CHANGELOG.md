@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Recovered seven completed Replit commits with preserved history: clearer
+  draft recovery identities, safe rapid project switching, a pinned mentor
+  deferral record, and manual Pages content verification and recovery guidance.
+- Made public artifact tests use the active Python interpreter and loopback
+  test servers. Browser checks now await the saved message and delayed project
+  response instead of accepting timing-dependent results.
+
 - Audited application, test, CI, documentation and host technology versions
   against primary stable-release sources, with separate Windows/Replit evidence.
 - Added daily browser dependency update coverage, daily release-audit reports,

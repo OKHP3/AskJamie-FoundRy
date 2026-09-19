@@ -14,9 +14,44 @@ controls. Its expected project-site path is
 `https://okhp3.github.io/AskJamie-FoundRy/`, subject to a separately approved
 Pages release.
 
-The authoring workbench remains private and loopback-only:
+## Recovering a bad Pages publication
+
+Pages recovery is a corrective release, not a database restore. The only source
+for the public artifact is [`public/`](public/). Never copy, restore, delete, or
+inspect `.foundry-data/`, backups, client records, or generated private
+packages as part of a Pages correction.
+
+If the published page has incorrect content or an unexpected link:
+
+1. Record the live URL, the Pages workflow run, and the commit shown for that
+   deployment. Compare the deployed content with the `public/` source.
+2. Start a task branch from the latest `origin/main`. Make the smallest
+   correction in `public/`, or revert the offending public-source commit on the
+   task branch. Do not edit `dist/pages/` as the source of truth.
+3. Run `python3 scripts/build-public-artifact.py --build` and the documented
+   validation checks. Review the generated artifact and confirm it contains no
+   private workbench or runtime content.
+4. Open a pull request into protected `main`. Wait for the supported Python
+   validation check, then merge the correction through GitHub. Do not push
+   directly to `main`, force-push, or rewrite the bad release's history.
+5. After the merge, manually dispatch
+   [AskJamie Pages (manual release)](.github/workflows/pages.yaml) from
+   `main`. The safe release boundary is the reviewed merge commit on protected
+   `main`, not an unreviewed branch or a local workbench state. Confirm that
+   the workflow run uses that merge commit before relying on its deployment.
+6. Check the workflow smoke test and open the public URL. Confirm the expected
+   path, visible content, and links. Keep the failed run and corrective commit
+   as the recovery record.
+
+If the source correction is not clear, stop after isolating the affected
+`public/` files and ask the owner to choose between a narrow edit and a revert.
+Do not use workbench import, deletion, or backup restore to repair a Pages
+publication. The complete operating procedure is in
+[`docs/workbench.md`](docs/workbench.md#recovering-a-bad-pages-publication).
 
 ## Run the workbench
+
+The authoring workbench remains private and loopback-only:
 
 ```bash
 python3 -m pip install -r requirements.txt

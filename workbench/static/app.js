@@ -17,6 +17,7 @@
     history: [],
     loading: true,
     loadingProjectId: null,
+    projectLoadToken: 0,
     recovery: null,
     localDrafts: {},
     localStorageUnavailable: false,
@@ -299,16 +300,20 @@
       state.projects.length;
   }
   async function loadProject(id, force = false) {
-    if (!force && !canLeaveCurrent()) return;
+    const destination = state.projects.find((project) => project.id === id);
+    if (!force && !canLeaveCurrent(destination)) return;
+    const loadToken = ++state.projectLoadToken;
     state.loadingProjectId = id;
     state.recovery = null;
     render();
     try {
-      state.current = await api(`/api/projects/${encodeURIComponent(id)}`);
+      const project = await api(`/api/projects/${encodeURIComponent(id)}`);
       const [history, evaluations] = await Promise.allSettled([
         api(`/api/projects/${encodeURIComponent(id)}/history`),
         api(`/api/projects/${encodeURIComponent(id)}/evaluations`),
       ]);
+      if (loadToken !== state.projectLoadToken) return;
+      state.current = project;
       state.history =
         history.status === "fulfilled" && Array.isArray(history.value.history)
           ? history.value.history
@@ -325,16 +330,31 @@
       state.loadingProjectId = null;
       render();
     } catch (error) {
+      if (loadToken !== state.projectLoadToken) return;
       state.loadingProjectId = null;
       state.error = error.message;
       render();
     }
   }
-  function canLeaveCurrent() {
-    return (
-      !state.current?._dirty ||
-      window.confirm("This project has unsaved changes. Leave without saving?")
-    );
+
+  function projectSwitchLabel(project) {
+    const title =
+      String(project?.title || "")
+        .replace(/\s+/g, " ")
+        .trim() || "Untitled capability";
+    const code = String(project?.code || "")
+      .replace(/\s+/g, " ")
+      .trim();
+    const readableTitle =
+      title.length > 96 ? `${title.slice(0, 95)}…` : title;
+    return code ? `${readableTitle} · ${code}` : readableTitle;
+  }
+  function canLeaveCurrent(destination = null) {
+    if (!state.current?._dirty) return true;
+    const message = destination
+      ? `This project has unsaved changes. Leave without saving and open “${projectSwitchLabel(destination)}”?`
+      : "This project has unsaved changes. Leave without saving?";
+    return window.confirm(message);
   }
   function requireSavedProject(action) {
     if (!state.current?.id) {
@@ -582,10 +602,17 @@
       );
       localRecoveries.forEach(({ project, localDraft }) => {
         recovery.append(
-          el("div", { class: "local-recovery-item" }, [
+          el("div", {
+            class: "local-recovery-item",
+            "data-project-id": project.id,
+          }, [
             el("div", {}, [
               el("strong", {
                 text: localDraft.draft.title || project.title || "Untitled capability",
+              }),
+              el("p", {
+                class: "field-hint",
+                text: `Saved project: ${project.title || "Untitled capability"} · ID ${project.id}`,
               }),
               el("p", {
                 class: "field-hint",

@@ -157,3 +157,52 @@ and unresolved access limits.
 For the public artifact, run `python scripts/build-public-artifact.py --build`.
 It checks relative asset references and rejects private/runtime markers before
 writing `dist/pages/`. A Pages release is manual and separately reviewed.
+
+## Recovering a bad Pages publication
+
+The Pages artifact and the local workbench have separate data boundaries. Pages
+is built only from `public/`. The local workbench database, `.foundry-data/`,
+backups, client records, and generated private packages are never inputs to a
+Pages recovery. Do not restore, import, delete, or copy private workbench data
+to fix a public publication.
+
+Use this procedure when a deployed page has incorrect content or an unexpected
+link:
+
+1. Record the public URL, the failed or suspect Pages workflow run, and the
+   deployed commit. Inspect the corresponding `public/` source and determine
+   whether the fix is a narrow correction or a revert of the offending
+   public-source commit.
+2. Fetch the latest `origin/main` and create a task branch from it. Change only
+   the affected public source. `dist/pages/` is generated output and is not the
+   source of truth.
+3. From the repository root, run:
+
+   ```bash
+   python3 scripts/build-public-artifact.py --build
+   python3 scripts/build-public-artifact.py
+   python3 -m unittest discover -s tests -v
+   ```
+
+   Review the generated `dist/pages/` contents and confirm that the correction
+   removes the bad content without introducing private workbench or runtime
+   markers.
+4. Open a pull request from the task branch into protected `main`. Wait for the
+   supported Python validation check and merge the reviewed correction through
+   GitHub. Never force-push or rewrite protected `main`.
+5. After the merge, manually dispatch
+   [AskJamie Pages (manual release)](../.github/workflows/pages.yaml) from
+   `main`. The safe release unit is the reviewed merge commit on protected
+   `main` followed by this manual workflow. Confirm the workflow run identifies
+   that merge commit before accepting the deployment.
+6. Confirm the workflow smoke test passes, then open the public URL and check
+   the expected repository path, visible content, and external links. Retain the
+   suspect run and corrective commit as evidence of what was changed.
+
+If a narrow fix is unsafe because later public changes are mixed together,
+prepare a separate revert commit on the task branch and send it through the
+same pull-request boundary. This restores public source history without
+rewriting `main`. If the source is correct but the publication still needs to
+be retried, dispatch the same reviewed `main` release again and verify the
+result. Do not dispatch an unreviewed branch or attempt to repair Pages by
+changing private workbench state.

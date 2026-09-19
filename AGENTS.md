@@ -132,6 +132,9 @@ dependencies from `requirements.txt`. The older staged definitions remain
 reference files unless explicitly activated under `.github/workflows/`.
 
 Technology versions and migration policy are in `docs/technology-inventory.md`.
+Public artifact tests use the active interpreter on Windows and POSIX. The
+manual Pages workflow verifies the expected repository path and public content
+markers after deployment; it does not certify hosted authoring or private state.
 Dependabot checks both Python requirements directories and active Actions daily.
 The compatibility workflow also runs weekly and tests the latest stable Python
 separately from the required Python 3.11 check. Run
