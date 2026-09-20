@@ -54,6 +54,8 @@ class AuditRepoTests(unittest.TestCase):
             self._git(root, "commit", "-qm", "reviewed work")
             reviewed_head = self._git(root, "rev-parse", "HEAD").strip()
 
+            self._git(root, "remote", "add", "upstream", str(root))
+            self._git(root, "switch", "main")
             check = audit_repo.prepare_branch_deletion(
                 root,
                 "feature/cleanup",
@@ -64,9 +66,31 @@ class AuditRepoTests(unittest.TestCase):
             self.assertEqual(check["reviewed_head"], reviewed_head)
             self.assertEqual(check["current_head"], reviewed_head)
             self.assertEqual(check["deletion_commands"], [
-                ["git", "push", "upstream", "--delete", "feature/cleanup"],
+                ["git", "push", f"--force-with-lease=refs/heads/feature/cleanup:{reviewed_head}", "upstream", ":refs/heads/feature/cleanup"],
                 ["git", "branch", "-d", "feature/cleanup"],
             ])
+
+    def test_remote_tip_change_and_checked_out_branch_are_held(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "local"
+            root.mkdir()
+            self._init_repo(root)
+            self._git(root, "switch", "-c", "feature/cleanup")
+            reviewed = self._git(root, "rev-parse", "HEAD").strip()
+            held = audit_repo.prepare_branch_deletion(root, "feature/cleanup", reviewed)
+            self.assertEqual(held["reason"], "branch is checked out")
+            self.assertEqual(held["deletion_commands"], [])
+            remote = Path(directory) / "remote.git"
+            self._git(root, "clone", "--bare", str(root), str(remote))
+            self._git(root, "remote", "add", "origin", str(remote))
+            self._git(root, "switch", "main")
+            (root / "new.txt").write_text("new")
+            self._git(root, "add", "new.txt")
+            self._git(root, "commit", "-m", "new remote work")
+            self._git(root, "push", "origin", "main:feature/cleanup")
+            held = audit_repo.prepare_branch_deletion(root, "feature/cleanup", reviewed)
+            self.assertEqual(held["reason"], "remote tip changed since review")
+            self.assertEqual(held["deletion_commands"], [])
 
     def test_cli_rejects_missing_deletion_approval_details(self) -> None:
         invalid_invocations = [

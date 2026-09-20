@@ -36,7 +36,7 @@ Approvals:
 - For external, destructive, paid, privileged, secret-related, or
   outbound-network actions, show the exact action and stop at Replit's approval
   boundary.
-- If Replit offers an “Always allow” option, I—not the agent—may choose it for a
+- If Replit offers an “Always allow” option, I:not the agent:may choose it for a
   trusted, low-risk action. This is my choice for that approval boundary, not
   blanket permission; do not select or configure it for me.
 

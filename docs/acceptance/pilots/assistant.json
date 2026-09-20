@@ -18,5 +18,18 @@
   "skill_ids": [],
   "workflow_steps": [],
   "decision": {},
-  "eval_cases": []
+  "eval_cases": [
+    {
+      "name": "bounded response",
+      "input": "What is the next step?",
+      "response": "Review this private draft before proceeding.",
+      "required": [
+        "private draft"
+      ],
+      "forbidden": [
+        "published",
+        "guaranteed"
+      ]
+    }
+  ]
 }
