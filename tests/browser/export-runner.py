@@ -7,7 +7,7 @@ import socketserver
 import tempfile
 import webbrowser
 import zipfile
-from pathlib import Path, PurePosixPath
+from pathlib import Path, PurePosixPath, PureWindowsPath
 
 
 class ReusableTCPServer(socketserver.TCPServer):
@@ -25,9 +25,15 @@ def _extract_export(zip_path: Path) -> tempfile.TemporaryDirectory:
         with zipfile.ZipFile(zip_path) as archive:
             for name in archive.namelist():
                 path = PurePosixPath(name)
-                if path.is_absolute() or ".." in path.parts or "\\" in name:
+                if path.is_absolute() or PureWindowsPath(name).drive or ".." in path.parts or "\\" in name:
                     raise SystemExit(f"unsafe archive path: {name}")
-            archive.extractall(temp.name)
+            for entry in archive.infolist():
+                destination = Path(temp.name).joinpath(*PurePosixPath(entry.filename).parts)
+                if entry.is_dir():
+                    destination.mkdir(parents=True, exist_ok=True)
+                else:
+                    destination.parent.mkdir(parents=True, exist_ok=True)
+                    destination.write_bytes(archive.read(entry))
         if not (Path(temp.name) / "index.html").exists():
             raise SystemExit("decision export is missing index.html")
     except BaseException:
