@@ -29,12 +29,12 @@ object. Supported event types are:
 
 The runner rejects response-derived sources, non-native evidence tiers,
 agent-attributed approval actions, malformed events, duplicate IDs, and
-conflicting activation decisions. It never treats a missing event as `false`.
+conflicting activation decisions, mixed run/configuration measurements, and without-skill trigger measurements. It never treats a missing event as `false`.
 
 ## Run
 
 ```bash
-python3 replit/okhp3-replit-free-mode-autonomy/benchmarks/run-native-telemetry.py \
+python3 .agents/skills/okhp3-replit-free-mode-autonomy/benchmarks/run-native-telemetry.py \
   --events /path/to/replit-agent-events.json
 ```
 

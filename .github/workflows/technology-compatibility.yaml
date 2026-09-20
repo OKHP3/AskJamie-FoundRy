@@ -50,6 +50,11 @@ jobs:
       - name: Check registry
         run: python scripts/check-registry.py
 
+      - name: Test reviewed maintenance packages
+        run: |
+          python -m unittest discover -s .agents/skills/okhp3-replit-repl-janitor/tests -v
+          python -m unittest discover -s .agents/skills/okhp3-replit-free-mode-autonomy/benchmarks -p test_native_telemetry.py -v
+
       - name: Test workbench and governance
         run: python -m unittest discover -s tests -v
 

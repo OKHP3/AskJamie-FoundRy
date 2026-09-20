@@ -69,6 +69,7 @@
       (state.loadingProjectId ? "Loading project." : "");
     live.textContent = message;
     live.setAttribute("role", state.error ? "alert" : "status");
+    live.removeAttribute("aria-live");
   };
   const draftDefaults = (kind = "assistant") => ({
     title: "",
@@ -301,7 +302,7 @@
   }
   async function loadProject(id, force = false) {
     const destination = state.projects.find((project) => project.id === id);
-    if (!force && !canLeaveCurrent(destination)) return;
+    if (!force && !canLeaveCurrent(destination)) return null;
     const loadToken = ++state.projectLoadToken;
     state.loadingProjectId = id;
     state.recovery = null;
@@ -312,7 +313,7 @@
         api(`/api/projects/${encodeURIComponent(id)}/history`),
         api(`/api/projects/${encodeURIComponent(id)}/evaluations`),
       ]);
-      if (loadToken !== state.projectLoadToken) return;
+      if (loadToken !== state.projectLoadToken) return null;
       state.current = project;
       state.history =
         history.status === "fulfilled" && Array.isArray(history.value.history)
@@ -329,11 +330,13 @@
       state.previewAnswers = {};
       state.loadingProjectId = null;
       render();
+      return project;
     } catch (error) {
-      if (loadToken !== state.projectLoadToken) return;
+      if (loadToken !== state.projectLoadToken) return null;
       state.loadingProjectId = null;
       state.error = error.message;
       render();
+      return null;
     }
   }
 
@@ -398,8 +401,6 @@
       ? el("div", {
           class: "error-box",
           role: "alert",
-          "aria-live": "assertive",
-          "aria-atomic": "true",
           text: state.error,
         })
       : null;
@@ -1511,7 +1512,7 @@
         ? {
             projectId,
             message:
-              "The saved copy changed while you were editing. Reload the saved copy to reconcile, or keep editing and save again.",
+              "The saved copy changed while you were editing. Copy any edits you need to keep, then reload the saved copy before saving again.",
           }
         : null;
       render();
@@ -1766,8 +1767,8 @@
     const localDraft = state.localDrafts?.[projectId];
     if (!localDraft) return;
     try {
-      await loadProject(projectId, true);
-      if (!state.current) return;
+      const restoredProject = await loadProject(projectId, true);
+      if (!restoredProject || state.current !== restoredProject) return;
       state.current = {
         ...state.current,
         ...localDraft.draft,

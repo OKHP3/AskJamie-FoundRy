@@ -72,7 +72,7 @@ permissions, quota, or platform interface.
    automatically accept an approval request. For an external, destructive, paid,
    privileged, secret-related, or outbound-network action, show what would
    happen and stop at the platform's approval boundary. If the host offers an
-   “Always allow” setting, the user—not the agent—may select it for a trusted,
+   “Always allow” setting, the user:not the agent:may select it for a trusted,
    low-risk action. This is a user choice for that approval boundary; the agent
    must not select it, configure it, or treat it as blanket permission on the
    user's behalf.

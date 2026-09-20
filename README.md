@@ -101,7 +101,7 @@ OKHP3/OverKill-Hill          ← Universe governance
 
 ## What This Repository Is
 
-**AskJamie FoundRy** is a private capability-building application and governance
+**AskJamie FoundRy** is a public-source, owner-local capability-building application and governance
 relay. Author assistants, decision tools and guided workflows; save revisions,
 record evidence, and export governed child-repository packages.
 

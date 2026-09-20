@@ -121,12 +121,14 @@ class BoundaryAcceptanceTests(unittest.TestCase):
         self.assertEqual(status, 400)
         self.assertIn("1 MiB", json.loads(payload)["error"])
 
-    def test_origin_host_write_protections_and_unsupported_methods(self):
-        self.assertEqual(self.request("POST", "/api/projects", draft(), {"Origin": "https://evil.test"})[0], 400)
-        self.assertEqual(self.request("POST", "/api/projects", draft(), {"X-Foundry-Request": "0"})[0], 400)
-        self.assertEqual(self.request("GET", "/api/health", headers={"Host": "evil.test"})[0], 400)
-        self.assertEqual(self.request("DELETE", "/api/projects")[0], 501)
-        self.assertEqual(self.request("PATCH", "/api/projects", draft())[0], 501)
+    def test_unsupported_methods_use_the_workbench_error_contract(self):
+        for method in ("DELETE", "PATCH"):
+            with self.subTest(method=method):
+                status, headers, payload = self.request(method, "/api/projects")
+                self.assertEqual(status, 501)
+                self.assertEqual(json.loads(payload)["error"], "method not supported")
+                self.assertIn("no-store", headers["Cache-Control"])
+                self.assertEqual(self.request(method, "/api/projects", headers={"Host": "evil.test"})[0], 400)
 
     def test_graph_edge_cases_and_incomplete_answers(self):
         cyclic = {

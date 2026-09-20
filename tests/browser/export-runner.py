@@ -7,7 +7,11 @@ import socketserver
 import tempfile
 import webbrowser
 import zipfile
-from pathlib import Path, PurePosixPath
+from pathlib import Path, PurePosixPath, PureWindowsPath
+
+
+class ReusableTCPServer(socketserver.TCPServer):
+    allow_reuse_address = True
 
 
 class QuietRequestHandler(http.server.SimpleHTTPRequestHandler):
@@ -17,27 +21,37 @@ class QuietRequestHandler(http.server.SimpleHTTPRequestHandler):
 
 def _extract_export(zip_path: Path) -> tempfile.TemporaryDirectory:
     temp = tempfile.TemporaryDirectory()
-    with zipfile.ZipFile(zip_path) as archive:
-        for name in archive.namelist():
-            path = PurePosixPath(name)
-            if path.is_absolute() or ".." in path.parts or "\\" in name:
-                raise SystemExit(f"unsafe archive path: {name}")
-        archive.extractall(temp.name)
-    if not (Path(temp.name) / "index.html").exists():
-        raise SystemExit("decision export is missing index.html")
+    try:
+        with zipfile.ZipFile(zip_path) as archive:
+            for name in archive.namelist():
+                path = PurePosixPath(name)
+                if path.is_absolute() or PureWindowsPath(name).drive or ".." in path.parts or "\\" in name:
+                    raise SystemExit(f"unsafe archive path: {name}")
+            for entry in archive.infolist():
+                destination = Path(temp.name).joinpath(*PurePosixPath(entry.filename).parts)
+                if entry.is_dir():
+                    destination.mkdir(parents=True, exist_ok=True)
+                else:
+                    destination.parent.mkdir(parents=True, exist_ok=True)
+                    destination.write_bytes(archive.read(entry))
+        if not (Path(temp.name) / "index.html").exists():
+            raise SystemExit("decision export is missing index.html")
+    except BaseException:
+        temp.cleanup()
+        raise
     return temp
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Serve an exported decision package locally.")
     parser.add_argument("zip_path", type=Path, help="Path to a generated export ZIP")
-    parser.add_argument("--port", type=int, default=8765, help="Local port to serve on")
+    parser.add_argument("--port", type=int, default=8767, help="Local port to serve on")
     parser.add_argument("--open", action="store_true", help="Open the local browser automatically")
     args = parser.parse_args()
 
     temp = _extract_export(args.zip_path)
     handler = functools.partial(QuietRequestHandler, directory=temp.name)
-    with socketserver.TCPServer(("127.0.0.1", args.port), handler) as server:
+    with temp, ReusableTCPServer(("127.0.0.1", args.port), handler) as server:
         url = f"http://127.0.0.1:{args.port}/index.html"
         print(url, flush=True)
         if args.open:

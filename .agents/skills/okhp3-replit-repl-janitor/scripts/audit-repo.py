@@ -109,11 +109,24 @@ def prepare_branch_deletion(
         })
         return result
 
+    checked_out = run(["git", "worktree", "list", "--porcelain"], root)
+    if f"branch refs/heads/{branch}" in checked_out.splitlines():
+        result.update(bucket="review", reason="branch is checked out", deletion_commands=[])
+        return result
+    remote_ref = f"refs/heads/{branch}"
+    remote_tip = run(["git", "ls-remote", "--exit-code", "--heads", remote, remote_ref], root)
+    matching = [line.split()[0] for line in remote_tip.splitlines()
+                if len(line.split()) == 2 and line.split()[1] == remote_ref]
+    if matching != [reviewed_head]:
+        result.update(bucket="review", reason="remote tip changed since review", deletion_commands=[])
+        return result
+    result["remote_head"] = reviewed_head
+
     result.update({
         "bucket": "delete",
         "reason": "branch tip matches reviewed head",
         "deletion_commands": [
-            ["git", "push", remote, "--delete", branch],
+            ["git", "push", f"--force-with-lease={remote_ref}:{reviewed_head}", remote, f":{remote_ref}"],
             ["git", "branch", "-d", branch],
         ],
     })

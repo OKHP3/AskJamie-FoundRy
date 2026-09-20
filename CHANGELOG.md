@@ -265,3 +265,12 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 [0.3.0]: https://github.com/OKHP3/AskJamie-FoundRy/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/OKHP3/AskJamie-FoundRy/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/OKHP3/AskJamie-FoundRy/releases/tag/v0.1.0
+
+## 2026-09-20: Historical review repairs
+
+- Isolate browser-local draft recovery from canceled or failed project loads.
+- Exercise synthetic assistant and decision pilots with real authored evaluation cases.
+- Clean rejected export archives, use a separate reusable preview port, and correct stale-save and accessibility guidance.
+- Audit dependency and workflow input changes in pull requests.
+- Bind branch deletion plans to the reviewed remote commit and protect checked-out branches.
+- Reject mixed native telemetry runs/configurations and correct project-local runner documentation.

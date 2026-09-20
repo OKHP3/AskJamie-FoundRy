@@ -194,6 +194,13 @@ class WorkbenchHandler(BaseHTTPRequestHandler):
             content_type += "; charset=utf-8"
         self._bytes(HTTPStatus.OK, target.read_bytes(), content_type)
 
+    def send_error(self, code, message=None, explain=None):
+        if code == HTTPStatus.NOT_IMPLEMENTED:
+            if self._check_host():
+                self._error(HTTPStatus.NOT_IMPLEMENTED, "method not supported")
+            return
+        super().send_error(code, message, explain)
+
     def do_POST(self) -> None:
         self._write_request("POST")
 

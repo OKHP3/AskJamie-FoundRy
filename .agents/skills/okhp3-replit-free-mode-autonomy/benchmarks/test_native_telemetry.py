@@ -129,6 +129,13 @@ class NativeTelemetryImportTests(unittest.TestCase):
                 [event("event-1"), event("event-2")],
             )
 
+    def test_mixed_run_or_configuration_cannot_complete_trigger_coverage(self):
+        for override in ({"run_id": "other"}, {"configuration": "with_skill"}, {"configuration": "without_skill"}):
+            with self.subTest(override=override), self.assertRaises(native_telemetry.TelemetryError):
+                native_telemetry.activation_results(QUERIES, [event("one"), event("two", query_id="trigger-02", **override)])
+        with self.assertRaises(native_telemetry.TelemetryError):
+            native_telemetry.activation_results(QUERIES, [event("one", configuration="without_skill")])
+
     def test_response_derived_event_is_rejected(self) -> None:
         response_event = event(
             "event-1",

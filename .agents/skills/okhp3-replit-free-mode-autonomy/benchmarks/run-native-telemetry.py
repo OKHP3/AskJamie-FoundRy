@@ -213,6 +213,11 @@ def activation_results(
     if unknown:
         raise TelemetryError(f"Activation events reference unknown trigger ids: {', '.join(unknown)}.")
 
+    configurations = {event.get("configuration", "native") for event in activation_events}
+    runs = {event["run_id"] for event in activation_events}
+    if len(configurations) > 1 or len(runs) > 1 or "without_skill" in configurations:
+        raise TelemetryError("Activation measurement requires one run and one target-skill configuration.")
+
     observed: dict[str, bool] = {}
     for event in activation_events:
         query_id = event["query_id"]

@@ -1,6 +1,6 @@
 {
   "skill_name": "okhp3-replit-free-mode-autonomy",
-  "skill_version": "1.0.0",
+  "skill_version": "1.1.0",
   "phase": 0,
   "status": "runner-available-awaiting-export",
   "description_evaluated": "Keep Replit project work autonomous and Free Mode-first with bounded execution, checkpointed quota recovery, and quiet upgrade handling. Use when the user asks to maximize Free Mode, avoid repeated upgrade nudges, retry after a five-hour or weekly limit, preserve work across interruptions, or keep routine work moving without unnecessary approval pauses. Does not bypass quotas or human approval.",

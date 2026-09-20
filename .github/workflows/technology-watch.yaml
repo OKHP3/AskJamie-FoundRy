@@ -8,7 +8,9 @@ on:
     paths:
       - scripts/audit-technologies.py
       - .github/technology-watch.json
-      - .github/workflows/technology-watch.yaml
+      - requirements.txt
+      - tests/browser/requirements.txt
+      - .github/workflows/**
       - .github/dependabot.yml
 
 permissions:

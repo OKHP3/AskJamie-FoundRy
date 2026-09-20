@@ -36,5 +36,20 @@
       }
     ]
   },
-  "eval_cases": []
+  "eval_cases": [
+    {
+      "name": "yes branch",
+      "answers": {
+        "start": true
+      },
+      "expected_result": "Proceed."
+    },
+    {
+      "name": "no branch",
+      "answers": {
+        "start": false
+      },
+      "expected_result": "Ask."
+    }
+  ]
 }
