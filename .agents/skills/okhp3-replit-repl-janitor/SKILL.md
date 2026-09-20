@@ -197,9 +197,12 @@ The JSON result records both `reviewed_head` and the freshly read
 `current_head`. If the bucket is `review`, stop, record the hold, and run no
 deletion command. Only a `delete` result may be executed, and its
 `deletion_commands` must be run in the emitted order. The sequence is
-remote-first (`git push origin --delete <branch>`) and local second
-(`git branch -d <branch>`). The check is read-only and never executes either
-command.
+remote-first with an exact-SHA lease
+(`git push --force-with-lease=refs/heads/<branch>:<reviewed SHA> origin :refs/heads/<branch>`)
+and local second (`git branch -d <branch>`). This lease guards deletion against
+a concurrent remote update; it does not authorize rewriting branch history.
+Do not substitute an unguarded `--delete` command. The check is read-only and
+never executes either command.
 
 For an approved merge:
 
