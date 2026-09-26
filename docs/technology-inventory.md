@@ -1,13 +1,14 @@
 # Technology inventory and update policy
 
-Audited 2026-09-18 America/Chicago; sources retrieved 2026-09-19 UTC.
+Inventory baseline assembled 2026-09-18 America/Chicago; its linked sources were
+retrieved 2026-09-19 UTC. The automated release watch was rerun 2026-09-26 UTC.
 Question: what does this solution use, how current is it, and how will later
 stable releases reach it with evidence of compatibility?
 
 ## Scope and evidence
 
-The canonical GitHub/Windows baseline is
-`c592bd76e526c1e1253b09fd55fd44c91e8ee49e`. The starting checkout was clean.
+The canonical GitHub/Windows baseline for this refresh is
+`b5c7bba260e5e4a415249d7ffc65dcbf94aa3a3a`. The starting checkout was clean.
 All tracked filenames, manifests, active/reference workflows, application
 imports, browser assets, Replit configuration and executable skill helpers
 were inspected. Private state was not read.
@@ -18,12 +19,12 @@ font dependency. **TypeScript, Vite, Tailwind, React, Next.js and pnpm are not
 application dependencies.** Mentions in mentor/skill guidance do not constitute
 installation. Their in-place application version is not applicable.
 
-Replit was inspected read-only through its authenticated browser Shell. Its
-clean `main` was `0a97a3a1e40b70fa0c26067d2832d445f4c94955`, eight commits ahead
-of its cached `origin/main`. This is separate owned work. Requirements and
-`.replit` matched the canonical baseline in the comparison. That work was not
-merged or changed. The Replit connector separately returned reauthentication
-required; browser access does not prove connector health.
+On 2026-09-26, Replit's Git panel and Shell were inspected read-only. Both showed
+clean `main` at `b5c7bba260e5e4a415249d7ffc65dcbf94aa3a3a`, equal to
+`origin/main` with `0/0` divergence and no changes to commit. The Replit project
+also has an unrelated ongoing agent task; it was left untouched. This confirms
+source parity at the observation time, not parity of installed host packages or
+Replit connector authentication.
 
 The linked latest-version entries are the source ledger. Publishers are
 upstream maintainers, official package registries or standards bodies. Each
@@ -34,7 +35,7 @@ above. These are dated observations, not perpetual latest-version claims.
 
 | Technology | In place / evidence | Latest stable and primary source | Update route |
 |---|---|---|---|
-| Python / CPython | Supported floor and CI selector `3.11`; Replit `3.11.14`; Windows default `py -3.14` actually reports **3.14.0rc1**, a prerelease. Stable audit virtual environment uses installed `3.12.10`. | [3.14.7; 3.11 line 3.11.16; 3.12 line 3.12.14](https://www.python.org/downloads/) | Latest stable CI plus separately validated host migrations |
+| Python / CPython | Required CI floor `3.11`; a separate CI job follows latest stable `3.x`. Project guidance reports successful verification under `3.11.15` and `3.14.5`. This Windows audit process itself reports **3.14.0rc1**, a prerelease, and is not the stable runtime baseline. | [3.14.7; 3.11 line 3.11.16; 3.12 line 3.12.14](https://www.python.org/downloads/) | Latest stable CI plus separately validated host migrations |
 | Python standard library | `http.server`, `sqlite3`, `json`, `zipfile`, `hashlib`, `urllib`, `unittest`, `venv`, etc. follow the interpreter | [Same Python release](https://docs.python.org/3/library/) | Update Python; no individual pip pins. HTTP server remains loopback-only. |
 | PyYAML | `6.0.3` pinned in `requirements.txt`, installed on both hosts | [6.0.3](https://pypi.org/project/PyYAML/) | Current; Dependabot PRs |
 | jsonschema | `4.26.0` pinned in `requirements.txt`, installed on both hosts | [4.26.0](https://pypi.org/project/jsonschema/) | Current; Dependabot PRs |
@@ -42,9 +43,9 @@ above. These are dated observations, not perpetual latest-version claims.
 | LibYAML | PyYAML extension `0.2.5` observed on both hosts; `.replit` also declares unpinned `libyaml` | [0.2.5](https://github.com/yaml/libyaml/releases/tag/0.2.5) | PyYAML wheel/Nix package; declaration does not prove system library bytes |
 | OpenSSL | Windows Python `3.0.16`; Replit Python `3.6.0` | [4.0.2; supported 3.6 line 3.6.4; 3.5 LTS line 3.5.8](https://openssl-library.org/source/) | Python/host distribution security updates. Do not manually replace interpreter libraries. 4.1.0-alpha1 excluded. |
 | zlib / zlib-ng | Stable audit Python zlib `1.3.1`; prerelease Python `1.3.1.zlib-ng` compatibility string; actual zlib-ng release unknown | [zlib 1.3.2](https://zlib.net/); [zlib-ng 2.3.3](https://github.com/zlib-ng/zlib-ng/releases/tag/2.3.3) | Python distribution; ZIP export/import tests |
-| Playwright for Python | `1.55.0` in `tests/browser/requirements.txt`, installed on Replit and audit venv | [1.63.0](https://pypi.org/project/playwright/) | Behind; update through a PR with both browser acceptance paths |
-| Playwright Chromium/headless shell | 1.55.0 browser manifest: `140.0.7339.16`, revision `1187`; CI installs Chromium | [1.63.0 tested build: 153.0.8010.12, revision 1243](https://github.com/microsoft/playwright/blob/v1.63.0/packages/playwright-core/browsers.json) | Install browsers paired with Playwright. This is its tested build, not consumer Chrome stable. Actual overrides remain host-specific. |
-| Playwright auxiliary binaries | FFmpeg revision `1011`, Windows helper `1007`; Firefox/WebKit are available but not installed by this CI workflow | [1.55.0 browser manifest](https://github.com/microsoft/playwright/blob/v1.55.0/packages/playwright-core/browsers.json) | Managed with Playwright; revision IDs are not upstream semantic versions |
+| Playwright for Python | `1.63.0` pinned in `tests/browser/requirements.txt`; merged in [PR #21](https://github.com/OKHP3/AskJamie-FoundRy/pull/21). The current Replit checkout reports 81 passing Python tests. | [1.63.0](https://pypi.org/project/playwright/) | Current; Dependabot proposes later releases for review and browser acceptance |
+| Playwright Chromium/headless shell | Pinned Playwright 1.63.0 browser manifest: `153.0.8010.12`, revision `1243`; CI installs Chromium | [1.63.0 browser manifest](https://github.com/microsoft/playwright/blob/v1.63.0/packages/playwright-core/browsers.json) | Install browsers paired with Playwright. This is its tested build, not consumer Chrome stable. Actual overrides remain host-specific. |
+| Playwright auxiliary binaries | Pinned 1.63.0 manifest: FFmpeg revision `1011`, Windows helper revision `1007`, Firefox `155.0` revision `1543`, WebKit `26.6` revision `2359` (macOS 14 override `2251`); Firefox/WebKit are not installed by this CI workflow | [1.63.0 browser manifest](https://github.com/microsoft/playwright/blob/v1.63.0/packages/playwright-core/browsers.json) | Managed with Playwright; revision IDs are not upstream semantic versions |
 
 The isolated Windows audit venv was created with Python 3.12.10 and both
 existing requirements files. It is validation evidence; the default interpreter
@@ -62,7 +63,7 @@ No transitive lockfile is checked in. Fresh installs resolve parent constraints.
 | referencing | 0.37.0 | 0.37.0 | [0.37.0](https://pypi.org/project/referencing/) | jsonschema |
 | rpds-py | 2026.6.3 | 2026.5.1 | [2026.6.3](https://pypi.org/project/rpds-py/) | Python/Rust binary wheel; no solution-owned Rust build toolchain |
 | typing-extensions | 4.16.0 | Not reported by initial probe | [4.16.0](https://pypi.org/project/typing-extensions/) | Conditional referencing dependency and pyee dependency; probe omission does not establish absence |
-| pyee | 13.0.1 | 13.0.1 | [14.0.0](https://pypi.org/project/pyee/) | Both Playwright 1.55.0 and 1.63.0 require `<14,>=13`; do not force 14 |
+| pyee | 13.0.1 | 13.0.1 | [14.0.0](https://pypi.org/project/pyee/) | Playwright 1.63.0 requires `<14,>=13`; do not force 14 |
 | greenlet | 3.5.6 | 3.5.5 | [3.5.6](https://pypi.org/project/greenlet/) | Playwright permits `>=3.1.1,<4` |
 | pip | 25.0.1 | 25.0.1 | [26.2.1](https://pypi.org/project/pip/) | Host tooling; prerelease Windows Python separately had 25.1.1 |
 
@@ -108,8 +109,8 @@ below do not establish an earlier run's resolved SHA or embedded Node engine.
 | Replit | Managed workspace, no platform pin | [Replit configuration reference](https://docs.replit.com/replit-app/configuration) |
 | Nixpkgs channel | `.replit`: `stable-25_05` | [Upstream 26.05](https://nixos.org/blog/announcements/2026/nixos-2605/) |
 | Nix | Replit reports Nix 2.31.1 with Determinate Nix 3.11.2 | [Upstream stable manual 2.34.9](https://nix.dev/manual/nix/stable/); [Determinate fork v2.35.2](https://github.com/DeterminateSystems/nix/releases/tag/v2.35.2) |
-| Node.js | Replit module `nodejs-24`; observed Replit 24.13.0, Windows 24.11.1 | [LTS 24.21.0; stable Current 26.9.0](https://nodejs.org/dist/index.json) |
-| npm | Windows/Replit 11.6.2; seven skill package manifests have no third-party dependencies | [12.0.2](https://registry.npmjs.org/npm/latest) |
+| Node.js | Replit module `nodejs-24`; Windows/Replit versions `24.13.0` / `24.11.1` were observed in the dated source inventory, not re-probed in this refresh | [LTS 24.21.0; stable Current 26.10.0](https://nodejs.org/dist/index.json) |
+| npm | Windows/Replit `11.6.2` in the dated source inventory, not re-probed in this refresh; seven skill package manifests have no third-party dependencies | [12.1.0](https://registry.npmjs.org/npm/latest) |
 | PostgreSQL | Replit module `postgresql-16`, CLI 16.10; no application driver/import/query dependency | [18.6; 16 line 16.15](https://www.postgresql.org/docs/release/) |
 | Bash | Replit 5.2.37; post-merge and CI scripts | [5.3](https://www.gnu.org/software/bash/manual/bash.html), [patches through 020](https://ftp.gnu.org/gnu/bash/bash-5.3-patches/) |
 | Git | Windows 2.55.0.windows.5; Replit 2.50.1 | [2.55.0](https://git-scm.com/); [Windows 2.55.0.windows.5](https://github.com/git-for-windows/git/releases/tag/v2.55.0.windows.5) |
@@ -156,6 +157,16 @@ Watch baselines are **reviewed upstream versions, not installed versions**.
 `REVIEWED` does not clear older host versions. Advance a baseline only with
 a recorded disposition and relevant tests. Failed lookups, changed page
 formats, unsupported versions or missing stable releases report `UNKNOWN`.
+
+On 2026-09-26, the release watch reported Node.js Current `26.10.0` and npm
+`12.1.0`, up from the prior observed baselines. The reviewed baselines now record
+those releases. This accepts the upstream observations only: `.replit` remains
+on the Node.js 24 LTS module, npm is optional developer tooling, and no host
+runtime or application dependency was upgraded. npm `12.1.0` declares support
+for Node `^24.15.0`; the watched Node LTS `24.21.0` satisfies that range. The
+latest pyee `14.0.0` remains incompatible with Playwright's `pyee>=13,<14`
+constraint and is not adopted. `AVAILABLE` pip `26.2.1` remains host tooling,
+not an application dependency update.
 
 ## Migration and merge plan
 
@@ -206,9 +217,10 @@ bundled libraries, package versions and Playwright browser manifest.
 | Two application and one browser package are pinned | Confirmed | Requirements and imports; rediscovered each audit |
 | No application TypeScript/Vite/Tailwind stack | Confirmed | Tracked manifests/entry points searched; repeat inventory when new stack files appear |
 | Latest versions listed above | Confirmed at retrieval | Primary sources per row; live watch and monthly review |
-| Replit source differs from GitHub | Confirmed for observed checkout | Shell SHA and eight-commit comparison; coordinate before integration |
+| Replit source matches GitHub | Confirmed at 2026-09-26 observation | Git panel and Shell both showed clean `main` at `b5c7bba260e5e4a415249d7ffc65dcbf94aa3a3a`, `0/0` |
 | Upgrades are compatible | Proposal until tested | Version numbers alone do not prove compatibility |
 | Earlier CI patch versions, viewer renderer, unreported host libraries | Unknown | Capture the specific run/host rather than infer from selectors |
 
-Next action: review this tracking PR, then accept the newly covered Playwright
-update only after both browser paths pass.
+Next action: retain monthly review of the dated standards, managed services and
+host-tool entries above; confirm host versions only when those environments are
+independently inspected.

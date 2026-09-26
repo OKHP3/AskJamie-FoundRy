@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
-  "reviewed_at": "2026-09-19",
+  "reviewed_at": "2026-09-26",
   "note": "These are reviewed upstream releases, not installed versions. Compare runtime evidence in docs/technology-inventory.md. Update baselines only after disposition and validation.",
   "watches": [
     {"name": "Python", "kind": "regex", "url": "https://www.python.org/downloads/", "pattern": "Python ([0-9]+\\.[0-9]+\\.[0-9]+)</a>", "reviewed": "3.14.7", "owner": "Runtime: latest-stable CI follows automatically; host migrations require validation."},
     {"name": "SQLite", "kind": "regex", "url": "https://sqlite.org/changes.html", "pattern": "<h3>[^<]*\\(([0-9]+\\.[0-9]+\\.[0-9]+)\\)", "reviewed": "3.53.4", "owner": "Python distribution: upgrade Python or Replit image and test backup/import."},
     {"name": "Node.js LTS", "kind": "node-lts", "url": "https://nodejs.org/dist/index.json", "reviewed": "24.21.0", "owner": "Optional skill tooling and Replit module; validate seven skill test packages."},
-    {"name": "Node.js Current", "kind": "node-current", "url": "https://nodejs.org/dist/index.json", "reviewed": "26.9.0", "owner": "Observe stable Current releases; retain LTS for normal development."},
-    {"name": "npm", "kind": "npm", "url": "https://registry.npmjs.org/npm/latest", "reviewed": "12.0.2", "owner": "Optional developer tooling; use a version compatible with selected Node LTS."},
+    {"name": "Node.js Current", "kind": "node-current", "url": "https://nodejs.org/dist/index.json", "reviewed": "26.10.0", "owner": "Observed 2026-09-26; informational Current release only, retain Node 24 LTS for normal development."},
+    {"name": "npm", "kind": "npm", "url": "https://registry.npmjs.org/npm/latest", "reviewed": "12.1.0", "owner": "Observed 2026-09-26; optional tooling, latest declares support for Node 24.15+; no host package migration."},
     {"name": "Mermaid", "kind": "npm", "url": "https://registry.npmjs.org/mermaid/latest", "reviewed": "12.0.0", "owner": "Documentation only: GitHub manages renderer. Preview diagrams after changes."},
     {"name": "LibYAML", "kind": "github", "url": "https://api.github.com/repos/yaml/libyaml/releases/latest", "reviewed": "0.2.5", "owner": "PyYAML wheel or Replit Nix package; validate YAML parsing."},
     {"name": "OpenSSL", "kind": "regex", "url": "https://openssl-library.org/source/", "pattern": "openssl-([0-9]+\\.[0-9]+\\.[0-9]+)\\.tar\\.gz", "reviewed": "4.0.2", "owner": "Python/host distribution; prefer its supported security updates over manual library replacement."},
