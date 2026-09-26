@@ -42,7 +42,7 @@ above. These are dated observations, not perpetual latest-version claims.
 | SQLite | Windows Python `3.49.1`; Replit Python `3.51.1`; used by `workbench/store.py` | [3.53.4](https://sqlite.org/changes.html) | Python/host distribution, then backup/import and transaction tests |
 | LibYAML | PyYAML extension `0.2.5` observed on both hosts; `.replit` also declares unpinned `libyaml` | [0.2.5](https://github.com/yaml/libyaml/releases/tag/0.2.5) | PyYAML wheel/Nix package; declaration does not prove system library bytes |
 | OpenSSL | Windows Python `3.0.16`; Replit Python `3.6.0` | [4.0.2; supported 3.6 line 3.6.4; 3.5 LTS line 3.5.8](https://openssl-library.org/source/) | Python/host distribution security updates. Do not manually replace interpreter libraries. 4.1.0-alpha1 excluded. |
-| zlib / zlib-ng | Stable audit Python zlib `1.3.1`; prerelease Python `1.3.1.zlib-ng` compatibility string; actual zlib-ng release unknown | [zlib 1.3.2](https://zlib.net/); [zlib-ng 2.3.3](https://github.com/zlib-ng/zlib-ng/releases/tag/2.3.3) | Python distribution; ZIP export/import tests |
+| zlib / zlib-ng | Stable audit Python zlib `1.3.1`; prerelease Python `1.3.1.zlib-ng` compatibility string; actual zlib-ng release unknown | [zlib 1.3.2](https://github.com/madler/zlib/releases/tag/v1.3.2); [zlib-ng 2.3.3](https://github.com/zlib-ng/zlib-ng/releases/tag/2.3.3) | Python distribution; ZIP export/import tests |
 | Playwright for Python | `1.63.0` pinned in `tests/browser/requirements.txt`; merged in [PR #21](https://github.com/OKHP3/AskJamie-FoundRy/pull/21). The current Replit checkout reports 81 passing Python tests. | [1.63.0](https://pypi.org/project/playwright/) | Current; Dependabot proposes later releases for review and browser acceptance |
 | Playwright Chromium/headless shell | Pinned Playwright 1.63.0 browser manifest: `153.0.8010.12`, revision `1243`; CI installs Chromium | [1.63.0 browser manifest](https://github.com/microsoft/playwright/blob/v1.63.0/packages/playwright-core/browsers.json) | Install browsers paired with Playwright. This is its tested build, not consumer Chrome stable. Actual overrides remain host-specific. |
 | Playwright auxiliary binaries | Pinned 1.63.0 manifest: FFmpeg revision `1011`, Windows helper revision `1007`, Firefox `155.0` revision `1543`, WebKit `26.6` revision `2359` (macOS 14 override `2251`); Firefox/WebKit are not installed by this CI workflow | [1.63.0 browser manifest](https://github.com/microsoft/playwright/blob/v1.63.0/packages/playwright-core/browsers.json) | Managed with Playwright; revision IDs are not upstream semantic versions |
@@ -166,7 +166,9 @@ runtime or application dependency was upgraded. npm `12.1.0` declares support
 for Node `^24.15.0`; the watched Node LTS `24.21.0` satisfies that range. The
 latest pyee `14.0.0` remains incompatible with Playwright's `pyee>=13,<14`
 constraint and is not adopted. `AVAILABLE` pip `26.2.1` remains host tooling,
-not an application dependency update.
+not an application dependency update. The zlib watch now reads the official
+upstream GitHub release API because `zlib.net` returned HTTP 403 to the hosted
+runner; this changes the lookup source, not the reviewed version (`1.3.2`).
 
 ## Migration and merge plan
 

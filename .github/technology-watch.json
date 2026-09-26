@@ -11,7 +11,7 @@
     {"name": "Mermaid", "kind": "npm", "url": "https://registry.npmjs.org/mermaid/latest", "reviewed": "12.0.0", "owner": "Documentation only: GitHub manages renderer. Preview diagrams after changes."},
     {"name": "LibYAML", "kind": "github", "url": "https://api.github.com/repos/yaml/libyaml/releases/latest", "reviewed": "0.2.5", "owner": "PyYAML wheel or Replit Nix package; validate YAML parsing."},
     {"name": "OpenSSL", "kind": "regex", "url": "https://openssl-library.org/source/", "pattern": "openssl-([0-9]+\\.[0-9]+\\.[0-9]+)\\.tar\\.gz", "reviewed": "4.0.2", "owner": "Python/host distribution; prefer its supported security updates over manual library replacement."},
-    {"name": "zlib", "kind": "regex", "url": "https://zlib.net/", "pattern": "zlib ([0-9]+\\.[0-9]+\\.[0-9]+)", "reviewed": "1.3.2", "owner": "Python distribution: validate ZIP export/import."},
+    {"name": "zlib", "kind": "github", "url": "https://api.github.com/repos/madler/zlib/releases/latest", "reviewed": "1.3.2", "owner": "Official upstream release API; zlib.net returned HTTP 403 to hosted CI on 2026-09-26. Validate ZIP export/import."},
     {"name": "Nix stable manual", "kind": "regex", "url": "https://nix.dev/manual/nix/stable/", "pattern": "Nix ([0-9]+\\.[0-9]+\\.[0-9]+) Reference Manual", "reviewed": "2.34.9", "owner": "Replit manages its Determinate Nix distribution. This upstream channel is informational."}
   ]
 }
